@@ -13,8 +13,8 @@ class PvInflux:
 
             self.logger.info("InfluxDB initialized")
             return True
-        except:
-            self.logger.error("Error initializing InfluxDB, retrying next interval")
+        except Exception as e:
+            self.logger.exception("Error initializing InfluxDB: '{}', retrying next interval".format(str(e)))
             return False
 
     def initialize_v2(self):
@@ -22,8 +22,8 @@ class PvInflux:
         try:
             from influxdb_client import InfluxDBClient
             from influxdb_client.client.write_api import SYNCHRONOUS
-        except:
-            raise Exception("Error importing InfluxDB client library")
+        except Exception as e:
+            raise Exception("Error importing InfluxDB client library: '{}'".format(str(e)))
 
         url = "{}://{}:{}".format(self.conf.if2protocol, self.conf.ifhost, self.conf.ifport)
         self.logger.info("Connecting to InfluxDB v2 url: {}".format(url))
@@ -38,16 +38,16 @@ class PvInflux:
             self.if2bucket_api = self.influxclient.buckets_api()
             self.if2organization_api = self.influxclient.organizations_api()
             self.ifwrite_api = self.influxclient.write_api(write_options=SYNCHRONOUS)
-        except:
-            raise Exception("Error instantiating InfluxDB v2 client library")
+        except Exception as e:
+            raise Exception("Error instantiating InfluxDB v2 client library: '{}'".format(str(e)))
 
         try:
             self.logger.debug("Fetching influxdb bucket by name")
             buckets = self.if2bucket_api.find_bucket_by_name(self.conf.if2bucket)
             if buckets == None:
                 raise Exception("InfluxDB v2 bucket {} not defined".format(self.conf.if2bucket))
-        except:
-            raise Exception("Error getting InfluxDB bucket by name")
+        except Exception as e:
+            raise Exception("Error getting InfluxDB bucket by name: '{}'".format(str(e)))
 
         try:
             self.logger.debug("Fetching InfluxDB organizations")
@@ -59,15 +59,15 @@ class PvInflux:
                     break
             if not orgfound:
                 self.logger.warning("InfluxDB v2 organization {} not defined or no authorisation to check".format(self.conf.if2org))
-        except:
-            self.logger.exception("Error getting InfluxDB organizations")
+        except Exception as e:
+            self.logger.exception("Error getting InfluxDB organizations: '{}'".format(str(e)))
 
     def initialize_v1(self):
         self.logger.debug("InfluxDB v1 initialization started")
         try:
             from influxdb import InfluxDBClient
-        except:
-            raise Exception("Error importing InfluxDB client library")
+        except Exception as e:
+            raise Exception("Error importing InfluxDB client library: '{}'".format(str(e)))
 
         try:
             self.logger.debug("Instantiating InfluxDBClient class from InfluxDB library")
@@ -78,26 +78,26 @@ class PvInflux:
                         username=self.conf.if1user,
                         password=self.conf.if1passwd,
                     )
-        except:
-            raise Exception("Error instantiating InfluxDB v1 client library")
+        except Exception as e:
+            raise Exception("Error instantiating InfluxDB v1 client library: '{}'".format(str(e)))
 
         try:
             self.logger.debug("Fetching influxdb database list")
             databases = [db["name"] for db in self.influxclient.get_list_database()]
         except Exception as e:
-            raise Exception("Cannot fetch list of databases from InfluxDB")
+            raise Exception("Cannot fetch list of databases from InfluxDB: '{}'".format(str(e)))
 
         if self.conf.if1dbname not in databases:
             self.logger.info(f"InfluxDB database {self.conf.if1dbname} not defined in InfluxDB, creating new database")
             try:
                 self.influxclient.create_database(self.conf.if1dbname)
-            except:
-                raise Exception("Unable create database: '{}'".format(self.conf.if1dbname))
+            except Exception as e:
+                raise Exception("Unable create database: '{}': '{}'".format(self.conf.if1dbname),str(e))
 
         self.logger.debug("Switching to influxdb database {}",self.conf.if1dbname)
         try:
             self.influxclient.switch_database(self.conf.if1dbname)
-        except:
-            raise Exception("Unable to switch to database {}".format(self.conf.if1dbname))
+        except Exception as e:
+            raise Exception("Error switching to database {}: ''".format(self.conf.if1dbname), str(e))
 
         self.logger.info("Succesfully switched to InfluxDB v1 database '{}'".format(self.conf.if1dbname))

@@ -20,8 +20,8 @@ class PvOutputOrg:
                 self.logger.info("Writing to PVOutput. Header: {} Data: {}".format(pvoutput_header_obj, pvoutput_data_obj))
                 api_response = requests.post(self.conf.pvoutputurl, data=pvoutput_data_obj, headers=pvoutput_header_obj)
                 self.logger.debug("PVOutput response {}".format(api_response.text))
-            except:
-                raise Exception("Exception while posting data to PVOutput")
+            except Exception as e:
+                raise Exception("Exception while posting data to PVOutput: '{}'".format(str(e)))
 
         else:
             self.logger.debug("PVOutput writing disabled")
