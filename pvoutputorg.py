@@ -1,6 +1,5 @@
 import requests
 import time
-from datetime import datetime
 
 class PvOutputOrg:
     def __init__(self, conf, logger):
