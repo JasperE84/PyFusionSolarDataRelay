@@ -26,9 +26,7 @@ class PvRelay:
                 self.write_to_influxdb(fusionsolar_json_data)
                 self.write_to_pvoutput(fusionsolar_json_data)
             except:
-                self.logger.exception(
-                    "Uncaught exception in FusionSolar data processing loop."
-                )
+                self.logger.exception("Uncaught exception in FusionSolar data processing loop.")
 
             self.logger.debug("Waiting for next interval...")
             time.sleep(self.conf.fusioninterval)
@@ -61,8 +59,8 @@ class PvRelay:
                     else:
                         self.logger.debug("Writing to InfluxDB v1...")
                         self.conf.influxclient.write_points(ifjson, time_precision="s")
-                except:
-                    self.logger.exception("InfluxDB write error")
+                except Exception as e:
+                    self.logger.exception("InfluxDB write error: '{}'".format(str(e)))
         else:
             self.logger.debug("Writing data to Influx skipped, not initialized yet.")
 
@@ -88,13 +86,13 @@ class PvRelay:
             response = requests.get(
                 f"{self.conf.fusionsolarurl}{self.conf.fusionsolarkkid}"
             )
-        except:
-            raise Exception("Error fetching data from FusionSolar Kiosk API")
+        except Exception as e:
+            raise Exception("Error fetching data from FusionSolar Kiosk API: '{}'".format(str(e)))
 
         try:
             response_json = response.json()
-        except:
-            raise Exception("Error while parsing JSON response from Kiosk API")
+        except Exception as e:
+            raise Exception("Error while parsing JSON response from Kiosk API: '{}'".format(str(e)))
 
         if not "data" in response_json:
             raise Exception(
@@ -104,15 +102,11 @@ class PvRelay:
         try:
             response_json_data_decoded = html.unescape(response_json["data"])
             response_json_data = json.loads(response_json_data_decoded)
-        except:
-            raise Exception(
-                "Error while parsing JSON response data element from FusionSolar Kiosk API"
-            )
+        except Exception as e:
+            raise Exception("Error while parsing JSON response data element from FusionSolar Kiosk API: '{}'".format(str(e)))
 
         if not "realKpi" in response_json_data_decoded:
-            raise Exception(
-                "Element realKpi is missing in FusionSolar Kiosk API response data"
-            )
+            raise Exception("Element realKpi is missing in FusionSolar Kiosk API response data")
 
         # Checking required realKpi elements and transforming kW(h) to W(h)
         floatKeys = {"realTimePower", "cumulativeEnergy"}
@@ -122,9 +116,7 @@ class PvRelay:
                     response_json_data["realKpi"][floatKey]
                 ) * float(1000)
             else:
-                raise Exception(
-                    f"FusionSolar API data realKpi response element does cot contain key {floatKey}."
-                )
+                raise Exception(f"FusionSolar API data realKpi response element does cot contain key {floatKey}.")
 
         self.logger.debug(f'FusionSolar API data: {response_json_data["realKpi"]}')
 
