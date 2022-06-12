@@ -1,4 +1,5 @@
 import requests
+import time
 from datetime import datetime
 
 class PvOutputOrg:
@@ -27,9 +28,9 @@ class PvOutputOrg:
             self.logger.debug("PVOutput writing disabled")
 
     def make_pvoutput_data_obj(self, response_json_data):
-        current_time = datetime.now()
-        pvodate = current_time.strftime("%Y%m%d")
-        pvotime = current_time.strftime("%H:%M")
+        localtime = time.localtime()
+        pvodate = time.strftime("%Y%m%d", localtime)
+        pvotime = time.strftime("%H:%M", localtime)
 
         pvoutput_data_obj = {
             "d": pvodate,
