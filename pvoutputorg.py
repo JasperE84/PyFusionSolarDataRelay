@@ -35,7 +35,7 @@ class PvOutputOrg:
             "d": pvodate,
             "t": pvotime,
             "v1": float(response_json_data["realKpi"]["cumulativeEnergy"]),
-            "v2": float(response_json_data["realKpi"]["realTimePower"]),
+            "v2": float(response_json_data["powerCurve"]["currentPower"]),
             "c1": 2,
         }
 

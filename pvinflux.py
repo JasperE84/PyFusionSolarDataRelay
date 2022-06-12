@@ -175,5 +175,9 @@ class PvInflux:
         for floatKey in floatKeys:
             ifobj["fields"][floatKey] = response_json_data["realKpi"][floatKey]
 
+        floatKeys = {"currentPower"}
+        for floatKey in floatKeys:
+            ifobj["fields"][floatKey] = response_json_data["powerCurve"][floatKey]
+
         ifjson = [ifobj]
         return ifjson

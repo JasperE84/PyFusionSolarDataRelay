@@ -43,13 +43,13 @@ class PvFusionSolar:
                 )
             )
 
+        # Checking required realKpi elements and transforming kW(h) to W(h)
         if not "realKpi" in response_json_data_decoded:
             raise Exception(
                 "Element realKpi is missing in FusionSolar Kiosk API response data"
             )
-
-        # Checking required realKpi elements and transforming kW(h) to W(h)
-        floatKeys = {"realTimePower", "cumulativeEnergy"}
+        
+        floatKeys = {"realTimePower", "cumulativeEnergy", "monthEnergy", "dailyEnergy", "yearEnergy"}
         for floatKey in floatKeys:
             if floatKey in response_json_data["realKpi"]:
                 response_json_data["realKpi"][floatKey] = float(
@@ -58,6 +58,23 @@ class PvFusionSolar:
             else:
                 raise Exception(
                     f"FusionSolar API data realKpi response element does cot contain key {floatKey}."
+                )
+
+        # Checking required powerCurve elements and transforming kW(h) to W(h)
+        if not "powerCurve" in response_json_data_decoded:
+            raise Exception(
+                "Element powerCurve is missing in FusionSolar Kiosk API response data"
+            )
+
+        floatKeys = {"currentPower"}
+        for floatKey in floatKeys:
+            if floatKey in response_json_data["powerCurve"]:
+                response_json_data["powerCurve"][floatKey] = float(
+                    response_json_data["powerCurve"][floatKey]
+                ) * float(1000)
+            else:
+                raise Exception(
+                    f"FusionSolar API data powerCurve response element does cot contain key {floatKey}."
                 )
 
         self.logger.debug(f'FusionSolar API data: {response_json_data["realKpi"]}')
