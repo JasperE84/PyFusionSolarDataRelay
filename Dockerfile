@@ -8,8 +8,6 @@ ENV LC_ALL=en_US.UTF-8
 RUN apt-get clean && apt-get update && apt-get upgrade -y
 
 # Set the locale
-RUN apt-get install -y locales && locale-gen en_US.UTF-8
-
 RUN pip install --upgrade pip
 RUN pip install --upgrade setuptools
 COPY requirements.txt requirements.txt

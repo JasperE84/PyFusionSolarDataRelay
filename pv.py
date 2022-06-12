@@ -3,6 +3,7 @@ import logging
 from pvconf import PvConf
 from pvinflux import PvInflux
 from pvrelay import PvRelay
+from pvoutputorg import PvOutputOrg
 
 # Logger
 logger = logging.getLogger()
@@ -26,8 +27,11 @@ else:
 pvinflux = PvInflux(conf, logger)
 pvinflux.initialize()
 
+# Setup PVOutput
+pvoutput = PvOutputOrg(conf, logger)
+
 # Start relay
-relay = PvRelay(conf, pvinflux, logger)
+relay = PvRelay(conf, pvinflux, pvoutput, logger)
 try:
     relay.main()
 except KeyboardInterrupt:

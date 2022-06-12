@@ -1,0 +1,66 @@
+version: '3'
+
+services:
+  influxdb:
+    container_name: influxdb
+    image: influxdb:2.2
+    restart: unless-stopped
+    volumes:
+      - ./data/influxdb2:/var/lib/influxdb2
+      - ./data/influxdb2-config:/etc/influxdb2
+    ports:
+      - "8086:8086"
+
+  influxdb_cli:
+    container_name: influxdb_cli
+    links:
+      - influxdb
+    image: influxdb:2.2
+    entrypoint: influx setup --bucket main -t my_secret_influx_token -o acme --username=admin --password=my_secret_passwd --host=http://influxdb:8086 -f
+    restart: on-failure:10
+    depends_on:
+      - influxdb
+
+  pyfusionsolar:
+    container_name: pyfusionsolardatarelay
+    build: ./PyFusionSolarDataRelay
+    restart: unless-stopped
+    network_mode: host
+    depends_on:
+      - influxdb
+    environment:
+      - pvdebug=True
+      - pvsysname=inverter01
+
+      - pvfusionsolarkkid=GET_THIS_STRING_FROM_YOUR_KIOSK_URL
+      - pvfusioninterval=120 #please note that the kiosk current power only seems to update each 30mins
+      
+      - pvinflux=True
+      - pvinflux2=True
+      - pvifhost=influxdb
+      - pvif2protocol=http
+      - pvif2org=acme
+      - pvif2bucket=fusionsolar
+      - pvif2token=GENERATE_TOKEN_IN_INFLUXDB_ADMIN_PANEL
+
+      - pvpvoutput=True
+      - pvpvoutputsystemid=123456
+      - pvpvoutputapikey=GENERATE_THIS_AND_SYSTEMID_ON_PVOUTPUT.ORG
+
+  grafana:
+    depends_on:
+      - influxdb
+    image: grafana/grafana-oss:8.5.5
+    container_name: grafana
+    restart: unless-stopped
+    ports:
+      - 3000:3000
+    user: "1000:1000"
+    volumes:
+      - ./data/grafana:/var/lib/grafana
+    environment:
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_NAME=Main Org.
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Viewer
+      - GF_AUTH_ANONYMOUS_HIDE_VERSION=True
+      - GF_SECURITY_ALLOW_EMBEDDING=True
