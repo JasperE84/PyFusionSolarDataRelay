@@ -10,7 +10,7 @@ A local settings file (such as .yml or .ini) has not been implemented yet, but p
 Check out [Examples/docker-compose.yml](https://github.com/JasperE84/PyFusionSolarDataRelay/blob/main/Examples/docker-compose.yml) for a docker configuration example.
 
 # About Huawei FusionSolar Kiosk mode
-FusionSolar is Huawei's online monitoring platform for their PV inverters. FusionSolar features a kiosk mode. When enabled, a kiosk url is generated which is publically accessible. The kiosk web app fetches its data from a JSON backend. It is this backend where this project fetches teh PV data. 
+FusionSolar is Huawei's online monitoring platform for their PV inverters. FusionSolar features a kiosk mode. When enabled, a kiosk url is generated which is publically accessible. The kiosk web app fetches its data from a JSON backend. It is this backend where this project fetches the PV data. 
 
 # About PVOutput.org
 [PVOutput.org](https://pvoutput.org/) is a free service for sharing and comparing PV output data.
@@ -41,3 +41,7 @@ FusionSolar is Huawei's online monitoring platform for their PV inverters. Fusio
 | if2org | pvif2org | Organization for InfluxDBv2, only required if influx2=True | acme |
 | if2bucket | pvif2bucket | Bucket for InfluxDBv2, only required if influx2=True | fusionsolar |
 | if2token | pvif2token | Token for InfluxDBv2, only required if influx2=True | XXXXXXX |
+
+# Grafana dashboard example
+A grafana dashboard export is included in the Examples subfolder in the Git repository.
+![Grafana dashboard screenshot](./Examples/grafana-screenshot.png)
