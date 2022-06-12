@@ -23,7 +23,8 @@ services:
 
   pyfusionsolar:
     container_name: pyfusionsolardatarelay
-    build: ./PyFusionSolarDataRelay
+    image: jsprnl/pyfusionsolardatarelay:latest
+    #build: ./PyFusionSolarDataRelay
     restart: unless-stopped
     network_mode: host
     depends_on:
