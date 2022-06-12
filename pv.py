@@ -1,9 +1,7 @@
 import sys
 import logging
 from pvconf import PvConf
-from pvinflux import PvInflux
 from pvrelay import PvRelay
-from pvoutputorg import PvOutputOrg
 
 # Logger
 logger = logging.getLogger()
@@ -23,15 +21,8 @@ if conf.debug:
 else:
     logger.setLevel(logging.INFO)
 
-# Setup InfluxDB
-pvinflux = PvInflux(conf, logger)
-pvinflux.initialize()
-
-# Setup PVOutput
-pvoutput = PvOutputOrg(conf, logger)
-
 # Start relay
-relay = PvRelay(conf, pvinflux, pvoutput, logger)
+relay = PvRelay(conf, logger)
 try:
     relay.main()
 except KeyboardInterrupt:
