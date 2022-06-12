@@ -44,4 +44,21 @@ FusionSolar is Huawei's online monitoring platform for their PV inverters. Fusio
 
 # Grafana dashboard example
 A grafana dashboard export is included in the Examples subfolder in the Git repository.
+
 ![Grafana dashboard screenshot](./Examples/grafana-screenshot.png)
+
+# Grafana solar PV dashboard elements on Xibo narrowcasting system
+I'm using individual the elements on this dashboard to show the PV solar statistics on a free and open source [Xibo Digital Signage](https://xibo.org.uk/) narrowcasting system. 
+
+Take the following steps to achieve this:
+1. Enable Grafana anonymous mode (see [Examples/docker-compose.yml](https://github.com/JasperE84/PyFusionSolarDataRelay/blob/main/Examples/docker-compose.yml))
+2. Create a new layout in Xibo and add some regions
+3. Back in Grafana, open the dashboard and click 'Share' in the grafana individual graph dropdown dialog (not the entire dashboard, but the individual graph on the dashboard)
+4. Share in "Link" mode (do not use snapshot or embed)
+5. Back in Xibo, drop the "Webpage" widget on your region
+6. Configure the webpage widget to show the link copied in step 4.
+7. Optionally alter the url to format like `&from=now-12h` instead of the default `&from=1655015379544&to=1655058579544`
+7. Publish the layout, the graphs will now fit nicely in the width/height of the defined regions.
+
+Result:
+![Xibo layout screenshot](./Examples/grafana-embedded-in-xibo-layout.png)
