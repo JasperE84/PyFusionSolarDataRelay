@@ -47,7 +47,7 @@ A grafana dashboard export is included in the Examples subfolder in the Git repo
 
 ![Grafana dashboard screenshot](./Examples/grafana-screenshot.png)
 
-# Grafana solar PV dashboard elements on Xibo narrowcasting system
+# Grafana solar PV dashboard elements on Xibo digital signage system
 I'm using individual the elements on this dashboard to show the PV solar statistics on a free and open source [Xibo Digital Signage](https://xibo.org.uk/) narrowcasting system. 
 
 Take the following steps to achieve this:
