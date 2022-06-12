@@ -1,12 +1,11 @@
 import sys
 import logging
-from pvconf import Conf
+from pvconf import PvConf
 from pvinflux import PvInflux
-from pvrelay import Relay
-
+from pvrelay import PvRelay
 
 # Logger
-logger = logging.getLogger("pv")
+logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
 streamHandler = logging.StreamHandler(sys.stdout)
 formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
@@ -15,7 +14,7 @@ logger.addHandler(streamHandler)
 logger.info("PyFusionSolarDataRelay started")
 
 # Config
-conf = Conf(logger)
+conf = PvConf(logger)
 if conf.debug:
     logger.debug("Enabled verbose logging")
     logger.setLevel(logging.DEBUG)
@@ -28,9 +27,9 @@ pvinflux = PvInflux(conf, logger)
 pvinflux.initialize()
 
 # Start relay
-relay = Relay(conf, pvinflux, logger)
+relay = PvRelay(conf, pvinflux, logger)
 try:
     relay.main()
 except KeyboardInterrupt:
     logger.info("Ctrl C - Stopping relay")
-    sys.exit(1)
+    sys.exit(0)

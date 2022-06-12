@@ -1,11 +1,9 @@
 import os
-import ipaddress
 
-
-class Conf:
+class PvConf:
     def __init__(self, logger):
         self.logger = logger
-        self.logger.debug("Instantiating Conf class")
+        self.logger.debug("Conf class instantiated")
         self.apply_default_settings()
         self.apply_environment_settings()
 
@@ -13,7 +11,6 @@ class Conf:
         self.logger.debug("Setting default conf values")
         # Set default variables
         self.debug = True
-        self.tmzone = "local"
 
         # pvoutput default
         self.pvsysname = "inverter01"
@@ -38,8 +35,7 @@ class Conf:
         self.logger.info(f"Current settings:")
         self.logger.info(f"_Generic:")
         self.logger.info(f"debug:   {self.debug}")
-        self.logger.info(f"timezone: {self.tmzone}")
-        self.logger.info(f"jsonurl: {self.fusionsolarurl}")
+        self.logger.info(f"fusionsolarurl: {self.fusionsolarurl}")
         self.logger.info(f"fusionsolarkkid: {self.fusionsolarkkid}")
         self.logger.info(f"sysname: {self.pvsysname}")
         self.logger.info(f"fusioninterval: {self.fusioninterval}")
@@ -67,8 +63,6 @@ class Conf:
         self.logger.info(f"Processing environment variables to running config")
         if os.getenv("pvverbose") != None:
             self.debug = self.getenv("pvverbose")
-        if os.getenv("pvtmzone") != None:
-            self.tmzone = self.getenv("pvtmzone")
         if os.getenv("pvfusionsolarurl") != None:
             self.fusionsolarurl = self.getenv("pvfusionsolarurl")
         if os.getenv("pvfusionsolarkkid") != None:
