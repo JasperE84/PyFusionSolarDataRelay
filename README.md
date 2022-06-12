@@ -1,4 +1,4 @@
-# PyFusionSolarDataRelay
+# Huawei FusionSolar Kiosk API to InfluxDB and PVOutput relay
 This is a python project intended to fetch data from the **Huawei FusionSolar** public **kiosk** and relay it to **InfluxDB** and/or **PVOutput.org**. 
 
 Credits go to the [Grott project](https://github.com/johanmeijer/grott). Many bits of code, structure and ideas are borrowed from there.
