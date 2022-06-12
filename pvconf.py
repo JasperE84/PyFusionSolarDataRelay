@@ -100,8 +100,8 @@ class PvConf:
             self.ifport = int(self.getenv("pvifport"))
         if os.getenv("pvif1user") != None:
             self.if1user = self.getenv("pvif1user")
-        if os.getenv("pvifpassword") != None:
-            self.if1passwd = self.getenv("pvifpassword")
+        if os.getenv("pvif1password") != None:
+            self.if1passwd = self.getenv("pvif1password")
         if os.getenv("pvif2org") != None:
             self.if2org = self.getenv("pvif2org")
         if os.getenv("pvif2bucket") != None:
