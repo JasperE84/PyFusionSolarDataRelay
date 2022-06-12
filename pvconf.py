@@ -9,17 +9,24 @@ class PvConf:
 
     def apply_default_settings(self):
         self.logger.debug("Setting default conf values")
-        # Set default variables
+        
+        # generic default
         self.debug = True
-
-        # pvoutput default
         self.pvsysname = "inverter01"
+
+        # fusionsolar default
         self.fusionsolarurl = "https://region01eu5.fusionsolar.huawei.com/rest/pvms/web/kiosk/v1/station-kiosk-file?kk="
         self.fusionsolarkkid = "GET_THIS_FROM_KIOSK_URL"
         self.fusioninterval = 120
 
+        # pvoutput default
+        self.pvoutput = False
+        self.pvoutputapikey = "yourapikey"
+        self.pvoutputsystemid = 12345
+        self.pvoutputurl = "https://pvoutput.org/service/r2/addstatus.jsp"
+
         # influxdb default
-        self.influx = True
+        self.influx = False
         self.influx2 = True
         self.ifhost = "localhost"
         self.ifport = 8086
@@ -30,6 +37,8 @@ class PvConf:
         self.if2org = "acme"
         self.if2bucket = "fusionsolar"
         self.if2token = "XXXXXXX"
+
+
 
     def print(self):
         self.logger.info(f"Current settings:")
@@ -53,6 +62,12 @@ class PvConf:
         self.logger.info(f"organization: {self.if2org}")
         self.logger.info(f"bucket: {self.if2bucket}")
         self.logger.info(f"token: {self.if2token}")
+        self.logger.info(f"_PVOutput.org:")
+        self.logger.info(f"Enabled: {self.pvoutput}")
+        self.logger.info(f"System ID: {self.pvoutputsystemid}")
+        self.logger.info(f"API Key: {self.pvoutputapikey}")
+        self.logger.info(f"API Url: {self.pvoutputurl}")
+
 
     def getenv(self, envvar):
         envval = os.getenv(envvar)
@@ -61,8 +76,8 @@ class PvConf:
 
     def apply_environment_settings(self):
         self.logger.info(f"Processing environment variables to running config")
-        if os.getenv("pvverbose") != None:
-            self.debug = self.getenv("pvverbose")
+        if os.getenv("pvdebug") != None:
+            self.debug = self.getenv("pvdebug")
         if os.getenv("pvfusionsolarurl") != None:
             self.fusionsolarurl = self.getenv("pvfusionsolarurl")
         if os.getenv("pvfusionsolarkkid") != None:
@@ -93,3 +108,14 @@ class PvConf:
             self.if2bucket = self.getenv("pvif2bucket")
         if os.getenv("pvif2token") != None:
             self.if2token = self.getenv("pvif2token")
+        
+        if os.getenv("pvpvoutput") != None:
+            self.pvoutput = self.getenv("pvpvoutput")
+        if os.getenv("pvpvoutputurl") != None:
+            self.pvoutputurl = self.getenv("pvpvoutputurl")
+        if os.getenv("pvpvoutputapikey") != None:
+            self.pvoutputapikey = self.getenv("pvpvoutputapikey")
+        if os.getenv("pvpvoutputsystemid") != None:
+            self.pvoutputsystemid = self.getenv("pvpvoutputsystemid")
+                
+
