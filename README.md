@@ -9,6 +9,15 @@ A local settings file (such as .yml or .ini) has not been implemented yet, but p
 
 Check out [Examples/docker-compose.yml](https://github.com/JasperE84/PyFusionSolarDataRelay/blob/main/Examples/docker-compose.yml) for a docker configuration example.
 
+# About Huawei FusionSolar Kiosk mode
+FusionSolar is Huawei's online monitoring platform for their PV inverters. FusionSolar features a kiosk mode. When enabled, a kiosk url is generated which is publically accessible. The kiosk web app fetches its data from a JSON backend. It is this backend where this project fetches teh PV data. 
+
+# About PVOutput.org
+[PVOutput.org](https://pvoutput.org/) is a free service for sharing and comparing PV output data.
+
+# About InfluxDB
+[InfluxDB](https://www.influxdata.com/) is an open source time series database on which dashboards can easily be built. For instance using [Grafana](https://grafana.com/)
+
 # Configuration parameter documentation
 | Parameter | Environment variable | Description | Default |
 | --- | --- | --- | --- |
