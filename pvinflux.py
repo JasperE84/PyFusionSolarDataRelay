@@ -73,7 +73,9 @@ class PvInflux:
                     self.conf.influx = False
                     raise SystemExit("InfluxDB-client Library not installed in Python")
 
-                url = "{}://{}:{}".format(self.conf.if2protocol,self.conf.ifhost, self.conf.ifport)
+                url = "{}://{}:{}".format(
+                    self.conf.if2protocol, self.conf.ifhost, self.conf.ifport
+                )
                 self.logger.info("Connecting to InfluxDBv2 url: {}".format(url))
 
                 self.influxclient = InfluxDBClient(
@@ -88,7 +90,9 @@ class PvInflux:
                 )
 
                 try:
-                    buckets = self.if2bucket_api.find_bucket_by_name(self.conf.if2bucket)
+                    buckets = self.if2bucket_api.find_bucket_by_name(
+                        self.conf.if2bucket
+                    )
                     organizations = self.if2organization_api.find_organizations()
                     if buckets == None:
                         print("InfluxDB V2 bucket ", self.conf.if2bucket, "not defined")
@@ -107,8 +111,6 @@ class PvInflux:
                             self.conf.if2org,
                             "not defined or no authorisation to check",
                         )
-                        ##self.conf.influx = False
-                        ##raise SystemExit("Influxdb initialisation error")
 
                 except Exception as e:
                     self.logger.debug("error: can not contact InfluxDB V2")

@@ -19,26 +19,24 @@ class Relay:
                 if self.conf.debug:
                     print("Requesting data from FusionSolar Kiosk API...")
                 try:
-                    response = requests.get(f"{self.conf.fusionsolarurl}{self.conf.fusionsolarkkid}")
+                    response = requests.get(
+                        f"{self.conf.fusionsolarurl}{self.conf.fusionsolarkkid}"
+                    )
                     response_json = response.json()
                 except:
                     raise Exception("Error fetching data from FusionSolar Kiosk API")
-
                 if not "data" in response_json:
                     raise Exception(
                         f"FusionSolar API response does not contain data key. Response: {response_json}"
                     )
                 response_json_data_decoded = html.unescape(response_json["data"])
-
                 response_json_data = json.loads(response_json_data_decoded)
                 if not "realKpi" in response_json_data_decoded:
                     raise Exception(
                         f'Element "realKpi" is missing in API response data'
                     )
                 print(f'FusionSolar API response: {response_json_data["realKpi"]}')
-
                 current_date = datetime.now().replace(microsecond=0).isoformat()
-
                 if self.conf.influx:
                     if self.conf.debug:
                         print("PyFusionSolarDataRelay InfluxDB publihing started")
@@ -65,7 +63,6 @@ class Relay:
                                 )
                         self.conf.tmzone = "local"
                         local = int(time.timezone / 3600)
-
                     if self.conf.tmzone == "local":
                         curtz = time.timezone
                         utc_dt = datetime.strptime(
@@ -75,7 +72,6 @@ class Relay:
                         naive = datetime.strptime(current_date, "%Y-%m-%dT%H:%M:%S")
                         local_dt = local.localize(naive, is_dst=None)
                         utc_dt = local_dt.astimezone(pytz.utc)
-
                     ifdt = utc_dt.strftime("%Y-%m-%dT%H:%M:%S")
                     if self.conf.debug:
                         print(
@@ -84,13 +80,11 @@ class Relay:
                             "adjusted UTC time for influx : ",
                             ifdt,
                         )
-
                     ifobj = {
                         "measurement": self.conf.pvsysname,
                         "time": ifdt,
                         "fields": {},
                     }
-
                     floatKeys = {"realTimePower", "cumulativeEnergy"}
                     for floatKey in floatKeys:
                         if floatKey in response_json_data["realKpi"]:
@@ -101,11 +95,8 @@ class Relay:
                             raise Exception(
                                 f"FusionSolar API data response element does cot contain key {floatKey}."
                             )
-
                     ifjson = [ifobj]
-
                     print("PyFusionSolarDataRelay InfluxDB json input: ", str(ifjson))
-
                     try:
                         if self.conf.influx2:
                             if self.conf.debug:
@@ -123,14 +114,12 @@ class Relay:
                         raise SystemExit(
                             "PyFusionSolarDataRelay Influxdb write error, script will be stopped"
                         )
-
                 else:
                     if self.conf.debug:
                         print("PyFusionSolarDataRelay Send data to Influx disabled ")
-
             except Exception as e:
                 if self.conf.debug:
                     print("PyFusionSolarDataRelay error")
                 print(e)
                 traceback.print_exc()
-            time.sleep(self.conf.pvinterval)
+            time.sleep(self.conf.fusioninterval)

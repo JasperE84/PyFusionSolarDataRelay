@@ -11,7 +11,6 @@ class Conf:
 
     def apply_default_settings(self):
         self.logger.debug("Setting default conf values")
-
         # Set default variables
         self.debug = True
         self.tmzone = "local"
@@ -20,19 +19,16 @@ class Conf:
         self.pvsysname = "inverter01"
         self.fusionsolarurl = "https://region01eu5.fusionsolar.huawei.com/rest/pvms/web/kiosk/v1/station-kiosk-file?kk="
         self.fusionsolarkkid = "GET_THIS_FROM_KIOSK_URL"
-        self.pvinterval = 120
+        self.fusioninterval = 120
 
         # influxdb default
         self.influx = True
         self.influx2 = True
-
         self.ifhost = "localhost"
         self.ifport = 8086
-
         self.if1dbname = "fusionsolar"
         self.if1user = "fusionsolar"
         self.if1passwd = "fusionsolar"
-
         self.if2protocol = "https"
         self.if2org = "acme"
         self.if2bucket = "fusionsolar"
@@ -40,15 +36,13 @@ class Conf:
 
     def print(self):
         self.logger.info(f"Current settings:")
-
         self.logger.info(f"_Generic:")
         self.logger.info(f"debug:   {self.debug}")
         self.logger.info(f"timezone: {self.tmzone}")
         self.logger.info(f"jsonurl: {self.fusionsolarurl}")
         self.logger.info(f"fusionsolarkkid: {self.fusionsolarkkid}")
         self.logger.info(f"sysname: {self.pvsysname}")
-        self.logger.info(f"interval: {self.pvinterval}")
-
+        self.logger.info(f"fusioninterval: {self.fusioninterval}")
         self.logger.info(f"_Influxdb:")
         self.logger.info(f"influx: {self.influx}")
         self.logger.info(f"influx2: {self.influx2}")
@@ -81,8 +75,8 @@ class Conf:
             self.fusionsolarkkid = self.getenv("pvfusionsolarkkid")
         if os.getenv("pvsysname") != None:
             self.pvsysname = self.getenv("pvsysname")
-        if os.getenv("pvinterval") != None:
-            self.pvinterval = int(self.getenv("pvinterval"))
+        if os.getenv("pvfusioninterval") != None:
+            self.fusioninterval = int(self.getenv("pvfusioninterval"))
         if os.getenv("pvinflux") != None:
             self.influx = self.getenv("pvinflux")
         if os.getenv("pvinflux2") != None:
