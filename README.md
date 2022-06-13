@@ -11,6 +11,7 @@ Check out [Examples/docker-compose.yml](https://github.com/JasperE84/PyFusionSol
 
 # About Huawei FusionSolar Kiosk mode
 FusionSolar is Huawei's online monitoring platform for their PV inverters. FusionSolar features a kiosk mode. When enabled, a kiosk url is generated which is publically accessible. The kiosk web app fetches its data from a JSON backend. It is this backend where this project fetches the PV data. 
+Fetching data from the kiosk mode can be beneficial to those without direct access to the official API and/or the inverter Modbus-TCP. For instance when the inverter is logging to fusionsolar over a direct cellular connection configured and fitted by an installer unable to provide API access rights to third parties.
 
 # About PVOutput.org
 [PVOutput.org](https://pvoutput.org/) is a free service for sharing and comparing PV output data.
