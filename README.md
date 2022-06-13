@@ -1,5 +1,5 @@
 # Huawei FusionSolar Kiosk API to InfluxDB and PVOutput relay
-This is a python project intended to fetch data from the **Huawei FusionSolar** public **kiosk** and relay it to **InfluxDB** and/or **PVOutput.org**. 
+This is a python project intended to fetch data from the **Huawei FusionSolar** public **kiosk** and relay it to **InfluxDB** and/or **PVOutput.org** and/or **MQTT**. 
 
 Credits go to the [Grott project](https://github.com/johanmeijer/grott). Many bits of code, structure and ideas are borrowed from there.
 
@@ -18,6 +18,9 @@ Fetching data from the kiosk mode can be beneficial to those without direct acce
 
 # About InfluxDB
 [InfluxDB](https://www.influxdata.com/) is an open source time series database on which dashboards can easily be built. For instance using [Grafana](https://grafana.com/)
+
+# About MQTT
+MQTT is an OASIS standard messaging protocol for the Internet of Things (IoT). It is designed as an extremely lightweight publish/subscribe messaging transport that is ideal for connecting remote devices. MQTT can be used to relay the PV data to various home automation software such as [Home Assistant](https://www.home-assistant.io/)
 
 # Configuration parameter documentation
 | Parameter | Environment variable | Description | Default |
