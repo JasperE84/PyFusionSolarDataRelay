@@ -20,6 +20,7 @@ class PvMqtt:
             auth_obj = None
 
         try: 
+            self.logger.info("Publishing to MQTT. Data: {}".format(jsonmsg))
             publish.single(
                 self.conf.mqtttopic,
                 payload=jsonmsg, 
@@ -30,8 +31,7 @@ class PvMqtt:
                 client_id=self.conf.pvsysname, 
                 keepalive=60, 
                 auth=auth_obj
-            )
-            self.logger.info("Published data to MQTT: {}".format(str(jsonmsg))) 
+            ) 
 
         except TimeoutError as e:     
             self.logger.error("Timeout while publishing to MQTT: '{}'".format(str(e))) 

@@ -50,7 +50,7 @@ services:
       
       - pvinflux=True
       - pvinflux2=True
-      - pvifhost=influxdb
+      - pvifhost=localservername
       - pvif2protocol=http
       - pvif2org=acme
       - pvif2bucket=fusionsolar
@@ -61,7 +61,7 @@ services:
       - pvpvoutputapikey=GENERATE_THIS_AND_SYSTEMID_ON_PVOUTPUT.ORG
 
       - pvmqtt=True
-      - pvmqtthost=mosquitto
+      - pvmqtthost=localservername
       - pvmqttauth=False
 
     volumes:
