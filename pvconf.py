@@ -136,7 +136,7 @@ class PvConf:
             self.mqtt = self.getenv("pvmqtt") == "True"
         if os.getenv("pvmqtthost") != None:
             self.mqtthost = self.getenv("pvmqtthost")
-        if os.getenv("pvmqtt") != None:
+        if os.getenv("pvmqttport") != None:
             self.mqttport = int(self.getenv("pvmqttport"))
         if os.getenv("pvmqttauth") != None:
             self.mqttauth = self.getenv("pvmqttauth") == "True"
