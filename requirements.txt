@@ -1,3 +1,4 @@
 requests
 influxdb
 influxdb-client
+paho-mqtt

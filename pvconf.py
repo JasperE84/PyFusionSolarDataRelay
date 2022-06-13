@@ -38,7 +38,14 @@ class PvConf:
         self.if2bucket = "fusionsolar"
         self.if2token = "XXXXXXX"
 
-
+        # mqtt default
+        self.mqtt = False
+        self.mqtthost = "localhost"
+        self.mqttport = 1883
+        self.mqttauth = False
+        self.mqttuser = "fusionsolar"
+        self.mqttpasswd = "fusionsolar"
+        self.mqtttopic = "energy/pyfusionsolar"
 
     def print(self):
         self.logger.info(f"Current settings:")
@@ -67,7 +74,14 @@ class PvConf:
         self.logger.info(f"System ID: {self.pvoutputsystemid}")
         self.logger.info(f"API Key: {self.pvoutputapikey}")
         self.logger.info(f"API Url: {self.pvoutputurl}")
-
+        self.logger.info(f"_MQTT")
+        self.logger.info(f"Enabled: {self.mqtt}")
+        self.logger.info(f"Host: {self.mqtthost}")
+        self.logger.info(f"Port: {self.mqttport}")
+        self.logger.info(f"Auth: {self.mqttauth}")
+        self.logger.info(f"User: {self.mqttuser}")
+        self.logger.info(f"Passwd: {self.mqttpasswd}")
+        self.logger.info(f"Topic: {self.mqtttopic}")
 
     def getenv(self, envvar):
         envval = os.getenv(envvar)
@@ -77,7 +91,7 @@ class PvConf:
     def apply_environment_settings(self):
         self.logger.info(f"Processing environment variables to running config")
         if os.getenv("pvdebug") != None:
-            self.debug = self.getenv("pvdebug")
+            self.debug = self.getenv("pvdebug") == "True"
         if os.getenv("pvfusionsolarurl") != None:
             self.fusionsolarurl = self.getenv("pvfusionsolarurl")
         if os.getenv("pvfusionsolarkkid") != None:
@@ -87,9 +101,9 @@ class PvConf:
         if os.getenv("pvfusioninterval") != None:
             self.fusioninterval = int(self.getenv("pvfusioninterval"))
         if os.getenv("pvinflux") != None:
-            self.influx = self.getenv("pvinflux")
+            self.influx = self.getenv("pvinflux") == "True"
         if os.getenv("pvinflux2") != None:
-            self.influx2 = self.getenv("pvinflux2")
+            self.influx2 = self.getenv("pvinflux2") == "True"
         if os.getenv("pvif1dbname") != None:
             self.if1dbname = self.getenv("pvif1dbname")
         if os.getenv("pvif2protocol") != None:
@@ -110,12 +124,28 @@ class PvConf:
             self.if2token = self.getenv("pvif2token")
         
         if os.getenv("pvpvoutput") != None:
-            self.pvoutput = self.getenv("pvpvoutput")
+            self.pvoutput = self.getenv("pvpvoutput") == "True"
         if os.getenv("pvpvoutputurl") != None:
             self.pvoutputurl = self.getenv("pvpvoutputurl")
         if os.getenv("pvpvoutputapikey") != None:
             self.pvoutputapikey = self.getenv("pvpvoutputapikey")
         if os.getenv("pvpvoutputsystemid") != None:
             self.pvoutputsystemid = self.getenv("pvpvoutputsystemid")
+
+        if os.getenv("pvmqtt") != None:
+            self.mqtt = self.getenv("pvmqtt") == "True"
+        if os.getenv("pvmqtthost") != None:
+            self.mqtthost = self.getenv("pvmqtthost")
+        if os.getenv("pvmqtt") != None:
+            self.mqttport = int(self.getenv("pvmqttport"))
+        if os.getenv("pvmqttauth") != None:
+            self.mqttauth = self.getenv("pvmqttauth") == "True"
+        if os.getenv("pvmqttuser") != None:
+            self.mqttuser = self.getenv("pvmqttuser")
+        if os.getenv("pvmqttpasswd") != None:
+            self.mqttpasswd = self.getenv("pvmqttpasswd")
+        if os.getenv("pvmqtttopic") != None:
+            self.mqtttopic = self.getenv("pvmqtttopic")
+
                 
 

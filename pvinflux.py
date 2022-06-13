@@ -149,7 +149,7 @@ class PvInflux:
         ifjson = self.make_influx_jsonrecord(response_json_data)
         self.logger.info("Writing InfluxDB json record: {}".format(str(ifjson)))
         try:
-            if self.conf.influx2:
+            if self.conf.influx2 :
                 self.logger.debug("Writing to InfluxDB v2...")
                 self.ifwrite_api.write(
                     bucket=self.conf.if2bucket,

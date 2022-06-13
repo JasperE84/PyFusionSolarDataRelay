@@ -47,6 +47,11 @@ services:
       - pvpvoutput=True
       - pvpvoutputsystemid=123456
       - pvpvoutputapikey=GENERATE_THIS_AND_SYSTEMID_ON_PVOUTPUT.ORG
+
+      - pvmqtt=True
+      - pvmqtthost=mqtt
+      - pvmqttauth=False
+      
     volumes:
       - /etc/localtime:/etc/localtime
 

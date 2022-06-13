@@ -41,6 +41,13 @@ FusionSolar is Huawei's online monitoring platform for their PV inverters. Fusio
 | if2org | pvif2org | Organization for InfluxDBv2, only required if influx2=True | acme |
 | if2bucket | pvif2bucket | Bucket for InfluxDBv2, only required if influx2=True | fusionsolar |
 | if2token | pvif2token | Token for InfluxDBv2, only required if influx2=True | XXXXXXX |
+| mqtt | pvmqtt | Can be `True` or `False`, determines if MQTT publishing is enabled | False |
+| mqtthost | pvmqtthost | Hostname of MQTT server | localhost |
+| mqttport | pvmqttport | Port of MQTT server | 1883 |
+| mqttauth | pvmqttauth | Can be `True` or `False`, determines if MQTT authentication is enabled | False |
+| mqttuser | pvmqttuser | MQTT Username | fusionsolar |
+| mqttpasswd | pvmqttpasswd | MQTT Password | fusionsolar |
+| mqtttopic | pvmqtttopic | MQTT Topic for publishing | energy/pyfusionsolar |
 
 # Grafana dashboard example
 A grafana dashboard export is included in the Examples subfolder in the Git repository.
