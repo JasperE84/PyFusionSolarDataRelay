@@ -3,9 +3,14 @@ This is a python project intended to fetch data from the **Huawei FusionSolar** 
 
 Credits go to the [Grott project](https://github.com/johanmeijer/grott). Many bits of code, structure and ideas are borrowed from there.
 
+[![GitHub release](https://img.shields.io/github/release/JasperE84/PyFusionSolarDataRelay?include_prereleases=&sort=semver&color=2ea44f)](https://github.com/JasperE84/PyFusionSolarDataRelay/releases/)
+[![License](https://img.shields.io/badge/License-MIT-2ea44f)](#license)
+
 # Installation
 This project is currently intented to run as a Docker container and fetches its config from environment variables. Yet the project can be run standalone. 
 A local settings file (such as .yml or .ini) has not been implemented yet, but pvconf.py can easily be modified to override standard settings.
+
+[![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white)](https://hub.docker.com/r/jsprnl/pyfusionsolardatarelay)
 
 Check out [Examples/docker-compose.yml](https://github.com/JasperE84/PyFusionSolarDataRelay/blob/main/Examples/docker-compose.yml) for a docker configuration example.
 
@@ -73,3 +78,6 @@ Take the following steps to achieve this:
 
 Result:
 ![Xibo layout screenshot](./Examples/grafana-embedded-in-xibo-layout.png)
+
+
+Released under [MIT](/LICENSE) by [@JasperE84](https://github.com/JasperE84).
