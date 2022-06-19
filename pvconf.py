@@ -27,6 +27,7 @@ class PvConf:
         self.pvoutputapikey = "yourapikey"
         self.pvoutputsystemid = 12345
         self.pvoutputurl = "https://pvoutput.org/service/r2/addstatus.jsp"
+        self.pvoutputbatchurl = "https://pvoutput.org/service/r2/addbatchstatus.jsp"
 
         # Gridrelay default
         # Please note that local server or docker container needs to be in same timezone als meetdata.nl in order for kenter data to work correctly
@@ -92,6 +93,7 @@ class PvConf:
         self.logger.info(f"System ID: {self.pvoutputsystemid}")
         self.logger.info(f"API Key: {self.pvoutputapikey}")
         self.logger.info(f"API Url: {self.pvoutputurl}")
+        self.logger.info(f"API BatchUrl: {self.pvoutputbatchurl}")
         self.logger.info(f"_MQTT")
         self.logger.info(f"Enabled: {self.mqtt}")
         self.logger.info(f"Host: {self.mqtthost}")
@@ -157,6 +159,8 @@ class PvConf:
             self.pvoutput = self.getenv("pvpvoutput") == "True"
         if os.getenv("pvpvoutputurl") != None:
             self.pvoutputurl = self.getenv("pvpvoutputurl")
+        if os.getenv("pvpvoutputbatchurl") != None:
+            self.pvoutputbatchurl = self.getenv("pvpvoutputbatchurl")
         if os.getenv("pvpvoutputapikey") != None:
             self.pvoutputapikey = self.getenv("pvpvoutputapikey")
         if os.getenv("pvpvoutputsystemid") != None:

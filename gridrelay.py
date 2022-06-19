@@ -35,7 +35,7 @@ class GridRelay:
             try:
                 grid_measurement_data = self.gridkenter.fetch_gridkenter_data(self.conf.gridrelaydaysback)
                 self.write_gridkenter_to_influxdb(grid_measurement_data)
-                #self.write_gridkenter_to_pvoutput(fusionsolar_json_data)
+                self.write_gridkenter_to_pvoutput(grid_measurement_data)
             except:
                 self.logger.exception(
                     "Uncaught exception in GridRelay data processing loop."
@@ -44,12 +44,12 @@ class GridRelay:
             self.logger.debug("Waiting for next interval...")
             time.sleep(self.conf.gridrelayinterval)
 
-    # def write_gridkenter_to_pvoutput(self, fusionsolar_json_data):
-    #     if self.conf.pvoutput:
-    #         try:
-    #             self.pvoutput.write_griddata_to_pvoutput(fusionsolar_json_data)
-    #         except:
-    #             self.logger.exception("Error writing to PVOutput.org")
+    def write_gridkenter_to_pvoutput(self, grid_measurement_data):
+        if self.conf.pvoutput:
+            try:
+                self.pvoutput.write_griddata_to_pvoutput(grid_measurement_data)
+            except:
+                self.logger.exception("Error writing GridData to PVOutput.org")
 
     def write_gridkenter_to_influxdb(self, grid_measurement_data):
         if self.conf.influx:
