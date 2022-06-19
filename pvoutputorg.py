@@ -74,7 +74,7 @@ class PvOutputOrg:
             if (rec_num > page * 30) and (rec_num <= page * 30 + 30):
                 local_date = datetime.fromtimestamp(measurement["timestamp"]).strftime("%Y%m%d")
                 local_time = datetime.fromtimestamp(measurement["timestamp"]).strftime("%H:%M")
-                data.append(f"{local_date},{local_time},,0,{measurement['interval_power_avg']}")
+                data.append(f"{local_date},{local_time},,0,,{measurement['interval_power_avg']}")
 
         pvoutput_data_obj = {
             "c1": 0,

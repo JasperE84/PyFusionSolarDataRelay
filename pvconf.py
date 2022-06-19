@@ -40,7 +40,7 @@ class PvConf:
         self.gridrelaykenteruser = "user"
         self.gridrelaykenterpasswd = "passwd"
         # Grid infrastructure measurements in The Netherlands, show up in the API with a 3-5 days delay.
-        self.gridrelaydaysback = 3
+        self.gridrelaydaysback = 4
 
         # Influxdb default
         self.influx = False
