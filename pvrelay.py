@@ -1,6 +1,4 @@
-from threading import Thread
 import time
-
 from pvconf import PvConf
 from pvinflux import PvInflux
 from pvoutputorg import PvOutputOrg
@@ -22,8 +20,6 @@ class PvRelay:
         self.pvinflux_initialized = False
 
         self.logger.info("Starting PvRelay on separate thread")
-        Thread.__init__(self)
-        self.daemon = True
         self.start()
 
     def start(self):

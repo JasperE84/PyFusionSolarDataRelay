@@ -1,6 +1,7 @@
 import sys
 import logging
 import time
+from threading import Thread
 from pvconf import PvConf
 from pvrelay import PvRelay
 from gridrelay import GridRelay
@@ -25,10 +26,11 @@ else:
 
 # Start PvRelay and KenterRelay
 try:
-    if conf.fusionsolar:
-        PvRelay(conf, logger)
-    if conf.gridrelay:
-        GridRelay(conf, logger)
+    if __name__ == '__main__':
+        if conf.fusionsolar:
+            Thread(target = PvRelay, args=[conf, logger]).start()
+        if conf.gridrelay:
+            Thread(target = GridRelay, args=[conf, logger]).start()
     while True:
         time.sleep(1)
 except KeyboardInterrupt:

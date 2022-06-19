@@ -1,13 +1,9 @@
-import imp
-from threading import Thread
 import time
-
 from pvinflux import PvInflux
 from pvoutputorg import PvOutputOrg
 from pvconf import PvConf
 from gridkenter import GridKenter
 from pvmqtt import PvMqtt
-
 
 
 class GridRelay:
@@ -23,8 +19,6 @@ class GridRelay:
         self.pvinflux_initialized = False
 
         self.logger.info("Starting GridRelay on separate thread")
-        Thread.__init__(self)
-        self.daemon = True
         self.start()
 
     def start(self):
