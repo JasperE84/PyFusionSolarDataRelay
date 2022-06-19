@@ -40,7 +40,7 @@ class PvConf:
         self.gridrelaykenteruser = "user"
         self.gridrelaykenterpasswd = "passwd"
         # Grid infrastructure measurements in The Netherlands, show up in the API with a 3-5 days delay.
-        self.gridrelaydaysback = 5
+        self.gridrelaydaysback = 3
         # If fusionsolar updates every 30mins and meetdata.nl has values per 15min, set this to 2 so that intervals between two datasources match to avoid weird pvoutput graphs.
         self.gridrelaypvoutputspan = 2
 
