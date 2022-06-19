@@ -1,20 +1,21 @@
 import requests
 import time
+from pvconf import PvConf
 
 class PvOutputOrg:
-    def __init__(self, conf, logger):
+    def __init__(self, conf: PvConf, logger):
         self.conf = conf
         self.logger = logger
         self.logger.debug("PvOutputOrg class instantiated")
 
-    def write_to_pvoutput(self, fusionsolar_json_data):
+    def write_pvdata_to_pvoutput(self, fusionsolar_json_data):
         if self.conf.pvoutput:
             pvoutput_header_obj = {
                 "X-Pvoutput-Apikey": self.conf.pvoutputapikey,
                 "X-Pvoutput-SystemId": self.conf.pvoutputsystemid,
             }
 
-            pvoutput_data_obj = self.make_pvoutput_data_obj(fusionsolar_json_data)
+            pvoutput_data_obj = self.make_pvoutput_pvdata_obj(fusionsolar_json_data)
 
             try:
                 self.logger.info("Writing to PVOutput. Header: {} Data: {}".format(pvoutput_header_obj, pvoutput_data_obj))
@@ -26,7 +27,7 @@ class PvOutputOrg:
         else:
             self.logger.debug("PVOutput writing disabled")
 
-    def make_pvoutput_data_obj(self, response_json_data):
+    def make_pvoutput_pvdata_obj(self, response_json_data):
         localtime = time.localtime()
         pvodate = time.strftime("%Y%m%d", localtime)
         pvotime = time.strftime("%H:%M", localtime)

@@ -1,7 +1,9 @@
 import sys
 import logging
+import time
 from pvconf import PvConf
 from pvrelay import PvRelay
+from gridrelay import GridRelay
 
 # Logger
 logger = logging.getLogger()
@@ -21,10 +23,15 @@ if conf.debug:
 else:
     logger.setLevel(logging.INFO)
 
-# Start relay
-relay = PvRelay(conf, logger)
+# Start PvRelay and KenterRelay
 try:
-    relay.main()
+    if conf.fusionsolar:
+        PvRelay(conf, logger)
+    if conf.gridrelay:
+        GridRelay(conf, logger)
+    while True:
+        time.sleep(1)
 except KeyboardInterrupt:
     logger.info("Ctrl C - Stopping relay")
     sys.exit(0)
+

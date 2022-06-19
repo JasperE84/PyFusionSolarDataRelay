@@ -1,7 +1,9 @@
 from datetime import datetime
+from pvconf import PvConf
+
 
 class PvInflux:
-    def __init__(self, conf, logger):
+    def __init__(self, conf: PvConf, logger):
         self.conf = conf
         self.logger = logger
         self.logger.debug("PvInflux class instantiated")
@@ -145,12 +147,12 @@ class PvInflux:
             )
         )
 
-    def pvinflux_write(self, response_json_data):
-        ifjson = self.make_influx_jsonrecord(response_json_data)
+    def pvinflux_write_pvdata(self, response_json_data):
+        ifjson = self.make_influx_pvdata_jsonrecord(response_json_data)
         self.logger.info("Writing InfluxDB json record: {}".format(str(ifjson)))
         try:
-            if self.conf.influx2 :
-                self.logger.debug("Writing to InfluxDB v2...")
+            if self.conf.influx2:
+                self.logger.debug("Writing PvData to InfluxDB v2...")
                 self.ifwrite_api.write(
                     bucket=self.conf.if2bucket,
                     org=self.conf.if2org,
@@ -158,12 +160,12 @@ class PvInflux:
                     write_precision="s",
                 )
             else:
-                self.logger.debug("Writing to InfluxDB v1...")
+                self.logger.debug("Writing PvData to InfluxDB v1...")
                 self.conf.influxclient.write_points(ifjson, time_precision="s")
         except Exception as e:
-            self.logger.exception("InfluxDB write error: '{}'".format(str(e)))
+            self.logger.exception("InfluxDB PvData write error: '{}'".format(str(e)))
 
-    def make_influx_jsonrecord(self, response_json_data):
+    def make_influx_pvdata_jsonrecord(self, response_json_data):
         ifobj = {
             "measurement": self.conf.pvsysname,
             "time": datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ"),
@@ -181,3 +183,36 @@ class PvInflux:
 
         ifjson = [ifobj]
         return ifjson
+
+    def pvinflux_write_griddata(self, grid_data_obj):
+        ifjson = self.make_influx_griddata_jsonrecord(grid_data_obj)
+        self.logger.info("Writing GridData InfluxDB json records: {}".format(str(ifjson)))
+        try:
+            if self.conf.influx2:
+                self.logger.debug("Writing GridData to InfluxDB v2...")
+                self.ifwrite_api.write(
+                    bucket=self.conf.if2bucket,
+                    org=self.conf.if2org,
+                    record=ifjson,
+                    write_precision="s",
+                )
+            else:
+                self.logger.debug("Writing GridData to InfluxDB v1...")
+                self.conf.influxclient.write_points(ifjson, time_precision="s")
+        except Exception as e:
+            self.logger.exception("InfluxDB GridData write error: '{}'".format(str(e)))
+
+    def make_influx_griddata_jsonrecord(self, grid_data_obj):
+        influx_measurement_list = []
+
+        for measurement in grid_data_obj["grid_net_consumption"]:
+            influx_measurement_list.append({
+                "measurement": grid_data_obj["sysname"],
+                "time": datetime.utcfromtimestamp(measurement["timestamp"]).strftime("%Y-%m-%dT%H:%M:%SZ"),
+                "fields": {
+                    "interval_energy": measurement["interval_energy"],
+                    "interval_power_avg": measurement["interval_power_avg"]
+                }
+            })
+
+        return influx_measurement_list
