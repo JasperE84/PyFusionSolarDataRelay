@@ -1,9 +1,11 @@
 import time
+from apscheduler.schedulers.blocking import BlockingScheduler
 from pvconf import PvConf
 from pvinflux import PvInflux
 from pvoutputorg import PvOutputOrg
 from pvfusionsolar import PvFusionSolar
 from pvmqtt import PvMqtt
+
 
 
 class PvRelay:
@@ -20,25 +22,25 @@ class PvRelay:
         self.pvinflux_initialized = False
 
         self.logger.info("Starting PvRelay on separate thread")
-        self.start()
-
-    def start(self):
         self.logger.debug("PvRelay waiting 5sec to initialize docker-compose containers")
         time.sleep(5)
 
-        while 1:
-            try:
-                fusionsolar_json_data = self.pvfusionsolar.fetch_fusionsolar_status()
-                self.write_pvdata_to_influxdb(fusionsolar_json_data)
-                self.write_pvdata_to_pvoutput(fusionsolar_json_data)
-                self.publish_pvdata_to_mqtt(fusionsolar_json_data)
-            except:
-                self.logger.exception(
-                    "Uncaught exception in FusionSolar data processing loop."
-                )
+        sched = BlockingScheduler(standalone = True)
+        sched.add_job(self.process_fusionsolar_request, trigger='cron', hour=self.conf.fusionhourcron, minute=self.conf.fusionminutecron)
+        sched.start()
 
-            self.logger.debug("Waiting for next FusionSolar interval...")
-            time.sleep(self.conf.fusioninterval)
+    def process_fusionsolar_request(self):
+        try:
+            fusionsolar_json_data = self.pvfusionsolar.fetch_fusionsolar_status()
+            self.write_pvdata_to_influxdb(fusionsolar_json_data)
+            self.write_pvdata_to_pvoutput(fusionsolar_json_data)
+            self.publish_pvdata_to_mqtt(fusionsolar_json_data)
+        except:
+            self.logger.exception(
+                "Uncaught exception in FusionSolar data processing loop."
+            )
+
+        self.logger.debug("Waiting for next FusionSolar interval...")
 
     def write_pvdata_to_pvoutput(self, fusionsolar_json_data):
         if self.conf.pvoutput:

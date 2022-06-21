@@ -28,9 +28,13 @@ else:
 try:
     if __name__ == '__main__':
         if conf.fusionsolar:
-            Thread(target = PvRelay, args=[conf, logger]).start()
+            fs_thread = Thread(target = PvRelay, args=[conf, logger])
+            fs_thread.daemon = True
+            fs_thread.start()
         if conf.gridrelay:
-            Thread(target = GridRelay, args=[conf, logger]).start()
+            gr_thread = Thread(target = GridRelay, args=[conf, logger])
+            gr_thread.daemon = True
+            gr_thread.start()
     while True:
         time.sleep(1)
 except KeyboardInterrupt:

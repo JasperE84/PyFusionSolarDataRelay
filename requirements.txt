@@ -2,3 +2,4 @@ requests
 influxdb
 influxdb-client
 paho-mqtt
+apscheduler

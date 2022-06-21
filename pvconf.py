@@ -20,7 +20,8 @@ class PvConf:
         self.fusionsolarkkid = "GET_THIS_FROM_KIOSK_URL"
         
         # The fusionsolar API only updates portal data each half hour, setting to lower value will produce weird PVOutput graph with horizontal bits in it.
-        self.fusioninterval = 1800 
+        self.fusionhourcron = "*"
+        self.fusionminutecron = "*/30" 
 
         # Pvoutput default
         self.pvoutput = False
@@ -75,7 +76,8 @@ class PvConf:
         self.logger.info(f"fusionsolarurl: {self.fusionsolarurl}")
         self.logger.info(f"fusionsolarkkid: {self.fusionsolarkkid}")
         self.logger.info(f"sysname: {self.pvsysname}")
-        self.logger.info(f"fusioninterval: {self.fusioninterval}")
+        self.logger.info(f"fusionhourcron: {self.fusionhourcron}")
+        self.logger.info(f"fusionminutecron: {self.fusionminutecron}")
         self.logger.info(f"_Influxdb:")
         self.logger.info(f"influx: {self.influx}")
         self.logger.info(f"influx2: {self.influx2}")
@@ -133,8 +135,10 @@ class PvConf:
             self.fusionsolarkkid = self.getenv("pvfusionsolarkkid")
         if os.getenv("pvsysname") != None:
             self.pvsysname = self.getenv("pvsysname")
-        if os.getenv("pvfusioninterval") != None:
-            self.fusioninterval = int(self.getenv("pvfusioninterval"))
+        if os.getenv("pvfusionhourcron") != None:
+            self.fusionhourcron = int(self.getenv("pvfusionhourcron"))
+        if os.getenv("pvfusionminutecron") != None:
+            self.fusionminutecron = int(self.getenv("pvfusionminutecron"))
         if os.getenv("pvinflux") != None:
             self.influx = self.getenv("pvinflux") == "True"
         if os.getenv("pvinflux2") != None:
