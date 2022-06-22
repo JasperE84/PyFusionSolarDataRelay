@@ -1,5 +1,6 @@
 # Huawei FusionSolar Kiosk API to InfluxDB and PVOutput relay
 This is a python project intended to fetch data from the **Huawei FusionSolar** public **kiosk** and relay it to **InfluxDB** and/or **PVOutput.org** and/or **MQTT**. 
+
 Additionally this project can also fetch and relay grid usage data from the Dutch meetdata.nl API provider by **Kenter**.
 
 Credits go to the [Grott project](https://github.com/johanmeijer/grott). Many bits of code, structure and ideas are borrowed from there.
@@ -16,6 +17,9 @@ The fusionsolarinterval configuration paramters has been replaced by two cron se
 # About Huawei FusionSolar Kiosk mode
 FusionSolar is Huawei's online monitoring platform for their PV inverters. FusionSolar features a kiosk mode. When enabled, a kiosk url is generated which is publically accessible. The kiosk web app fetches its data from a JSON backend. It is this backend where this project fetches the PV data. 
 Fetching data from the kiosk mode can be beneficial to those without direct access to the official API and/or the inverter Modbus-TCP. For instance when the inverter is logging to fusionsolar over a direct cellular connection configured and fitted by an installer unable to provide API access rights to third parties.
+
+# About Kenter's API and matching PVOutput intervals
+Fusion solar data fetching is planned by cron in order to exactly specify at what times the data should reload. This way, it is possible to synchronise the intervals of fusionsolar and gridkenter datapoints, which end up showing on PVOutput. That's relevant because if the gridkenter data class is fetched, meetdata.nl does not provide live measurements. Instead it provides historic measurements with a certain interval (15 minutes interval with the most recent data point 3 days old in my case). If this interval doesn't match the fusionsolar interval, then PVOutput will show distorted graphs because it won't have a datapoint for both PV production and grid usage for each interval. (Fusionsolar kiosk API only updates each half hour). See [this url](https://crontab.guru/) for help with finding the right cron config.
 
 # About PVOutput.org
 [PVOutput.org](https://pvoutput.org/) is a free service for sharing and comparing PV output data.
@@ -38,7 +42,7 @@ Kenter provides measurement services for **commercially rented** grid transforme
 | fusionsolar | pvfusionsolar | Can be `True` or `False`, determines if fusionsolar kiosk API is enabled | True |
 | fusionsolarurl | pvfusionsolarurl | Link to the fusionsolar kiosk data backend | [Click url](https://region01eu5.fusionsolar.huawei.com/rest/pvms/web/kiosk/v1/station-kiosk-file?kk=) |
 | fusionsolarkkid | pvfusionsolarkkid | Unique kiosk ID, can be found by looking the kiosk URL and then taking the code after `kk=` | GET_THIS_FROM_KIOSK_URL |
-| fusionhourcron | pvfusionhourcron | Hour component for python cron job to fetch and process data from fusionsolar. Fusion solar is planned by cron in order to exactly specify at what times the data should reload. This way, it is possible to synchronise the intervals which end up showing on PVOutput. That's relevant because if the GridKenter class is used, meetdata.nl does not provide live measurements, but historic measurements with a certain interval (15 minutes in my case). If this interval doesn't match the fusionsolar interval, then PVOutput will show distorted graphs because it won't have a datapoint for both PV production and grid usage for each interval. (Fusionsolar kiosk API only updates each half hour). See [this url](https://crontab.guru/) for help with finding the right cron config. | * |
+| fusionhourcron | pvfusionhourcron | Hour component for python cron job to fetch and process data from fusionsolar. | * |
 | fusionminutecron | pvfusionminutecron | Minute component for python cron job to fetch and process data from fusionsolar | 0,30 |
 | pvoutput | pvpvoutput | Can be `True` or `False`, determines if PVOutput.org API is enabled | False |
 | pvoutputapikey | pvpvoutputapikey | API Key for PVOutput.org | yourapikey |
@@ -71,7 +75,7 @@ Kenter provides measurement services for **commercially rented** grid transforme
 | gridrelaykentermeterid | pvgridrelaykentermeterid | MeterID as shown on Kenter's www.meetdata.nl | XXX |
 | gridrelaykenteruser | pvgridrelaykenteruser | Username for Kenter's API | user |
 | gridrelaykenterpasswd | pvgridrelaykenterpasswd | Password for Kenter's API | passwd |
-| gridrelaydaysback | pvgridrelaydaysback | Kenter's meetdata.nl does not provide live data. Data is only available up until an X amount of days back. May vary per transformer. In my case data is only available at a minimum of 3 days back. | 3 |
+| gridrelaydaysback | pvgridrelaydaysback | Kenter's meetdata.nl does not provide live data. Data is only available up until an X amount of days back. May vary per transformer. | 3 |
 | gridrelaypvoutputspan | pvgridrelaypvoutputspan | In my case meetdata.nl has datapoints for each 15mins. Setting this to a value of 2, will calculate averages over 2 datapoints spanning half an hour before posting to PVOutput. This way the datapoint interval between the grid usage data and fusionsolar PV production data matches, resulting in nice diagrams on PVOutput.org | 2 |
 # Grafana dashboard example
 A grafana dashboard export is included in the Examples subfolder in the Git repository.
