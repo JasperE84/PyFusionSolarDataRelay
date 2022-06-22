@@ -44,8 +44,9 @@ services:
       - pvdebug=True
       - pvsysname=inverter01
 
+      - pvfusionsolar=True
       - pvfusionsolarkkid=GET_THIS_STRING_FROM_YOUR_KIOSK_URL
-      - pvfusioninterval=120 #please note that the kiosk current power only seems to update each 30mins
+      - pvfusionminutecron=0,30 # Please note that the kiosk only seems to update each 30mins
       
       - pvinflux=True
       - pvinflux2=True
@@ -62,6 +63,12 @@ services:
       - pvmqtt=True
       - pvmqtthost=mosquitto
       - pvmqttauth=False
+
+      - pvgridrelay=False
+      - pvgridrelaykenterean=000000000000000000
+      - pvgridrelaykentermeterid=0000000000
+      - pvgridrelaykenteruser=my@username.com
+      - pvgridrelaykenterpasswd=secretpassword
 
     volumes:
       - /etc/localtime:/etc/localtime
