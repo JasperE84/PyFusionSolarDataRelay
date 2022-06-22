@@ -1,13 +1,18 @@
-# Huawei FusionSolar Kiosk API to InfluxDB and PVOutput relay
+# Huawei FusionSolar Kiosk API to InfluxDB, MQTT and PVOutput relay
 This is a python project intended to fetch data from the **Huawei FusionSolar** public **kiosk** and relay it to **InfluxDB** and/or **PVOutput.org** and/or **MQTT**. 
 
 Additionally this project can also fetch and relay grid usage data from the Dutch meetdata.nl API provider by **Kenter**.
 
 Credits go to the [Grott project](https://github.com/johanmeijer/grott). Many bits of code, structure and ideas are borrowed from there.
 
+[![GitHub release](https://img.shields.io/github/release/JasperE84/PyFusionSolarDataRelay?include_prereleases=&sort=semver&color=2ea44f)](https://github.com/JasperE84/PyFusionSolarDataRelay/releases/)
+[![License](https://img.shields.io/badge/License-MIT-2ea44f)](#license)
+
 # Installation
 This project is currently intented to run as a Docker container and fetches its config from environment variables. Yet the project can be run standalone. 
 A local settings file (such as .yml or .ini) has not been implemented yet, but pvconf.py can easily be modified to override standard settings.
+
+[![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white)](https://hub.docker.com/r/jsprnl/pyfusionsolardatarelay)
 
 Check out [Examples/docker-compose.yml](https://github.com/JasperE84/PyFusionSolarDataRelay/blob/main/Examples/docker-compose.yml) for a docker configuration example.
 
@@ -77,6 +82,7 @@ Kenter provides measurement services for **commercially rented** grid transforme
 | gridrelaykenterpasswd | pvgridrelaykenterpasswd | Password for Kenter's API | passwd |
 | gridrelaydaysback | pvgridrelaydaysback | Kenter's meetdata.nl does not provide live data. Data is only available up until an X amount of days back. May vary per transformer. | 3 |
 | gridrelaypvoutputspan | pvgridrelaypvoutputspan | In my case meetdata.nl has datapoints for each 15mins. Setting this to a value of 2, will calculate averages over 2 datapoints spanning half an hour before posting to PVOutput. This way the datapoint interval between the grid usage data and fusionsolar PV production data matches, resulting in nice diagrams on PVOutput.org | 2 |
+
 # Grafana dashboard example
 A grafana dashboard export is included in the Examples subfolder in the Git repository.
 
@@ -106,3 +112,6 @@ Result:
 | 1.0.3 | pv.py now uses separate threads for PvRelay and GridRelay classes |
 | 1.0.3 | Implemented apscheduler's cron implementation to be able to specify exact moments to fetch fusionsolar data |
 | 1.0.3 | Code and method name refactoring including PvConf type hints in classes where this class was injected as method parameter |
+=======
+
+Released under [MIT](/LICENSE) by [@JasperE84](https://github.com/JasperE84).
