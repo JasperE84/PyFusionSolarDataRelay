@@ -34,7 +34,7 @@ class PvConf:
         # Please note that local server or docker container needs to be in same timezone als meetdata.nl in order for kenter data to work correctly
         self.gridrelay = False
         self.gridrelaysysname = "transformer01"
-        self.gridrelayinterval = 86400
+        self.gridrelayinterval = 43200
         self.gridrelaykenterurl = "https://webapi.meetdata.nl"
         self.gridrelaykenterean = "XXX"
         self.gridrelaykentermeterid = "XXX"

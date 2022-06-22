@@ -29,9 +29,7 @@ class GridRelay:
             try:
                 grid_measurement_data = self.gridkenter.fetch_gridkenter_data(self.conf.gridrelaydaysback)
                 self.write_gridkenter_to_influxdb(grid_measurement_data)
-                
-                # This doesn't work properly yet.
-                # self.write_gridkenter_to_pvoutput(grid_measurement_data)
+                self.write_gridkenter_to_pvoutput(grid_measurement_data)
             except:
                 self.logger.exception(
                     "Uncaught exception in GridRelay data processing loop."
