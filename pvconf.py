@@ -21,7 +21,7 @@ class PvConf:
         
         # The fusionsolar API only updates portal data each half hour, setting to lower value will produce weird PVOutput graph with horizontal bits in it.
         self.fusionhourcron = "*"
-        self.fusionminutecron = "*/30" 
+        self.fusionminutecron = "0,30" 
 
         # Pvoutput default
         self.pvoutput = False
