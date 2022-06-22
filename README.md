@@ -100,6 +100,7 @@ Result:
 
 # Changelog
 | Version | Description |
+| --- | --- |
 | 1.0.3 | Grid transformer usage measurement polling from Kenter's meetdata.nl API has been implemented |
 | 1.0.3 | Changed docker-compose.yml template not to use host networking mode |
 | 1.0.3 | pv.py now uses separate threads for PvRelay and GridRelay classes |
