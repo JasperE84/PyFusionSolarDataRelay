@@ -37,7 +37,6 @@ services:
     image: jsprnl/pyfusionsolardatarelay:latest
     #build: ./PyFusionSolarDataRelay
     restart: unless-stopped
-    network_mode: host
     depends_on:
       - influxdb
       - mosquitto
@@ -45,12 +44,13 @@ services:
       - pvdebug=True
       - pvsysname=inverter01
 
+      - pvfusionsolar=True
       - pvfusionsolarkkid=GET_THIS_STRING_FROM_YOUR_KIOSK_URL
-      - pvfusioninterval=120 #please note that the kiosk current power only seems to update each 30mins
+      - pvfusionminutecron=0,30 # Please note that the kiosk only seems to update each 30mins
       
       - pvinflux=True
       - pvinflux2=True
-      - pvifhost=localservername
+      - pvifhost=influxdb
       - pvif2protocol=http
       - pvif2org=acme
       - pvif2bucket=fusionsolar
@@ -61,8 +61,14 @@ services:
       - pvpvoutputapikey=GENERATE_THIS_AND_SYSTEMID_ON_PVOUTPUT.ORG
 
       - pvmqtt=True
-      - pvmqtthost=localservername
+      - pvmqtthost=mosquitto
       - pvmqttauth=False
+
+      - pvgridrelay=False
+      - pvgridrelaykenterean=000000000000000000
+      - pvgridrelaykentermeterid=0000000000
+      - pvgridrelaykenteruser=my@username.com
+      - pvgridrelaykenterpasswd=secretpassword
 
     volumes:
       - /etc/localtime:/etc/localtime

@@ -1,12 +1,14 @@
 import requests
 import json
 import html
+from pvconf import PvConf
 
 class PvFusionSolar:
 
-    def __init__(self, conf, logger):
+    def __init__(self, conf: PvConf, logger):
         self.conf = conf
         self.logger = logger
+        #self.lastPowerCurveTime = ""
         self.logger.debug("PvFusionSolar class instantiated")
 
     def fetch_fusionsolar_status(self):
@@ -14,7 +16,8 @@ class PvFusionSolar:
 
         try:
             response = requests.get(
-                f"{self.conf.fusionsolarurl}{self.conf.fusionsolarkkid}"
+                f"{self.conf.fusionsolarurl}{self.conf.fusionsolarkkid}",
+                verify=False
             )
         except Exception as e:
             raise Exception(
@@ -76,6 +79,11 @@ class PvFusionSolar:
                 raise Exception(
                     f"FusionSolar API data powerCurve response element does cot contain key {floatKey}."
                 )
+
+        #test = {}
+        #for idx, x in enumerate(response_json_data["powerCurve"]["xAxis"]):
+        #    test[idx] = x
+        #self.logger.info(str(test))
 
         self.logger.debug(f'FusionSolar API data: {response_json_data["realKpi"]}')
 
