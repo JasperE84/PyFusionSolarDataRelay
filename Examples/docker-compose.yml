@@ -71,7 +71,7 @@ services:
       - pvgridrelaykenterpasswd=secretpassword
 
     volumes:
-      - /etc/localtime:/etc/localtime
+      - /etc/localtime:/etc/localtime:ro
 
   grafana:
     depends_on:
@@ -90,3 +90,14 @@ services:
       - GF_AUTH_ANONYMOUS_ORG_ROLE=Viewer
       - GF_AUTH_ANONYMOUS_HIDE_VERSION=True
       - GF_SECURITY_ALLOW_EMBEDDING=True
+
+  homeassistant:
+    container_name: homeassistant
+    depends_on:
+      - mosquitto
+    image: homeassistant/home-assistant
+    volumes:
+      - ./data/hass:/config
+      - /etc/localtime:/etc/localtime:ro
+    restart: unless-stopped
+    network_mode: host
