@@ -39,8 +39,10 @@ Home Assistant (hass) is an open source home automation platform. Hass features 
 Hass can easily be connected to an MQTT using the MQTT integration, which can be set up using the hass web interface. Once hass is connected to MQTT, a change in configuration.yaml is required in order to add the energy sensors to hass. A [configuration.yaml example file](./Examples/configuration.yaml) which shows how to do this is provided in the Examples subfolder of this project. 
 
 Once everything is configured, solar data will flow as follows: 
-``[FusionSolar Kiosk API] --> [PyFusionSolarDataRelay] --> [MQTT Server] --> [Home Assistant]`` 
-For those of you using Docker, a docker-compose.yml file is provided [here](./Examples/docker-compose.yml).
+
+`[FusionSolar Kiosk API] --> [PyFusionSolarDataRelay] --> [MQTT Server] --> [Home Assistant]`
+
+For those of you using Docker, a docker-compose.yml file is provided [here](./Examples/docker-compose.yml) in order to get these different components up and running quickly.
 
 # About Kenter's meetdata.nl
 Kenter provides measurement services for **commercially rented** grid transformers. This project can fetch energy usage data from this API and post it to InfluxDB and PVOutput. MQTT is not supported for posting Kenter data, as Kenter's latest measurement data is usually 3 days old.
@@ -121,6 +123,6 @@ Result:
 | 1.0.3 | pv.py now uses separate threads for PvRelay and GridRelay classes |
 | 1.0.3 | Implemented apscheduler's cron implementation to be able to specify exact moments to fetch fusionsolar data |
 | 1.0.3 | Code and method name refactoring including PvConf type hints in classes where this class was injected as method parameter |
-=======
+
 
 Released under [MIT](/LICENSE) by [@JasperE84](https://github.com/JasperE84).
