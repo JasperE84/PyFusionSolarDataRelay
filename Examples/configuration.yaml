@@ -1,0 +1,33 @@
+# This is a Home Assistant example configuration file, which shows how fetch PV solar production data from MQTT messages published by PyFusionSolarDataRelay
+
+# Loads default set of integrations. Do not remove.
+default_config:
+
+# Make sure to set  up the MQTT integration in hass integration settings for this to work
+mqtt:
+  sensor:
+    - name: Solar power
+      state_topic: energy/pyfusionsolar
+      value_template: "{{ value_json['values']['realTimePower'] | int / 1000 }}"
+      unique_id: pyfusion_solar_power
+      device_class: power
+      unit_of_measurement: "kW"
+      icon: mdi:solar-power
+
+    - name: Solar energy
+      state_topic: energy/pyfusionsolar
+      value_template: "{{ value_json['values']['cumulativeEnergy'] | int / 1000 }}"
+      unique_id: pyfusion_solar_energy
+      device_class: energy
+      unit_of_measurement: "kWh"
+      state_class: total_increasing
+      last_reset_value_template: '1970-01-01T00:00:00+00:00'
+      icon: mdi:solar-power-variant-outline
+
+# Text to speech
+tts:
+  - platform: google_translate
+
+automation: !include automations.yaml
+script: !include scripts.yaml
+scene: !include scenes.yaml
