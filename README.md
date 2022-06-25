@@ -36,7 +36,11 @@ MQTT is an OASIS standard messaging protocol for the Internet of Things (IoT). I
 # About Home Assistant
 Home Assistant (hass) is an open source home automation platform. Hass features an energy dashboard in which energy generation, storage and usage data can be combined in a dashboard giving a total overview of energy flow. Using MQTT, the power and energy generation data from Huawei's FusionSolar Kiosk can be fed into Home Assistant. This project can then act as a data source for the solar production section of the HASS energy dashboard.
 
-A [configuration.yaml](./Examples/configuration.yaml) example file is provided in the Examples subfolder of this project. This configuration.yaml file shows how you can add solar energy sensors to hass based on the MQTT published messages.
+Hass can easily be connected to an MQTT using the MQTT integration, which can be set up using the hass web interface. Once hass is connected to MQTT, a change in configuration.yaml is required in order to add the energy sensors to hass. A [configuration.yaml example file](./Examples/configuration.yaml) which shows how to do this is provided in the Examples subfolder of this project. 
+
+Once everything is configured, solar data will flow as follows: 
+``[FusionSolar Kiosk API] --> [PyFusionSolarDataRelay] --> [MQTT Server] --> [Home Assistant]`` 
+For those of you using Docker, a docker-compose.yml file is provided [here](./Examples/docker-compose.yml).
 
 # About Kenter's meetdata.nl
 Kenter provides measurement services for **commercially rented** grid transformers. This project can fetch energy usage data from this API and post it to InfluxDB and PVOutput. MQTT is not supported for posting Kenter data, as Kenter's latest measurement data is usually 3 days old.
