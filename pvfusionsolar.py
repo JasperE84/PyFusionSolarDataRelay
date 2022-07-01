@@ -60,12 +60,12 @@ class PvFusionSolar:
                     response_json_data["realKpi"][floatKey]
                 ) * float(1000)
 
-            # Set this to fix fusionsolar quirk at midnight where cumulativeEnergy will decrease with the days amount of solar production
-            if floatKey == "cumulativeEnergy":
-                if self.lastCumulativeEnergy == 0:
-                    self.lastCumulativeEnergy = response_json_data["realKpi"][floatKey]
-                elif response_json_data["realKpi"][floatKey] < self.lastCumulativeEnergy:
-                    response_json_data["realKpi"][floatKey] = self.lastCumulativeEnergy
+                # Set this to fix fusionsolar quirk at midnight where cumulativeEnergy will decrease with the days amount of solar production
+                if floatKey == "cumulativeEnergy":
+                    if self.lastCumulativeEnergy == 0:
+                        self.lastCumulativeEnergy = response_json_data["realKpi"][floatKey]
+                    elif response_json_data["realKpi"][floatKey] < self.lastCumulativeEnergy:
+                        response_json_data["realKpi"][floatKey] = self.lastCumulativeEnergy
 
             else:
                 raise Exception(
