@@ -8,8 +8,9 @@ class PvFusionSolar:
     def __init__(self, conf: PvConf, logger):
         self.conf = conf
         self.logger = logger
-        #self.lastPowerCurveTime = ""
+        self.lastCumulativeEnergy = 0
         self.logger.debug("PvFusionSolar class instantiated")
+
 
     def fetch_fusionsolar_status(self):
         self.logger.info("Requesting data from FusionSolar Kiosk API...")
@@ -58,6 +59,14 @@ class PvFusionSolar:
                 response_json_data["realKpi"][floatKey] = float(
                     response_json_data["realKpi"][floatKey]
                 ) * float(1000)
+
+                # Set this to fix fusionsolar quirk at midnight where cumulativeEnergy will decrease with the days amount of solar production
+                if floatKey == "cumulativeEnergy":
+                    if self.lastCumulativeEnergy != 0 and response_json_data["realKpi"][floatKey] < self.lastCumulativeEnergy:
+                        response_json_data["realKpi"][floatKey] = self.lastCumulativeEnergy
+                    else:
+                        self.lastCumulativeEnergy = response_json_data["realKpi"][floatKey]
+
             else:
                 raise Exception(
                     f"FusionSolar API data realKpi response element does cot contain key {floatKey}."
