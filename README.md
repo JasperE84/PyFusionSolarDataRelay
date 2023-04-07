@@ -62,7 +62,7 @@ Fusion solar data fetching is planned by cron in order to exactly specify at wha
 | fusionminutecron | pvfusionminutecron | Minute component for python cron job to fetch and process data from fusionsolar | 0,30 |
 | pvoutput | pvpvoutput | Can be `True` or `False`, determines if PVOutput.org API is enabled | False |
 | pvoutputapikey | pvpvoutputapikey | API Key for PVOutput.org | yourapikey |
-| pvoutputsystemid | pvoutputsystemid | System ID for PVOutput.org, should be numeric | 12345 |
+| pvoutputsystemid | pvpvoutputsystemid | System ID for PVOutput.org, should be numeric | 12345 |
 | pvoutputurl | pvpvoutputurl | API url for PVOutput.org live output posting | [Click url](https://pvoutput.org/service/r2/addstatus.jsp)
 | pvoutputbatchurl | pvpvoutputbatchurl | API url for PVOutput.org historic data batch posting (used for grid data from meetdata.nl) | [Click url](https://pvoutput.org/service/r2/addbatchstatus.jsp)
 | influx | pvinflux | Can be `True` or `False`, determines if InfluxDB processing is enabled | False |
