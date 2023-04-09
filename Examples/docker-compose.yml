@@ -65,10 +65,19 @@ services:
       - pvmqttauth=False
 
       - pvgridrelay=False
-      - pvgridrelaykenterean=000000000000000000
-      - pvgridrelaykentermeterid=0000000000
       - pvgridrelaykenteruser=my@username.com
       - pvgridrelaykenterpasswd=secretpassword
+
+      - pvgridrelaysysname=transformer01
+      - pvgridrelaykenterean=000000000000000000
+      - pvgridrelaykentermeterid=0000000000
+
+      - pvgridrelaysys02enabled=False
+      - pvgridrelaysysname02=transformer02
+      - pvgridrelaykenterean02=000000000000000000
+      - pvgridrelaykentermeterid02=0000000000
+
+
 
     volumes:
       - /etc/localtime:/etc/localtime:ro
