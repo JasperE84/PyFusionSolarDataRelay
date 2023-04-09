@@ -84,15 +84,19 @@ Fusion solar data fetching is planned by cron in order to exactly specify at wha
 | mqttpasswd | pvmqttpasswd | MQTT Password | fusionsolar |
 | mqtttopic | pvmqtttopic | MQTT Topic for publishing | energy/pyfusionsolar |
 | gridrelay | pvgridrelay | Can be `True` or `False`, determines if data is fetched from Kenter's meetdata.nl API | False |
-| gridrelaysysname | pvgridrelaysysname | Grid transformer name for InfluxDB transformer data | transformer01 |
 | gridrelayinterval | pvgridrelayinterval | Interval in seconds to fetch data from meetdata.nl and post to PVOutput and InfluxDB | 43200 |
 | gridrelaykenterurl | pvgridrelaykenterurl | Kenter API url for fetching transformer grid measurements | [Click url](https://webapi.meetdata.nl) |
-| gridrelaykenterean | pvgridrelaykenterean | EAN code for transformer on Kenter's www.meetdata.nl | XXX |
-| gridrelaykentermeterid | pvgridrelaykentermeterid | MeterID as shown on Kenter's www.meetdata.nl | XXX |
 | gridrelaykenteruser | pvgridrelaykenteruser | Username for Kenter's API | user |
 | gridrelaykenterpasswd | pvgridrelaykenterpasswd | Password for Kenter's API | passwd |
 | gridrelaydaysback | pvgridrelaydaysback | Kenter's meetdata.nl does not provide live data. Data is only available up until an X amount of days back. May vary per transformer. | 3 |
 | gridrelaypvoutputspan | pvgridrelaypvoutputspan | In my case meetdata.nl has datapoints for each 15mins. Setting this to a value of 2, will calculate averages over 2 datapoints spanning half an hour before posting to PVOutput. This way the datapoint interval between the grid usage data and fusionsolar PV production data matches, resulting in nice diagrams on PVOutput.org | 2 |
+| gridrelaysysname | pvgridrelaysysname | Grid transformer name for InfluxDB transformer data | transformer01 |
+| gridrelaykenterean | pvgridrelaykenterean | EAN code for transformer on Kenter's www.meetdata.nl | XXX |
+| gridrelaykentermeterid | pvgridrelaykentermeterid | MeterID as shown on Kenter's www.meetdata.nl | XXX |
+| gridrelaysys02enabled | pvgridrelaysys02enabled | Can be `True` or `False`, determines if a secondary transformer is configured for InfluxDB output | False |
+| gridrelaysysname02 | pvgridrelaysysname02 | Grid transformer name for InfluxDB transformer data | transformer02 |
+| gridrelaykenterean02 | pvgridrelaykenterean02 | EAN code for transformer on Kenter's www.meetdata.nl | XXX |
+| gridrelaykentermeterid02 | pvgridrelaykentermeterid02 | MeterID as shown on Kenter's www.meetdata.nl | XXX |
 
 # Grafana dashboard example
 A grafana dashboard export is included in the Examples subfolder in the Git repository.
@@ -118,6 +122,8 @@ Result:
 # Changelog
 | Version | Description |
 | --- | --- |
+| 1.0.5 | Added InfluxDB support for an optional secondary grid telemetry EAN configuration (pvoutput output is only supported on the primary EAN) |
+| 1.0.5 | Bugfix for InfluxDB v1 implementation and removed auto-database creation for VictoriaMetrics compatibility |
 | 1.0.3 | Grid transformer usage measurement polling from Kenter's meetdata.nl API has been implemented |
 | 1.0.3 | Changed docker-compose.yml template not to use host networking mode |
 | 1.0.3 | pv.py now uses separate threads for PvRelay and GridRelay classes |
