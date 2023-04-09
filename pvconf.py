@@ -51,15 +51,20 @@ class PvConf:
         self.gridrelaykenterean02 = "XXX"
         self.gridrelaykentermeterid02 = "XXX"
 
-
         # Influxdb default
         self.influx = False
-        self.influx2 = True
         self.ifhost = "localhost"
         self.ifport = 8086
+
+        # Set to True to enable InfluxDB v2, or to False for InfluxDB v1 or VictoriaMetrics
+        self.influx2 = True
+
+        # Influxdb v1 settings
         self.if1dbname = "fusionsolar"
         self.if1user = "fusionsolar"
         self.if1passwd = "fusionsolar"
+
+        # Influxdb v2 settings
         self.if2protocol = "https"
         self.if2org = "acme"
         self.if2bucket = "fusionsolar"

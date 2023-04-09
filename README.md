@@ -1,5 +1,5 @@
 # Huawei FusionSolar Kiosk to InfluxDB, MQTT, PVOutput and Home Assistant relay
-This is a python project intended to fetch data from the **Huawei FusionSolar** public **kiosk** and relay it to **InfluxDB** and/or **PVOutput.org** and/or **MQTT** and/or **Home Assistant (hass)**. 
+This is a python project intended to fetch data from the **Huawei FusionSolar** public **kiosk** and relay it to **InfluxDB**/**VictoriaMetrics** and/or **PVOutput.org** and/or **MQTT** and/or **Home Assistant (hass)**. 
 
 Additionally this project can also fetch and relay grid usage data from the Dutch meetdata.nl API provider by **Kenter**.
 
