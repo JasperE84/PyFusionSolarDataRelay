@@ -33,17 +33,24 @@ class PvConf:
         # Gridrelay default
         # Please note that local server or docker container needs to be in same timezone als meetdata.nl in order for kenter data to work correctly
         self.gridrelay = False
-        self.gridrelaysysname = "transformer01"
         self.gridrelayinterval = 43200
         self.gridrelaykenterurl = "https://webapi.meetdata.nl"
-        self.gridrelaykenterean = "XXX"
-        self.gridrelaykentermeterid = "XXX"
         self.gridrelaykenteruser = "user"
         self.gridrelaykenterpasswd = "passwd"
         # Grid infrastructure measurements in The Netherlands, show up in the API with a 3-5 days delay.
         self.gridrelaydaysback = 3
         # If fusionsolar updates every 30mins and meetdata.nl has values per 15min, set this to 2 so that intervals between two datasources match to avoid weird pvoutput graphs.
         self.gridrelaypvoutputspan = 2
+
+        self.gridrelaysysname = "transformer01"
+        self.gridrelaykenterean = "XXX"
+        self.gridrelaykentermeterid = "XXX"
+
+        self.gridrelaysys02enabled = False
+        self.gridrelaysysname02 = "transformer02"
+        self.gridrelaykenterean02 = "XXX"
+        self.gridrelaykentermeterid02 = "XXX"
+
 
         # Influxdb default
         self.influx = False
@@ -108,15 +115,21 @@ class PvConf:
         self.logger.info(f"Topic: {self.mqtttopic}")
         self.logger.info(f"_GridRelay")
         self.logger.info(f"Enabled: {self.gridrelay}")
-        self.logger.info(f"System name: {self.gridrelaysysname}")
         self.logger.info(f"Interval: {self.gridrelayinterval}")
         self.logger.info(f"PVOutput span: {self.gridrelaypvoutputspan}")
         self.logger.info(f"Kenter URL: {self.gridrelaykenterurl}")
-        self.logger.info(f"Kenter EAN: {self.gridrelaykenterean}")
-        self.logger.info(f"Kenter MeterId: {self.gridrelaykentermeterid}")
+        self.logger.info(f"Days back: {self.gridrelaydaysback}")
         self.logger.info(f"Kenter User: {self.gridrelaykenteruser}")
         self.logger.info(f"Kenter Passwd: {self.gridrelaykenterpasswd}")
-        self.logger.info(f"Days back: {self.gridrelaydaysback}")
+
+        self.logger.info(f"System name 01: {self.gridrelaysysname}")
+        self.logger.info(f"Kenter EAN 01: {self.gridrelaykenterean}")
+        self.logger.info(f"Kenter MeterId 01: {self.gridrelaykentermeterid}")
+
+        self.logger.info(f"System name 02: {self.gridrelaysysname02}")
+        self.logger.info(f"Kenter EAN 02: {self.gridrelaykenterean02}")
+        self.logger.info(f"Kenter MeterId: {self.gridrelaykentermeterid02}")
+
 
     def getenv(self, envvar):
         envval = os.getenv(envvar)
@@ -190,16 +203,10 @@ class PvConf:
 
         if os.getenv("pvgridrelay") != None:
             self.gridrelay = self.getenv("pvgridrelay") == "True"
-        if os.getenv("pvgridrelaysysname") != None:
-            self.gridrelaysysname = self.getenv("pvgridrelaysysname")
         if os.getenv("pvgridrelayinterval") != None:
             self.gridrelayinterval = int(self.getenv("pvgridrelayinterval"))
         if os.getenv("pvgridrelaykenterurl") != None:
             self.gridrelaykenterurl = self.getenv("pvgridrelaykenterurl")
-        if os.getenv("pvgridrelaykenterean") != None:
-            self.gridrelaykenterean = self.getenv("pvgridrelaykenterean")
-        if os.getenv("pvgridrelaykentermeterid") != None:
-            self.gridrelaykentermeterid = self.getenv("pvgridrelaykentermeterid")
         if os.getenv("pvgridrelaykenteruser") != None:
             self.gridrelaykenteruser = self.getenv("pvgridrelaykenteruser")
         if os.getenv("pvgridrelaykenterpasswd") != None:
@@ -208,4 +215,20 @@ class PvConf:
             self.gridrelaydaysback = int(self.getenv("pvgridrelaydaysback"))
         if os.getenv("pvgridrelaypvoutputspan") != None:
             self.gridrelaypvoutputspan = int(self.getenv("pvgridrelaypvoutputspan"))
+
+        if os.getenv("pvgridrelaysysname") != None:
+            self.gridrelaysysname = self.getenv("pvgridrelaysysname")
+        if os.getenv("pvgridrelaykenterean") != None:
+            self.gridrelaykenterean = self.getenv("pvgridrelaykenterean")
+        if os.getenv("pvgridrelaykentermeterid") != None:
+            self.gridrelaykentermeterid = self.getenv("pvgridrelaykentermeterid")
+
+        if os.getenv("pvgridrelaysys02enabled") != None:
+            self.gridrelaysys02enabled = self.getenv("pvgridrelaysys02enabled") == "False"
+        if os.getenv("pvgridrelaysysname02") != None:
+            self.gridrelaysysname02 = self.getenv("pvgridrelaysysname02")
+        if os.getenv("pvgridrelaykenterean02") != None:
+            self.gridrelaykenterean02 = self.getenv("pvgridrelaykenterean02")
+        if os.getenv("pvgridrelaykentermeterid02") != None:
+            self.gridrelaykentermeterid02 = self.getenv("pvgridrelaykentermeterid02")
 
