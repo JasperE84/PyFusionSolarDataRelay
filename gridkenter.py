@@ -11,19 +11,20 @@ class GridKenter:
         self.logger = logger
         self.logger.debug("GridKenter class instantiated")
 
-    def fetch_gridkenter_data(self, days_back):
+    def fetch_gridkenter_data(self, sysname, ean, meterid, days_back):
         self.logger.info(
             "Requesting data for {} from GridKenter API...".format(
-                self.conf.gridrelaysysname
+                sysname
             )
         )
+        
         req_time = datetime.now() - timedelta(days=days_back)
         req_year = req_time.strftime("%Y")
         req_month = req_time.strftime("%m")
         req_day = req_time.strftime("%d")
 
         try:
-            url = f"{self.conf.gridrelaykenterurl}/api/1/measurements/{self.conf.gridrelaykenterean}/{self.conf.gridrelaykentermeterid}/{req_year}/{req_month}/{req_day}"
+            url = f"{self.conf.gridrelaykenterurl}/api/1/measurements/{ean}/{meterid}/{req_year}/{req_month}/{req_day}"
             self.logger.debug(f"Fetching URL: {url}")
 
             response = requests.get(
@@ -59,9 +60,9 @@ class GridKenter:
             )
 
         grid_data_obj = {
-            "sysname": self.conf.gridrelaysysname,
-            "ean": self.conf.gridrelaykenterean,
-            "meter_id": self.conf.gridrelaykentermeterid,
+            "sysname": sysname,
+            "ean": ean,
+            "meter_id": meterid,
             "grid_net_consumption": [],
         }
 

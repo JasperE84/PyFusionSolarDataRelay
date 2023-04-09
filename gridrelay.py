@@ -27,9 +27,16 @@ class GridRelay:
 
         while 1:
             try:
-                grid_measurement_data = self.gridkenter.fetch_gridkenter_data(self.conf.gridrelaydaysback)
+                grid_measurement_data = self.gridkenter.fetch_gridkenter_data(self.conf.gridrelaysysname, self.conf.gridrelaykenterean, self.conf.gridrelaykentermeterid, self.conf.gridrelaydaysback)
                 self.write_gridkenter_to_influxdb(grid_measurement_data)
                 self.write_gridkenter_to_pvoutput(grid_measurement_data)
+
+                if self.conf.gridrelaysys02enabled:
+                    grid_measurement_data = self.gridkenter.fetch_gridkenter_data(self.conf.gridrelaysysname02, self.conf.gridrelaykenterean02, self.conf.gridrelaykentermeterid02, self.conf.gridrelaydaysback)
+                    self.write_gridkenter_to_influxdb(grid_measurement_data)
+                    #No support for pvoutput on 2 EAN codes yet (needs summing of kenter data or pvoutput support for 2 distinct systems)
+                    #self.write_gridkenter_to_pvoutput(grid_measurement_data)
+
             except:
                 self.logger.exception(
                     "Uncaught exception in GridRelay data processing loop."

@@ -107,12 +107,14 @@ class PvInflux:
                 timeout=3,
                 username=self.conf.if1user,
                 password=self.conf.if1passwd,
+                database=self.conf.if1dbname
             )
         except Exception as e:
             raise Exception(
                 "Error instantiating InfluxDB v1 client library: '{}'".format(str(e))
             )
 
+        '''
         try:
             self.logger.debug("Fetching influxdb database list")
             databases = [db["name"] for db in self.influxclient.get_list_database()]
@@ -146,6 +148,7 @@ class PvInflux:
                 self.conf.if1dbname
             )
         )
+        '''
 
     def pvinflux_write_pvdata(self, response_json_data):
         ifjson = self.make_influx_pvdata_jsonrecord(response_json_data)
@@ -161,7 +164,7 @@ class PvInflux:
                 )
             else:
                 self.logger.debug("Writing PvData to InfluxDB v1...")
-                self.conf.influxclient.write_points(ifjson, time_precision="s")
+                self.influxclient.write_points(ifjson, time_precision="s")
         except Exception as e:
             self.logger.exception("InfluxDB PvData write error: '{}'".format(str(e)))
 
@@ -198,7 +201,7 @@ class PvInflux:
                 )
             else:
                 self.logger.debug("Writing GridData to InfluxDB v1...")
-                self.conf.influxclient.write_points(ifjson, time_precision="s")
+                self.influxclient.write_points(ifjson, time_precision="s")
         except Exception as e:
             self.logger.exception("InfluxDB GridData write error: '{}'".format(str(e)))
 
