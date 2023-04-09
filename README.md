@@ -126,3 +126,7 @@ Result:
 
 
 Released under [MIT](/LICENSE) by [@JasperE84](https://github.com/JasperE84).
+
+This project has been partly developed in time donated by [Contour - Sheet metal supplier](https://www.contour.eu/en/)
+
+Dit project is deels ontwikkeld ontwikkeld in de tijd van [Contour - Plaatwerkleverancier](https://www.contour.eu/)
