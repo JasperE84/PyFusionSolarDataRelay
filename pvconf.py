@@ -224,7 +224,7 @@ class PvConf:
             self.gridrelaykentermeterid = self.getenv("pvgridrelaykentermeterid")
 
         if os.getenv("pvgridrelaysys02enabled") != None:
-            self.gridrelaysys02enabled = self.getenv("pvgridrelaysys02enabled") == "False"
+            self.gridrelaysys02enabled = self.getenv("pvgridrelaysys02enabled") == "True"
         if os.getenv("pvgridrelaysysname02") != None:
             self.gridrelaysysname02 = self.getenv("pvgridrelaysysname02")
         if os.getenv("pvgridrelaykenterean02") != None:
