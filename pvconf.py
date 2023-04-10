@@ -39,6 +39,8 @@ class PvConf:
         self.gridrelaykenterpasswd = "passwd"
         # Grid infrastructure measurements in The Netherlands, show up in the API with a 3-5 days delay.
         self.gridrelaydaysback = 3
+        # Setting this to 30 would try to backfill gridkenter data on startup for any day between 3 days back (gridrelaydaysback) and 3+30=33 days back.
+        self.gridrelaydaystobackfill = 0
         # If fusionsolar updates every 30mins and meetdata.nl has values per 15min, set this to 2 so that intervals between two datasources match to avoid weird pvoutput graphs.
         self.gridrelaypvoutputspan = 2
 
@@ -78,63 +80,6 @@ class PvConf:
         self.mqttuser = "fusionsolar"
         self.mqttpasswd = "fusionsolar"
         self.mqtttopic = "energy/pyfusionsolar"
-
-    def print(self):
-        self.logger.info(f"Current settings:")
-        self.logger.info(f"_Generic:")
-        self.logger.info(f"debug:   {self.debug}")
-        self.logger.info(f"_FusionSolar:")
-        self.logger.info(f"enabled: {self.fusionsolar}")
-        self.logger.info(f"fusionsolarurl: {self.fusionsolarurl}")
-        self.logger.info(f"fusionsolarkkid: {self.fusionsolarkkid}")
-        self.logger.info(f"sysname: {self.pvsysname}")
-        self.logger.info(f"fusionhourcron: {self.fusionhourcron}")
-        self.logger.info(f"fusionminutecron: {self.fusionminutecron}")
-        self.logger.info(f"_Influxdb:")
-        self.logger.info(f"influx: {self.influx}")
-        self.logger.info(f"influx2: {self.influx2}")
-        self.logger.info(f"host: {self.ifhost}")
-        self.logger.info(f"port: {self.ifport}")
-        self.logger.info(f"_Influxdb_v1:")
-        self.logger.info(f"database: {self.if1dbname}")
-        self.logger.info(f"user: {self.if1user}")
-        self.logger.info(f"password: **secret**")
-        self.logger.info(f"_Influxdb_v2:")
-        self.logger.info(f"protocol: {self.if2protocol}")
-        self.logger.info(f"organization: {self.if2org}")
-        self.logger.info(f"bucket: {self.if2bucket}")
-        self.logger.info(f"token: {self.if2token}")
-        self.logger.info(f"_PVOutput.org:")
-        self.logger.info(f"Enabled: {self.pvoutput}")
-        self.logger.info(f"System ID: {self.pvoutputsystemid}")
-        self.logger.info(f"API Key: {self.pvoutputapikey}")
-        self.logger.info(f"API Url: {self.pvoutputurl}")
-        self.logger.info(f"API BatchUrl: {self.pvoutputbatchurl}")
-        self.logger.info(f"_MQTT")
-        self.logger.info(f"Enabled: {self.mqtt}")
-        self.logger.info(f"Host: {self.mqtthost}")
-        self.logger.info(f"Port: {self.mqttport}")
-        self.logger.info(f"Auth: {self.mqttauth}")
-        self.logger.info(f"User: {self.mqttuser}")
-        self.logger.info(f"Passwd: {self.mqttpasswd}")
-        self.logger.info(f"Topic: {self.mqtttopic}")
-        self.logger.info(f"_GridRelay")
-        self.logger.info(f"Enabled: {self.gridrelay}")
-        self.logger.info(f"Interval: {self.gridrelayinterval}")
-        self.logger.info(f"PVOutput span: {self.gridrelaypvoutputspan}")
-        self.logger.info(f"Kenter URL: {self.gridrelaykenterurl}")
-        self.logger.info(f"Days back: {self.gridrelaydaysback}")
-        self.logger.info(f"Kenter User: {self.gridrelaykenteruser}")
-        self.logger.info(f"Kenter Passwd: {self.gridrelaykenterpasswd}")
-
-        self.logger.info(f"System name 01: {self.gridrelaysysname}")
-        self.logger.info(f"Kenter EAN 01: {self.gridrelaykenterean}")
-        self.logger.info(f"Kenter MeterId 01: {self.gridrelaykentermeterid}")
-
-        self.logger.info(f"System name 02: {self.gridrelaysysname02}")
-        self.logger.info(f"Kenter EAN 02: {self.gridrelaykenterean02}")
-        self.logger.info(f"Kenter MeterId: {self.gridrelaykentermeterid02}")
-
 
     def getenv(self, envvar):
         envval = os.getenv(envvar)
@@ -218,6 +163,8 @@ class PvConf:
             self.gridrelaykenterpasswd = self.getenv("pvgridrelaykenterpasswd")
         if os.getenv("pvgridrelaydaysback") != None:
             self.gridrelaydaysback = int(self.getenv("pvgridrelaydaysback"))
+        if os.getenv("pvgridrelaydaystobackfill") != None:
+            self.gridrelaydaystobackfill = int(self.getenv("pvgridrelaydaystobackfill"))
         if os.getenv("pvgridrelaypvoutputspan") != None:
             self.gridrelaypvoutputspan = int(self.getenv("pvgridrelaypvoutputspan"))
 
@@ -237,3 +184,59 @@ class PvConf:
         if os.getenv("pvgridrelaykentermeterid02") != None:
             self.gridrelaykentermeterid02 = self.getenv("pvgridrelaykentermeterid02")
 
+    def print(self):
+        self.logger.info(f"Current settings:")
+        self.logger.info(f"_Generic:")
+        self.logger.info(f"debug:   {self.debug}")
+        self.logger.info(f"_FusionSolar:")
+        self.logger.info(f"enabled: {self.fusionsolar}")
+        self.logger.info(f"fusionsolarurl: {self.fusionsolarurl}")
+        self.logger.info(f"fusionsolarkkid: {self.fusionsolarkkid}")
+        self.logger.info(f"sysname: {self.pvsysname}")
+        self.logger.info(f"fusionhourcron: {self.fusionhourcron}")
+        self.logger.info(f"fusionminutecron: {self.fusionminutecron}")
+        self.logger.info(f"_Influxdb:")
+        self.logger.info(f"influx: {self.influx}")
+        self.logger.info(f"influx2: {self.influx2}")
+        self.logger.info(f"host: {self.ifhost}")
+        self.logger.info(f"port: {self.ifport}")
+        self.logger.info(f"_Influxdb_v1:")
+        self.logger.info(f"database: {self.if1dbname}")
+        self.logger.info(f"user: {self.if1user}")
+        self.logger.info(f"password: **secret**")
+        self.logger.info(f"_Influxdb_v2:")
+        self.logger.info(f"protocol: {self.if2protocol}")
+        self.logger.info(f"organization: {self.if2org}")
+        self.logger.info(f"bucket: {self.if2bucket}")
+        self.logger.info(f"token: {self.if2token}")
+        self.logger.info(f"_PVOutput.org:")
+        self.logger.info(f"Enabled: {self.pvoutput}")
+        self.logger.info(f"System ID: {self.pvoutputsystemid}")
+        self.logger.info(f"API Key: {self.pvoutputapikey}")
+        self.logger.info(f"API Url: {self.pvoutputurl}")
+        self.logger.info(f"API BatchUrl: {self.pvoutputbatchurl}")
+        self.logger.info(f"_MQTT")
+        self.logger.info(f"Enabled: {self.mqtt}")
+        self.logger.info(f"Host: {self.mqtthost}")
+        self.logger.info(f"Port: {self.mqttport}")
+        self.logger.info(f"Auth: {self.mqttauth}")
+        self.logger.info(f"User: {self.mqttuser}")
+        self.logger.info(f"Passwd: {self.mqttpasswd}")
+        self.logger.info(f"Topic: {self.mqtttopic}")
+        self.logger.info(f"_GridRelay")
+        self.logger.info(f"Enabled: {self.gridrelay}")
+        self.logger.info(f"Interval: {self.gridrelayinterval}")
+        self.logger.info(f"PVOutput span: {self.gridrelaypvoutputspan}")
+        self.logger.info(f"Kenter URL: {self.gridrelaykenterurl}")
+        self.logger.info(f"Days back: {self.gridrelaydaysback}")
+        self.logger.info(f"Days to backfill: {self.gridrelaydaystobackfill}")
+        self.logger.info(f"Kenter User: {self.gridrelaykenteruser}")
+        self.logger.info(f"Kenter Passwd: {self.gridrelaykenterpasswd}")
+
+        self.logger.info(f"System name 01: {self.gridrelaysysname}")
+        self.logger.info(f"Kenter EAN 01: {self.gridrelaykenterean}")
+        self.logger.info(f"Kenter MeterId 01: {self.gridrelaykentermeterid}")
+
+        self.logger.info(f"System name 02: {self.gridrelaysysname02}")
+        self.logger.info(f"Kenter EAN 02: {self.gridrelaykenterean02}")
+        self.logger.info(f"Kenter MeterId: {self.gridrelaykentermeterid02}")
