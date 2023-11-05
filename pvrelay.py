@@ -25,6 +25,10 @@ class PvRelay:
         self.logger.debug("PvRelay waiting 5sec to initialize docker-compose containers")
         time.sleep(5)
 
+        if self.conf.debug:
+            self.logger.info("Starting process_fusionsolar_request() at init, before waiting for cron, because we're in debug mode")
+            self.process_fusionsolar_request()
+
         sched = BlockingScheduler(standalone = True)
         sched.add_job(self.process_fusionsolar_request, trigger='cron', hour=self.conf.fusionhourcron, minute=self.conf.fusionminutecron)
         sched.start()

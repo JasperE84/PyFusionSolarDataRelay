@@ -22,14 +22,25 @@ class PvFusionSolar:
             )
         except Exception as e:
             raise Exception(
-                "Error fetching data from FusionSolar Kiosk API: '{}'".format(str(e))
+                "Error fetching data from FusionSolar Kiosk API: '{}'".format(
+                    str(e).replace('\n', '')
+                )
             )
 
         try:
             response_json = response.json()
         except Exception as e:
+            content = response.content.decode("utf-8")
+            if content:
+                content_first_100 = content[:200]
+            else:
+                content_first_100 = ""
+                
             raise Exception(
-                "Error while parsing JSON response from Kiosk API: '{}'".format(str(e))
+                "Error while decoding the JSON Kiosk API response, did you set the right fusionsolarurl and fusionsolarkkid in your conf? Kiosk link still working?: '{}', raw JSON content: '{}'".format(
+                    str(e).replace('\n', ''),
+                    content_first_100.replace('\n', '')
+                )
             )
 
         if not "data" in response_json:
@@ -42,8 +53,9 @@ class PvFusionSolar:
             response_json_data = json.loads(response_json_data_decoded)
         except Exception as e:
             raise Exception(
-                "Error while parsing JSON response data element from FusionSolar Kiosk API: '{}'".format(
-                    str(e)
+                "Error while parsing JSON response data element from FusionSolar Kiosk API: '{}' Data element content from FusionSolar API: {}".format(
+                    str(e).replace('\n', ''),
+                    response_json["data"]
                 )
             )
 
