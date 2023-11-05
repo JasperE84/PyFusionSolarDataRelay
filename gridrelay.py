@@ -24,19 +24,27 @@ class GridRelay:
     def start(self):
         self.logger.debug("GridRelay waiting 5sec to initialize docker-compose containers")
         time.sleep(5)
+        
+        daystobackfill = self.conf.gridrelaydaystobackfill
 
         while 1:
             try:
-                grid_measurement_data = self.gridkenter.fetch_gridkenter_data(self.conf.gridrelaysysname, self.conf.gridrelaykenterean, self.conf.gridrelaykentermeterid, self.conf.gridrelaydaysback)
-                self.write_gridkenter_to_influxdb(grid_measurement_data)
-                self.write_gridkenter_to_pvoutput(grid_measurement_data)
-
-                if self.conf.gridrelaysys02enabled:
-                    grid_measurement_data = self.gridkenter.fetch_gridkenter_data(self.conf.gridrelaysysname02, self.conf.gridrelaykenterean02, self.conf.gridrelaykentermeterid02, self.conf.gridrelaydaysback)
+                for daysback in range(self.conf.gridrelaydaysback, self.conf.gridrelaydaysback + 1 + daystobackfill):
+                    grid_measurement_data = self.gridkenter.fetch_gridkenter_data(self.conf.gridrelaysysname, self.conf.gridrelaykenterean, self.conf.gridrelaykentermeterid, daysback)
                     self.write_gridkenter_to_influxdb(grid_measurement_data)
-                    #No support for pvoutput on 2 EAN codes yet (needs summing of kenter data or pvoutput support for 2 distinct systems)
-                    #self.write_gridkenter_to_pvoutput(grid_measurement_data)
+                    self.write_gridkenter_to_pvoutput(grid_measurement_data)
 
+                    if self.conf.gridrelaysys02enabled:
+                        grid_measurement_data = self.gridkenter.fetch_gridkenter_data(self.conf.gridrelaysysname02, self.conf.gridrelaykenterean02, self.conf.gridrelaykentermeterid02, daysback)
+                        self.write_gridkenter_to_influxdb(grid_measurement_data)
+                        #No support for pvoutput on 2 EAN codes yet (needs summing of kenter data or pvoutput support for 2 distinct systems)
+                        #self.write_gridkenter_to_pvoutput(grid_measurement_data)
+
+                    # Wait 5 secs for next backfill day
+                    if daystobackfill > 0: time.sleep(5);
+
+                # Don't backfill after initial backfill
+                daystobackfill = 0
             except:
                 self.logger.exception(
                     "Uncaught exception in GridRelay data processing loop."
