@@ -99,9 +99,9 @@ class PvConf:
         if os.getenv("pvsysname") != None:
             self.pvsysname = self.getenv("pvsysname")
         if os.getenv("pvfusionhourcron") != None:
-            self.fusionhourcron = int(self.getenv("pvfusionhourcron"))
+            self.fusionhourcron = self.getenv("pvfusionhourcron")
         if os.getenv("pvfusionminutecron") != None:
-            self.fusionminutecron = int(self.getenv("pvfusionminutecron"))
+            self.fusionminutecron = self.getenv("pvfusionminutecron")
         if os.getenv("pvinflux") != None:
             self.influx = self.getenv("pvinflux") == "True"
         if os.getenv("pvinflux2") != None:
