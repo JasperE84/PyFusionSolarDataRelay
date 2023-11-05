@@ -122,8 +122,8 @@ Result:
 # Changelog
 | Version | Description |
 | --- | --- |
-| 1.0.5 | Fixed a bug  parsing the environment cron settings, which are in string format, but were interpreted as int, causing an exception |
-| 1.0.5 | FusionSolar API will now immediately be queried on startup if debug mode is enabled (so no waiting for cron to trigger is required for testing) |
+| 1.0.6 | Fixed a bug  parsing the environment cron settings, which are in string format, but were interpreted as int, causing an exception |
+| 1.0.6 | FusionSolar API will now immediately be queried on startup if debug mode is enabled (so no waiting for cron to trigger is required for testing) |
 | 1.0.5 | Added InfluxDB support for an optional secondary grid telemetry EAN configuration (pvoutput output is only supported on the primary EAN) |
 | 1.0.5 | Bugfix for InfluxDB v1 implementation and removed auto-database creation for VictoriaMetrics compatibility |
 | 1.0.3 | Grid transformer usage measurement polling from Kenter's meetdata.nl API has been implemented |
