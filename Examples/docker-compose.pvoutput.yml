@@ -1,0 +1,34 @@
+# Sample to run with PVOutput-only support:
+# docker-compose -f docker-compose.pvoutput.yml up -d --remove-orphans
+
+version: '3'
+
+services:
+  pyfusionsolar:
+    container_name: pyfusionsolardatarelay
+    image: jsprnl/pyfusionsolardatarelay:latest
+    restart: unless-stopped
+    privileged: true # Important! Without this, I get: "RuntimeError: can't start new thread"
+    environment:
+      - pvdebug=True
+      - pvsysname=inverter
+
+      - pvfusionsolar=True
+      - pvfusionsolarkkid=KKID # Go to https://intl.fusionsolar.huawei.com/, click on "Kiosk", generate a URL and copy the ID after `kk=`
+      - pvfusionminutecron=0,30 # Please note that the kiosk only seems to update each 30mins
+
+      # Diable everything
+      - pvinflux=False 
+      - pvinflux2=False
+      - pvmqtt=False
+      - pvgridrelay=False
+      - pvgridrelaysys02enabled=False
+
+      # Except PVOutput
+      - pvpvoutput=True
+      - pvpvoutputsystemid=PVID # Your PVOutput system ID here
+      - pvpvoutputapikey=PVKEY # Get this key from https://pvoutput.org/account.jsp, section `API`
+
+      
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
