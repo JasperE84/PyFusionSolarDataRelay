@@ -3,10 +3,10 @@ import time
 import math
 from copy import copy
 from datetime import datetime
-from pvconfmodels import BaseConf
+from modules.conf_models import BaseConf
 
 
-class PvOutputOrg:
+class WritePvOutput:
     def __init__(self, conf: BaseConf, logger):
         self.conf = conf
         self.logger = logger

@@ -1,9 +1,9 @@
 import json
 import paho.mqtt.publish as publish
 from datetime import datetime
-from pvconfmodels import BaseConf
+from modules.conf_models import BaseConf
 
-class PvMqtt:
+class WriteMqtt:
     def __init__(self, conf: BaseConf, logger):
         self.conf = conf
         self.logger = logger

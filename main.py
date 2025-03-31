@@ -2,9 +2,9 @@ import sys
 import logging
 import time
 from threading import Thread
-from pvconf import PvConf
-from pvrelay import PvRelay
-from gridrelay import GridRelay
+from modules.conf import Conf
+from modules.relay_fusionsolar import RelayFusionSolar
+from modules.relay_meetdata import RelayMeetdata
 
 # Logger
 logger = logging.getLogger()
@@ -16,7 +16,7 @@ logger.addHandler(streamHandler)
 logger.info("PyFusionSolarDataRelay 1.1.0 started")
 
 # Config
-conf = PvConf(logger).read_and_validate_config()
+conf = Conf(logger).read_and_validate_config()
 if conf.debug_mode:
     logger.debug("Enabled verbose logging")
     logger.setLevel(logging.DEBUG)
@@ -28,11 +28,11 @@ else:
 try:
     if __name__ == '__main__':
         if conf.fusionsolar_kiosk_enabled:
-            fs_thread = Thread(target = PvRelay, args=[conf, logger])
+            fs_thread = Thread(target = RelayFusionSolar, args=[conf, logger])
             fs_thread.daemon = True
             fs_thread.start()
         if conf.meetdata_nl_enabled:
-            gr_thread = Thread(target = GridRelay, args=[conf, logger])
+            gr_thread = Thread(target = RelayMeetdata, args=[conf, logger])
             gr_thread.daemon = True
             gr_thread.start()
     while True:

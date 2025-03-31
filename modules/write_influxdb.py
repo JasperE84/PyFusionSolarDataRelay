@@ -1,8 +1,8 @@
 from datetime import datetime
-from pvconfmodels import BaseConf
+from modules.conf_models import BaseConf
 
 
-class PvInflux:
+class WriteInfluxDb:
     def __init__(self, conf: BaseConf, logger):
         self.conf = conf
         self.logger = logger

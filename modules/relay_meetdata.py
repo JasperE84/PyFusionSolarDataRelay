@@ -1,21 +1,21 @@
 import time
-from pvinflux import PvInflux
-from pvoutputorg import PvOutputOrg
-from pvconfmodels import BaseConf
-from gridkenter import GridKenter
-from pvmqtt import PvMqtt
+from modules.write_influxdb import WriteInfluxDb
+from modules.write_pvoutput import WritePvOutput
+from modules.conf_models import BaseConf
+from modules.fetch_meetdata import FetchMeetdata
+from modules.write_mqtt import WriteMqtt
 
 
-class GridRelay:
+class RelayMeetdata:
     def __init__(self, conf: BaseConf, logger):
         self.conf = conf
         self.logger = logger
         self.logger.debug("GridRelay class instantiated")
 
-        self.gridkenter = GridKenter(conf, logger)
-        self.pvoutput = PvOutputOrg(conf, logger)
-        self.pvmqtt = PvMqtt(conf, logger)
-        self.pvinflux = PvInflux(self.conf, self.logger)
+        self.gridkenter = FetchMeetdata(conf, logger)
+        self.pvoutput = WritePvOutput(conf, logger)
+        self.pvmqtt = WriteMqtt(conf, logger)
+        self.pvinflux = WriteInfluxDb(self.conf, self.logger)
         self.pvinflux_initialized = False
 
         self.logger.info("Starting GridRelay on separate thread")

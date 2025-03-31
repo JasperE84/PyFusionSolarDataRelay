@@ -129,7 +129,7 @@ Result:
 | 1.0.5 | Bugfix for InfluxDB v1 implementation and removed auto-database creation for VictoriaMetrics compatibility |
 | 1.0.3 | Grid transformer usage measurement polling from Kenter's meetdata.nl API has been implemented |
 | 1.0.3 | Changed docker-compose.yml template not to use host networking mode |
-| 1.0.3 | pv.py now uses separate threads for PvRelay and GridRelay classes |
+| 1.0.3 | main.py now uses separate threads for PvRelay and GridRelay classes |
 | 1.0.3 | Implemented apscheduler's cron implementation to be able to specify exact moments to fetch fusionsolar data |
 | 1.0.3 | Code and method name refactoring including PvConf type hints in classes where this class was injected as method parameter |
 

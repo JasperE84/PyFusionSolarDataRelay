@@ -1,9 +1,9 @@
 import requests
 import json
 import html
-from pvconfmodels import BaseConf
+from modules.conf_models import BaseConf
 
-class PvFusionSolar:
+class FetchFusionSolarKiosk:
 
     def __init__(
             self, 

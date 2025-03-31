@@ -1,9 +1,9 @@
 import os
 import yaml
-from pvconfmodels import *
+from modules.conf_models import *
 from pydantic import ValidationError
 
-class PvConf:
+class Conf:
     def __init__(self, logger):
         self.logger = logger
         self.logger.debug("Config class instantiated")

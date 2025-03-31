@@ -2,10 +2,10 @@ import requests
 from requests.auth import HTTPBasicAuth
 from datetime import datetime, timedelta
 import json
-from pvconfmodels import BaseConf
+from modules.conf_models import BaseConf
 
 
-class GridKenter:
+class FetchMeetdata:
     def __init__(self, conf: BaseConf, logger):
         self.conf = conf
         self.logger = logger
