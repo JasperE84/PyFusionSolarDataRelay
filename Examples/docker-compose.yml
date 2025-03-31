@@ -41,41 +41,41 @@ services:
       - influxdb
       - mosquitto
     environment:
-      - pvdebug=True
-      - pvsysname=inverter01
+      - debug_mode=True
+      - fusionsolar_kiosk_site_name=inverter01
 
-      - pvfusionsolar=True
-      - pvfusionsolarkkid=GET_THIS_STRING_FROM_YOUR_KIOSK_URL
-      - pvfusionminutecron=0,30 # Please note that the kiosk only seems to update each 30mins
+      - fusionsolar_kiosk_enabled=True
+      - fusionsolar_kiosk_api_kkid=GET_THIS_STRING_FROM_YOUR_KIOSK_URL
+      - fusionsolar_kiosk_fetch_cron_minute=0,30 # Please note that the kiosk only seems to update each 30mins
       
-      - pvinflux=True
-      - pvinflux2=True
-      - pvifhost=influxdb
-      - pvif2protocol=http
-      - pvif2org=acme
-      - pvif2bucket=fusionsolar
-      - pvif2token=GENERATE_TOKEN_IN_INFLUXDB_ADMIN_PANEL
+      - influxdb_enabled=True
+      - influxdb_is_v2=True
+      - influxdb_host=influxdb
+      - influxdb_v2_protocol=http
+      - influxdb_v2_org=acme
+      - influxdb_v2_bucket=fusionsolar
+      - influxdb_v2_token=GENERATE_TOKEN_IN_INFLUXDB_ADMIN_PANEL
 
-      - pvpvoutput=True
-      - pvpvoutputsystemid=123456
-      - pvpvoutputapikey=GENERATE_THIS_AND_SYSTEMID_ON_PVOUTPUT.ORG
+      - pvoutput_enabled=True
+      - pvoutput_system_id=123456
+      - pvoutput_api_key=GENERATE_THIS_AND_SYSTEMID_ON_PVOUTPUT.ORG
 
-      - pvmqtt=True
-      - pvmqtthost=mosquitto
-      - pvmqttauth=False
+      - mqtt_enabled=True
+      - mqtt_host=mosquitto
+      - mqtt_auth=False
 
-      - pvgridrelay=False
-      - pvgridrelaykenteruser=my@username.com
-      - pvgridrelaykenterpasswd=secretpassword
+      - meetdata_nl_enabled=False
+      - meetdata_nl_username=my@username.com
+      - meetdata_nl_password=secretpassword
 
-      - pvgridrelaysysname=transformer01
-      - pvgridrelaykenterean=000000000000000000
-      - pvgridrelaykentermeterid=0000000000
+      - meetdata_nl_meter_sysname=transformer01
+      - meetdata_nl_meter_ean=000000000000000000
+      - meetdata_nl_meter_id=0000000000
 
-      - pvgridrelaysys02enabled=False
-      - pvgridrelaysysname02=transformer02
-      - pvgridrelaykenterean02=000000000000000000
-      - pvgridrelaykentermeterid02=0000000000
+      - meetdata_nl_meter2_enabled=False
+      - meetdata_nl_meter2_sysname=transformer02
+      - meetdata_nl_meter2_ean=000000000000000000
+      - meetdata_nl_meter2_id=0000000000
 
 
 

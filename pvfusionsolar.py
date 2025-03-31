@@ -1,11 +1,15 @@
 import requests
 import json
 import html
-from pvconf import PvConf
+from pvconfmodels import BaseConf
 
 class PvFusionSolar:
 
-    def __init__(self, conf: PvConf, logger):
+    def __init__(
+            self, 
+            conf: BaseConf, 
+            logger
+    ):
         self.conf = conf
         self.logger = logger
         self.lastCumulativeEnergy = 0
@@ -17,7 +21,7 @@ class PvFusionSolar:
 
         try:
             response = requests.get(
-                f"{self.conf.fusionsolarurl}{self.conf.fusionsolarkkid}",
+                f"{self.conf.fusionsolar_kiosk_api_url}{self.conf.fusionsolar_kiosk_api_kkid}",
                 verify=False
             )
         except Exception as e:

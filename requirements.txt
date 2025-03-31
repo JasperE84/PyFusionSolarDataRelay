@@ -3,3 +3,6 @@ influxdb
 influxdb-client
 paho-mqtt
 apscheduler
+pydantic
+pydantic-settings
+pyaml

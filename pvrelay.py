@@ -1,6 +1,6 @@
 import time
 from apscheduler.schedulers.blocking import BlockingScheduler
-from pvconf import PvConf
+from pvconfmodels import BaseConf
 from pvinflux import PvInflux
 from pvoutputorg import PvOutputOrg
 from pvfusionsolar import PvFusionSolar
@@ -9,7 +9,7 @@ from pvmqtt import PvMqtt
 
 
 class PvRelay:
-    def __init__(self, conf: PvConf, logger):
+    def __init__(self, conf: BaseConf, logger):
         self.conf = conf
         self.logger = logger
         self.logger.debug("PvRelay class instantiated")
@@ -25,12 +25,12 @@ class PvRelay:
         self.logger.debug("PvRelay waiting 5sec to initialize docker-compose containers")
         time.sleep(5)
 
-        if self.conf.debug:
+        if self.conf.debug_mode:
             self.logger.info("Starting process_fusionsolar_request() at init, before waiting for cron, because we're in debug mode")
             self.process_fusionsolar_request()
 
         sched = BlockingScheduler(standalone = True)
-        sched.add_job(self.process_fusionsolar_request, trigger='cron', hour=self.conf.fusionhourcron, minute=self.conf.fusionminutecron)
+        sched.add_job(self.process_fusionsolar_request, trigger='cron', hour=self.conf.fusionsolar_kiosk_fetch_cron_hour, minute=self.conf.fusionsolar_kiosk_fetch_cron_minute)
         sched.start()
 
     def process_fusionsolar_request(self):
@@ -47,14 +47,14 @@ class PvRelay:
         self.logger.debug("Waiting for next FusionSolar interval...")
 
     def write_pvdata_to_pvoutput(self, fusionsolar_json_data):
-        if self.conf.pvoutput:
+        if self.conf.pvoutput_enabled:
             try:
                 self.pvoutput.write_pvdata_to_pvoutput(fusionsolar_json_data)
             except:
                 self.logger.exception("Error writing PV data to PVOutput.org")
 
     def publish_pvdata_to_mqtt(self, fusionsolar_json_data):
-        if self.conf.mqtt:
+        if self.conf.mqtt_enabled:
             try:
                 self.pvmqtt.publish_pvdata_to_mqtt(fusionsolar_json_data)
             except:
@@ -64,7 +64,7 @@ class PvRelay:
 
 
     def write_pvdata_to_influxdb(self, response_json_data):
-        if self.conf.influx:
+        if self.conf.influxdb_enabled:
             if self.pvinflux_initialized == False:
                 self.pvinflux_initialized = self.pvinflux.initialize()
 

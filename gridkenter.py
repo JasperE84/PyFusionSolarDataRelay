@@ -2,11 +2,11 @@ import requests
 from requests.auth import HTTPBasicAuth
 from datetime import datetime, timedelta
 import json
-from pvconf import PvConf
+from pvconfmodels import BaseConf
 
 
 class GridKenter:
-    def __init__(self, conf: PvConf, logger):
+    def __init__(self, conf: BaseConf, logger):
         self.conf = conf
         self.logger = logger
         self.logger.debug("GridKenter class instantiated")
@@ -24,13 +24,13 @@ class GridKenter:
         req_day = req_time.strftime("%d")
 
         try:
-            url = f"{self.conf.gridrelaykenterurl}/api/1/measurements/{ean}/{meterid}/{req_year}/{req_month}/{req_day}"
+            url = f"{self.conf.meetdata_nl_api_url}/api/1/measurements/{ean}/{meterid}/{req_year}/{req_month}/{req_day}"
             self.logger.debug(f"Fetching URL: {url}")
 
             response = requests.get(
                 url,
                 auth=HTTPBasicAuth(
-                    self.conf.gridrelaykenteruser, self.conf.gridrelaykenterpasswd
+                    self.conf.meetdata_nl_username, self.conf.meetdata_nl_password
                 ),
                 verify=False,
             )

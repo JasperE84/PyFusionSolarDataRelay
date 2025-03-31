@@ -1,16 +1,16 @@
 from datetime import datetime
-from pvconf import PvConf
+from pvconfmodels import BaseConf
 
 
 class PvInflux:
-    def __init__(self, conf: PvConf, logger):
+    def __init__(self, conf: BaseConf, logger):
         self.conf = conf
         self.logger = logger
         self.logger.debug("PvInflux class instantiated")
 
     def initialize(self):
         try:
-            if self.conf.influx2:
+            if self.conf.influxdb_is_v2:
                 self.initialize_v2()
             else:
                 self.initialize_v1()
@@ -36,7 +36,7 @@ class PvInflux:
             )
 
         url = "{}://{}:{}".format(
-            self.conf.if2protocol, self.conf.ifhost, self.conf.ifport
+            self.conf.influxdb_v2_protocol, self.conf.influxdb_host, self.conf.influxdb_port
         )
         self.logger.info("Connecting to InfluxDB v2 url: {}".format(url))
 
@@ -46,8 +46,8 @@ class PvInflux:
             )
             self.influxclient = InfluxDBClient(
                 url=url,
-                org=self.conf.if2org,
-                token=self.conf.if2token,
+                org=self.conf.influxdb_v2_org,
+                token=self.conf.influxdb_v2_token,
             )
             self.if2bucket_api = self.influxclient.buckets_api()
             self.if2organization_api = self.influxclient.organizations_api()
@@ -59,10 +59,10 @@ class PvInflux:
 
         try:
             self.logger.debug("Fetching influxdb bucket by name")
-            buckets = self.if2bucket_api.find_bucket_by_name(self.conf.if2bucket)
+            buckets = self.if2bucket_api.find_bucket_by_name(self.conf.influxdb_v2_bucket)
             if buckets == None:
                 raise Exception(
-                    "InfluxDB v2 bucket {} not defined".format(self.conf.if2bucket)
+                    "InfluxDB v2 bucket {} not defined".format(self.conf.influxdb_v2_bucket)
                 )
         except Exception as e:
             raise Exception(
@@ -74,13 +74,13 @@ class PvInflux:
             organizations = self.if2organization_api.find_organizations()
             orgfound = False
             for org in organizations:
-                if org.name == self.conf.if2org:
+                if org.name == self.conf.influxdb_v2_org:
                     orgfound = True
                     break
             if not orgfound:
                 self.logger.warning(
                     "InfluxDB v2 organization {} not defined or no authorisation to check".format(
-                        self.conf.if2org
+                        self.conf.influxdb_v2_org
                     )
                 )
         except Exception as e:
@@ -102,12 +102,12 @@ class PvInflux:
                 "Instantiating InfluxDBClient class from InfluxDB library"
             )
             self.influxclient = InfluxDBClient(
-                host=self.conf.ifhost,
-                port=self.conf.ifport,
+                host=self.conf.influxdb_host,
+                port=self.conf.influxdb_port,
                 timeout=3,
-                username=self.conf.if1user,
-                password=self.conf.if1passwd,
-                database=self.conf.if1dbname
+                username=self.conf.influxdb_v1_username,
+                password=self.conf.influxdb_v1_password,
+                database=self.conf.influxdb_v1_db_name
             )
         except Exception as e:
             raise Exception(
@@ -154,11 +154,11 @@ class PvInflux:
         ifjson = self.make_influx_pvdata_jsonrecord(response_json_data)
         self.logger.info("Writing InfluxDB json record: {}".format(str(ifjson)))
         try:
-            if self.conf.influx2:
+            if self.conf.influxdb_is_v2:
                 self.logger.debug("Writing PvData to InfluxDB v2...")
                 self.ifwrite_api.write(
-                    bucket=self.conf.if2bucket,
-                    org=self.conf.if2org,
+                    bucket=self.conf.influxdb_v2_bucket,
+                    org=self.conf.influxdb_v2_org,
                     record=ifjson,
                     write_precision="s",
                 )
@@ -170,7 +170,7 @@ class PvInflux:
 
     def make_influx_pvdata_jsonrecord(self, response_json_data):
         ifobj = {
-            "measurement": self.conf.pvsysname,
+            "measurement": self.conf.fusionsolar_kiosk_site_name,
             "time": datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ"),
             "fields": {},
         }
@@ -191,11 +191,11 @@ class PvInflux:
         ifjson = self.make_influx_griddata_jsonrecord(grid_data_obj)
         self.logger.info("Writing GridData InfluxDB json records: {}".format(str(ifjson)))
         try:
-            if self.conf.influx2:
+            if self.conf.influxdb_is_v2:
                 self.logger.debug("Writing GridData to InfluxDB v2...")
                 self.ifwrite_api.write(
-                    bucket=self.conf.if2bucket,
-                    org=self.conf.if2org,
+                    bucket=self.conf.influxdb_v2_bucket,
+                    org=self.conf.influxdb_v2_org,
                     record=ifjson,
                     write_precision="s",
                 )

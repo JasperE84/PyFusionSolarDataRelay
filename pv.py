@@ -13,25 +13,25 @@ streamHandler = logging.StreamHandler(sys.stdout)
 formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 streamHandler.setFormatter(formatter)
 logger.addHandler(streamHandler)
-logger.info("PyFusionSolarDataRelay 1.0.6 started")
+logger.info("PyFusionSolarDataRelay 1.1.0 started")
 
 # Config
-conf = PvConf(logger)
-if conf.debug:
+conf = PvConf(logger).read_and_validate_config()
+if conf.debug_mode:
     logger.debug("Enabled verbose logging")
     logger.setLevel(logging.DEBUG)
-    conf.print()
+    print(conf.model_dump_json())
 else:
     logger.setLevel(logging.INFO)
 
 # Start PvRelay and KenterRelay
 try:
     if __name__ == '__main__':
-        if conf.fusionsolar:
+        if conf.fusionsolar_kiosk_enabled:
             fs_thread = Thread(target = PvRelay, args=[conf, logger])
             fs_thread.daemon = True
             fs_thread.start()
-        if conf.gridrelay:
+        if conf.meetdata_nl_enabled:
             gr_thread = Thread(target = GridRelay, args=[conf, logger])
             gr_thread.daemon = True
             gr_thread.start()

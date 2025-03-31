@@ -3,20 +3,20 @@ import time
 import math
 from copy import copy
 from datetime import datetime
-from pvconf import PvConf
+from pvconfmodels import BaseConf
 
 
 class PvOutputOrg:
-    def __init__(self, conf: PvConf, logger):
+    def __init__(self, conf: BaseConf, logger):
         self.conf = conf
         self.logger = logger
         self.logger.debug("PvOutputOrg class instantiated")
 
     def write_pvdata_to_pvoutput(self, fusionsolar_json_data):
-        if self.conf.pvoutput:
+        if self.conf.pvoutput_enabled:
             pvoutput_header_obj = {
-                "X-Pvoutput-Apikey": self.conf.pvoutputapikey,
-                "X-Pvoutput-SystemId": self.conf.pvoutputsystemid,
+                "X-Pvoutput-Apikey": self.conf.pvoutput_api_key,
+                "X-Pvoutput-SystemId": self.conf.pvoutput_system_id,
             }
 
             pvoutput_data_obj = self.make_pvoutput_pvdata_obj(fusionsolar_json_data)
@@ -28,7 +28,7 @@ class PvOutputOrg:
                     )
                 )
                 api_response = requests.post(
-                    self.conf.pvoutputurl,
+                    self.conf.pvoutput_record_url,
                     data=pvoutput_data_obj,
                     headers=pvoutput_header_obj,
                 )
@@ -57,10 +57,10 @@ class PvOutputOrg:
         return pvoutput_data_obj
 
     def write_griddata_to_pvoutput(self, grid_data_obj):
-        if self.conf.pvoutput:
+        if self.conf.pvoutput_enabled:
             pvoutput_header_obj = {
-                "X-Pvoutput-Apikey": self.conf.pvoutputapikey,
-                "X-Pvoutput-SystemId": self.conf.pvoutputsystemid,
+                "X-Pvoutput-Apikey": self.conf.pvoutput_api_key,
+                "X-Pvoutput-SystemId": self.conf.pvoutput_system_id,
             }
 
             # Apply span
@@ -75,9 +75,9 @@ class PvOutputOrg:
                     new_elem['interval_power_avg'] += element['interval_power_avg']
                     new_elem['interval_energy'] += element['interval_energy']
 
-                residual = (idx + 1) % self.conf.gridrelaypvoutputspan
+                residual = (idx + 1) % self.conf.meetdata_nl_pvoutput_span
                 if residual == 0:
-                    new_elem['interval_power_avg'] = new_elem['interval_power_avg'] / self.conf.gridrelaypvoutputspan
+                    new_elem['interval_power_avg'] = new_elem['interval_power_avg'] / self.conf.meetdata_nl_pvoutput_span
                     grid_net_consumption_new.append(new_elem)
                     new_elem = None
 
@@ -86,9 +86,9 @@ class PvOutputOrg:
             # PVOutput allows max 30 records per batch
             pages = math.ceil(len(grid_data_obj_copy["grid_net_consumption"]) / 30)
 
-            if (len(grid_data_obj_copy["grid_net_consumption"]) % self.conf.gridrelaypvoutputspan > 0):
+            if (len(grid_data_obj_copy["grid_net_consumption"]) % self.conf.meetdata_nl_pvoutput_span > 0):
                 self.logger.warn("WARNING! The number of measurements per 24h as supplied by meetdata.nl should be dividable by configured gridrelaypvoutputspan parameter.")
-                self.logger.warn("Measurements in 24h: {}, configured span: {}.".format(len(grid_data_obj["grid_net_consumption"]),self.conf.gridrelaypvoutputspan,))
+                self.logger.warn("Measurements in 24h: {}, configured span: {}.".format(len(grid_data_obj["grid_net_consumption"]),self.conf.meetdata_nl_pvoutput_span,))
 
             for page in range(pages):
                 pvoutput_batch_data_obj = self.make_pvoutput_griddata_obj_page(grid_data_obj_copy, page)
@@ -96,7 +96,7 @@ class PvOutputOrg:
                     self.logger.info("Writing GridData batch to PVOutput. Header: {} Data: {}".format(pvoutput_header_obj, pvoutput_batch_data_obj))
 
                     api_response = requests.post(
-                        self.conf.pvoutputbatchurl,
+                        self.conf.pvoutput_batch_url,
                         data=pvoutput_batch_data_obj,
                         headers=pvoutput_header_obj,
                     )
