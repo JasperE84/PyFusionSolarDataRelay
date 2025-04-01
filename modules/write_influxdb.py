@@ -1,5 +1,6 @@
 from datetime import datetime
 from modules.conf_models import BaseConf
+from modules.models import FusionSolarInverterKpi
 
 
 class WriteInfluxDb:
@@ -114,44 +115,8 @@ class WriteInfluxDb:
                 "Error instantiating InfluxDB v1 client library: '{}'".format(str(e))
             )
 
-        '''
-        try:
-            self.logger.debug("Fetching influxdb database list")
-            databases = [db["name"] for db in self.influxclient.get_list_database()]
-        except Exception as e:
-            raise Exception(
-                "Cannot fetch list of databases from InfluxDB: '{}'".format(str(e))
-            )
-
-        if self.conf.if1dbname not in databases:
-            self.logger.info(
-                f"InfluxDB database {self.conf.if1dbname} not defined in InfluxDB, creating new database"
-            )
-            try:
-                self.influxclient.create_database(self.conf.if1dbname)
-            except Exception as e:
-                raise Exception(
-                    "Unable create database: '{}': '{}'".format(self.conf.if1dbname),
-                    str(e),
-                )
-
-        self.logger.debug("Switching to influxdb database {}", self.conf.if1dbname)
-        try:
-            self.influxclient.switch_database(self.conf.if1dbname)
-        except Exception as e:
-            raise Exception(
-                "Error switching to database {}: ''".format(self.conf.if1dbname), str(e)
-            )
-
-        self.logger.info(
-            "Succesfully switched to InfluxDB v1 database '{}'".format(
-                self.conf.if1dbname
-            )
-        )
-        '''
-
-    def pvinflux_write_pvdata(self, response_json_data):
-        ifjson = self.make_influx_pvdata_jsonrecord(response_json_data)
+    def pvinflux_write_pvdata(self, inverter_data: FusionSolarInverterKpi):
+        ifjson = self.make_influx_pvdata_jsonrecord(inverter_data)
         self.logger.info("Writing InfluxDB json record: {}".format(str(ifjson)))
         try:
             if self.conf.influxdb_is_v2:
@@ -168,24 +133,37 @@ class WriteInfluxDb:
         except Exception as e:
             self.logger.exception("InfluxDB PvData write error: '{}'".format(str(e)))
 
-    def make_influx_pvdata_jsonrecord(self, response_json_data):
-        ifobj = {
-            "measurement": self.conf.fusionsolar_kiosk_site_name,
-            "time": datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ"),
-            "fields": {},
+    def make_influx_pvdata_jsonrecord(self, inverter_data: FusionSolarInverterKpi) -> list[dict]:
+        """
+        Creates an InfluxDB JSON record from FusionSolarInverterKpi data.
+        """
+        timestamp = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
+        measurement = 'energy'
+        device_type = 'inverter'
+
+        tags = {
+            "siteName": self.conf.fusionsolar_kiosk_site_name,
+            "stationName": inverter_data.stationName,
+            "dataSource": inverter_data.dataSource,
+            "deviceType": device_type,
+            "stationDn": inverter_data.stationDn,
         }
 
-        # floatKey element existence already verified and converted to Watts in fetch_fusionsolar_status()
-        floatKeys = {"realTimePower", "cumulativeEnergy"}
-        for floatKey in floatKeys:
-            ifobj["fields"][floatKey] = response_json_data["realKpi"][floatKey]
+        fields = {
+            "realTimePower_W": inverter_data.realTimePowerW,
+            "currentPower_Wh": inverter_data.currentPowerW,
+            "cumulativeEnergy_W": inverter_data.cumulativeEnergyWh
+        }
 
-        floatKeys = {"currentPower"}
-        for floatKey in floatKeys:
-            ifobj["fields"][floatKey] = response_json_data["powerCurve"][floatKey]
+        record = {
+            "measurement": measurement,
+            "time": timestamp,
+            "fields": fields,
+            "tags": tags
+        }
 
-        ifjson = [ifobj]
-        return ifjson
+        return [record]
+
 
     def pvinflux_write_griddata(self, grid_data_obj):
         ifjson = self.make_influx_griddata_jsonrecord(grid_data_obj)

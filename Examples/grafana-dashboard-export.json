@@ -129,7 +129,7 @@
             "type": "influxdb",
             "uid": "${DS_INFLUXDB}"
           },
-          "query": "from(bucket: \"fusionsolar\")\r\n  |> range(start: -1h)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"inverter01\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"realTimePower\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\r\n  |> map(fn: (r) => ({r with _value: r._value / float(v:1000)}))\r\n  |> yield(name: \"last\")",
+          "query": "from(bucket: \"fusionsolar\")\r\n  |> range(start: -1h)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"site01\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"realTimePower\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\r\n  |> map(fn: (r) => ({r with _value: r._value / float(v:1000)}))\r\n  |> yield(name: \"last\")",
           "refId": "A"
         }
       ],
@@ -189,7 +189,7 @@
             "type": "influxdb",
             "uid": "${DS_INFLUXDB}"
           },
-          "query": "from(bucket: \"fusionsolar\")\r\n  |> range(start: -99999d)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"inverter01\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"cumulativeEnergy\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\r\n  |> yield(name: \"last\")\r\n  ",
+          "query": "from(bucket: \"fusionsolar\")\r\n  |> range(start: -99999d)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"site01\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"cumulativeEnergy\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\r\n  |> yield(name: \"last\")\r\n  ",
           "refId": "A"
         }
       ],
@@ -275,7 +275,7 @@
             "type": "influxdb",
             "uid": "${DS_INFLUXDB}"
           },
-          "query": "from(bucket: \"fusionsolar\")\r\n  |> range(start: -12h)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"inverter01\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"cumulativeEnergy\")\r\n  |> aggregateWindow(every: 1h, fn: last, createEmpty: false)\r\n  |> difference(\r\n    nonNegative: true,\r\n    columns: [\"_value\"],\r\n    keepFirst: false,\r\n    initialZero: false,\r\n  )\r\n  ",
+          "query": "from(bucket: \"fusionsolar\")\r\n  |> range(start: -12h)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"site01\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"cumulativeEnergy\")\r\n  |> aggregateWindow(every: 1h, fn: last, createEmpty: false)\r\n  |> difference(\r\n    nonNegative: true,\r\n    columns: [\"_value\"],\r\n    keepFirst: false,\r\n    initialZero: false,\r\n  )\r\n  ",
           "refId": "A"
         }
       ],
@@ -361,7 +361,7 @@
             "type": "influxdb",
             "uid": "${DS_INFLUXDB}"
           },
-          "query": "from(bucket: \"fusionsolar\")\r\n  |> range(start: -30d)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"inverter01\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"cumulativeEnergy\")\r\n  |> aggregateWindow(every: 1d, fn: last, createEmpty: false)\r\n  |> difference(\r\n    nonNegative: true,\r\n    columns: [\"_value\"],\r\n    keepFirst: false,\r\n    initialZero: false,\r\n  )\r\n  ",
+          "query": "from(bucket: \"fusionsolar\")\r\n  |> range(start: -30d)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"site01\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"cumulativeEnergy\")\r\n  |> aggregateWindow(every: 1d, fn: last, createEmpty: false)\r\n  |> difference(\r\n    nonNegative: true,\r\n    columns: [\"_value\"],\r\n    keepFirst: false,\r\n    initialZero: false,\r\n  )\r\n  ",
           "refId": "A"
         }
       ],

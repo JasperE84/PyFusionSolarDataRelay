@@ -42,7 +42,7 @@ services:
       - mosquitto
     environment:
       - debug_mode=True
-      - fusionsolar_kiosk_site_name=inverter01
+      - fusionsolar_kiosk_site_name=site01
 
       - fusionsolar_kiosk_enabled=True
       - fusionsolar_kiosk_api_kkid=GET_THIS_STRING_FROM_YOUR_KIOSK_URL

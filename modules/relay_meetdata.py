@@ -10,19 +10,19 @@ class RelayMeetdata:
     def __init__(self, conf: BaseConf, logger):
         self.conf = conf
         self.logger = logger
-        self.logger.debug("GridRelay class instantiated")
+        self.logger.debug("RelayMeetdata class instantiated")
 
         self.gridkenter = FetchMeetdata(conf, logger)
         self.pvoutput = WritePvOutput(conf, logger)
-        self.pvmqtt = WriteMqtt(conf, logger)
-        self.pvinflux = WriteInfluxDb(self.conf, self.logger)
-        self.pvinflux_initialized = False
+        self.mqtt = WriteMqtt(conf, logger)
+        self.influxdb = WriteInfluxDb(self.conf, self.logger)
+        self.influxdb_initialized = False
 
-        self.logger.info("Starting GridRelay on separate thread")
+        self.logger.info("Starting RelayMeetdata on separate thread")
         self.start()
 
     def start(self):
-        self.logger.debug("GridRelay waiting 5sec to initialize docker-compose containers")
+        self.logger.debug("RelayMeetdata waiting 5sec to initialize docker-compose containers")
         time.sleep(5)
         
         daystobackfill = self.conf.meetdata_nl_days_backfill
@@ -47,7 +47,7 @@ class RelayMeetdata:
                 daystobackfill = 0
             except:
                 self.logger.exception(
-                    "Uncaught exception in GridRelay data processing loop."
+                    "Uncaught exception in RelayMeetdata data processing loop."
                 )
 
             self.logger.debug("Waiting for next interval...")
@@ -56,17 +56,17 @@ class RelayMeetdata:
     def write_gridkenter_to_pvoutput(self, grid_measurement_data):
         if self.conf.pvoutput_enabled:
             try:
-                self.pvoutput.write_griddata_to_pvoutput(grid_measurement_data)
+                self.pvoutput.write_meetdata_to_pvoutput(grid_measurement_data)
             except:
                 self.logger.exception("Error writing GridData to PVOutput.org")
 
     def write_gridkenter_to_influxdb(self, grid_measurement_data):
         if self.conf.influxdb_enabled:
-            if self.pvinflux_initialized == False:
-                self.pvinflux_initialized = self.pvinflux.initialize()
+            if self.influxdb_initialized == False:
+                self.influxdb_initialized = self.influxdb.initialize()
 
-            if self.pvinflux_initialized:
-                self.pvinflux.pvinflux_write_griddata(grid_measurement_data)
+            if self.influxdb_initialized:
+                self.influxdb.pvinflux_write_griddata(grid_measurement_data)
         else:
             self.logger.debug("Writing data to Influx skipped, not initialized yet.")
 

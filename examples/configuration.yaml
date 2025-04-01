@@ -7,7 +7,7 @@ default_config:
 mqtt:
   sensor:
     - name: Solar power
-      state_topic: energy/pyfusionsolar
+      state_topic: pyfusionsolar
       value_template: "{{ value_json['values']['realTimePower'] | int / 1000 }}"
       unique_id: pyfusion_solar_power
       device_class: power
@@ -15,7 +15,7 @@ mqtt:
       icon: mdi:solar-power
 
     - name: Solar energy
-      state_topic: energy/pyfusionsolar
+      state_topic: pyfusionsolar
       value_template: "{{ value_json['values']['cumulativeEnergy'] | int / 1000 }}"
       unique_id: pyfusion_solar_energy
       device_class: energy

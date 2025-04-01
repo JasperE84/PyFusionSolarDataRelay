@@ -8,7 +8,7 @@ class BaseConf(BaseSettings):
     fusionsolar_kiosk_enabled: bool = Field(default=True)
     fusionsolar_kiosk_api_url: str = Field(default="https://region01eu5.fusionsolar.huawei.com/rest/pvms/web/kiosk/v1/station-kiosk-file?kk=")
     fusionsolar_kiosk_api_kkid: str = Field(default="GET_THIS_FROM_KIOSK_URL")
-    fusionsolar_kiosk_site_name: str = Field(default="inverter01")
+    fusionsolar_kiosk_site_name: str = Field(default="site01")
 
      # The fusionsolar API only updates portal data each half hour, setting to lower value will produce weird PVOutput graph with horizontal bits in it.
     fusionsolar_kiosk_fetch_cron_hour: str = Field(default="*")
@@ -45,7 +45,7 @@ class BaseConf(BaseSettings):
     mqtt_auth: bool = Field(default=False)
     mqtt_username: str = Field(default="fusionsolar")
     mqtt_password: str = Field(default="fusionsolar")
-    mqtt_topic: str = Field(default="energy/pyfusionsolar")
+    mqtt_root_topic: str = Field(default="pyfusionsolar")
 
     # Kenter Meetdata.nl
     meetdata_nl_enabled: bool = Field(default=False)

@@ -54,7 +54,7 @@ Fusion solar data fetching is planned by cron in order to exactly specify at wha
 | Parameter | Environment variable | Description | Default |
 | --- | --- | --- | --- |
 | debug_mode | debug_mode | Enables verbose logging | True |
-| fusionsolar_kiosk_site_name | fusionsolar_kiosk_site_name | Definition of 'measurement' name for InfluxDB | inverter01 |
+| fusionsolar_kiosk_site_name | fusionsolar_kiosk_site_name | Definition of 'measurement' name for InfluxDB | site01 |
 | fusionsolar | fusionsolar_kiosk_enabled | Can be `True` or `False`, determines if fusionsolar kiosk API is enabled | True |
 | fusionsolar_kiosk_api_url | fusionsolar_kiosk_api_url | Link to the fusionsolar kiosk data backend | [Click url](https://region01eu5.fusionsolar.huawei.com/rest/pvms/web/kiosk/v1/station-kiosk-file?kk=) |
 | fusionsolar_kiosk_api_kkid | fusionsolar_kiosk_api_kkid | Unique kiosk ID, can be found by looking the kiosk URL and then taking the code after `kk=` | GET_THIS_FROM_KIOSK_URL |
@@ -82,7 +82,7 @@ Fusion solar data fetching is planned by cron in order to exactly specify at wha
 | mqtt_auth | mqtt_auth | Can be `True` or `False`, determines if MQTT authentication is enabled | False |
 | mqtt_username | mqtt_username | MQTT Username | fusionsolar |
 | mqtt_password | mqtt_password | MQTT Password | fusionsolar |
-| mqtt_topic | mqtt_topic | MQTT Topic for publishing | energy/pyfusionsolar |
+| mqtt_root_topic | mqtt_root_topic | MQTT Topic for publishing | pyfusionsolar |
 | meetdata_nl_enabled | meetdata_nl_enabled | Can be `True` or `False`, determines if data is fetched from Kenter's meetdata.nl API | False |
 | meetdata_nl_interval | meetdata_nl_interval | Interval in seconds to fetch data from meetdata.nl and post to PVOutput and InfluxDB | 43200 |
 | meetdata_nl_api_url | meetdata_nl_api_url | Kenter API url for fetching transformer grid measurements | [Click url](https://webapi.meetdata.nl) |
@@ -129,7 +129,7 @@ Result:
 | 1.0.5 | Bugfix for InfluxDB v1 implementation and removed auto-database creation for VictoriaMetrics compatibility |
 | 1.0.3 | Grid transformer usage measurement polling from Kenter's meetdata.nl API has been implemented |
 | 1.0.3 | Changed docker-compose.yml template not to use host networking mode |
-| 1.0.3 | main.py now uses separate threads for PvRelay and GridRelay classes |
+| 1.0.3 | main.py now uses separate threads for RelayFusionSolar and RelayMeetdata classes |
 | 1.0.3 | Implemented apscheduler's cron implementation to be able to specify exact moments to fetch fusionsolar data |
 | 1.0.3 | Code and method name refactoring including PvConf type hints in classes where this class was injected as method parameter |
 

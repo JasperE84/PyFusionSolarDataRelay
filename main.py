@@ -24,7 +24,7 @@ if conf.debug_mode:
 else:
     logger.setLevel(logging.INFO)
 
-# Start PvRelay and KenterRelay
+# Start RelayFusionSolar and KenterRelay
 try:
     if __name__ == '__main__':
         if conf.fusionsolar_kiosk_enabled:
