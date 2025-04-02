@@ -51,52 +51,52 @@ Kenter provides measurement services for **commercially rented** grid transforme
 Fusion solar data fetching is planned by cron in order to exactly specify at what times the data should reload. This way, it is possible to synchronise the intervals of fusionsolar and gridkenter datapoints, which end up showing on PVOutput. That's relevant because if the gridkenter data class is fetched, meetdata.nl does not provide live measurements. Instead it provides historic measurements with a certain interval (15 minutes interval with the most recent data point 3 days old in my case). If this interval doesn't match the fusionsolar interval, then PVOutput will show distorted graphs because it won't have a datapoint for both PV production and grid usage for each interval. (Fusionsolar kiosk API only updates each half hour). See [this url](https://crontab.guru/) for help with finding the right cron config.
 
 # Configuration parameter documentation
-| Parameter | Environment variable | Description | Default |
-| --- | --- | --- | --- |
-| debug_mode | debug_mode | Enables verbose logging | True |
-| fusionsolar_kiosk_site_name | fusionsolar_kiosk_site_name | Definition of 'measurement' name for InfluxDB | site01 |
-| fusionsolar | fusionsolar_kiosk_enabled | Can be `True` or `False`, determines if fusionsolar kiosk API is enabled | True |
-| fusionsolar_kiosk_api_url | fusionsolar_kiosk_api_url | Link to the fusionsolar kiosk data backend | [Click url](https://region01eu5.fusionsolar.huawei.com/rest/pvms/web/kiosk/v1/station-kiosk-file?kk=) |
-| fusionsolar_kiosk_api_kkid | fusionsolar_kiosk_api_kkid | Unique kiosk ID, can be found by looking the kiosk URL and then taking the code after `kk=` | GET_THIS_FROM_KIOSK_URL |
-| fusionsolar_kiosk_fetch_cron_hour | fusionsolar_kiosk_fetch_cron_hour | Hour component for python cron job to fetch and process data from fusionsolar. | * |
-| fusionsolar_kiosk_fetch_cron_minute | fusionsolar_kiosk_fetch_cron_minute | Minute component for python cron job to fetch and process data from fusionsolar | 0,30 |
-| pvoutput_enabled | pvoutput_enabled | Can be `True` or `False`, determines if PVOutput.org API is enabled | False |
-| pvoutput_api_key | pvoutput_api_key | API Key for PVOutput.org | yourapikey |
-| pvoutput_system_id | pvoutput_system_id | System ID for PVOutput.org, should be numeric | 12345 |
-| pvoutput_record_url | pvoutput_record_url | API url for PVOutput.org live output posting | [Click url](https://pvoutput.org/service/r2/addstatus.jsp)
-| pvoutput_batch_url | pvoutput_batch_url | API url for PVOutput.org historic data batch posting (used for grid data from meetdata.nl) | [Click url](https://pvoutput.org/service/r2/addbatchstatus.jsp)
-| influxdb_enabled | influxdb_enabled | Can be `True` or `False`, determines if InfluxDB processing is enabled | False |
-| influxdb_is_v2 | influxdb_is_v2 | If `True` the InfluxDBv2 methods are used. If `False` InfluxDBv1 methods are used | True |
-| influxdb_host | influxdb_host | Hostname of the influxdb server | localhost |
-| influxdb_port | influxdb_port | Port of influxdb server | 8086 |
-| influxdb_v1_db_name | influxdb_v1_db_name | Database name for InfluxDBv1, only required if influx2=False | fusionsolar |
-| influxdb_v1_username | influxdb_v1_username | Username for InfluxDBv1, only required if influx2=False | fusionsolar |
-| pvif1passwd | pvif1passwd | Password for InfluxDBv1, only required if influx2=False | fusionsolar |
-| influxdb_v2_protocol | influxdb_v2_protocol | Protocol for InfluxDBv2, can be `https` or `http`, only required if influx2=True | https |
-| influxdb_v2_org | influxdb_v2_org | Organization for InfluxDBv2, only required if influx2=True | acme |
-| influxdb_v2_bucket | influxdb_v2_bucket | Bucket for InfluxDBv2, only required if influx2=True | fusionsolar |
-| influxdb_v2_token | influxdb_v2_token | Token for InfluxDBv2, only required if influx2=True | XXXXXXX |
-| mqtt_enabled | mqtt_enabled | Can be `True` or `False`, determines if MQTT publishing is enabled | False |
-| mqtt_host | mqtt_host | Hostname of MQTT server | localhost |
-| mqtt_port | mqtt_port | Port of MQTT server | 1883 |
-| mqtt_auth | mqtt_auth | Can be `True` or `False`, determines if MQTT authentication is enabled | False |
-| mqtt_username | mqtt_username | MQTT Username | fusionsolar |
-| mqtt_password | mqtt_password | MQTT Password | fusionsolar |
-| mqtt_root_topic | mqtt_root_topic | MQTT Topic for publishing | pyfusionsolar |
-| meetdata_nl_enabled | meetdata_nl_enabled | Can be `True` or `False`, determines if data is fetched from Kenter's meetdata.nl API | False |
-| meetdata_nl_interval | meetdata_nl_interval | Interval in seconds to fetch data from meetdata.nl and post to PVOutput and InfluxDB | 43200 |
-| meetdata_nl_api_url | meetdata_nl_api_url | Kenter API url for fetching transformer grid measurements | [Click url](https://webapi.meetdata.nl) |
-| meetdata_nl_username | meetdata_nl_username | Username for Kenter's API | user |
-| meetdata_nl_password | meetdata_nl_password | Password for Kenter's API | passwd |
-| meetdata_nl_days_back | meetdata_nl_days_back | Kenter's meetdata.nl does not provide live data. Data is only available up until an X amount of days back. May vary per transformer. | 3 |
-| meetdata_nl_pvoutput_span | meetdata_nl_pvoutput_span | In my case meetdata.nl has datapoints for each 15mins. Setting this to a value of 2, will calculate averages over 2 datapoints spanning half an hour before posting to PVOutput. This way the datapoint interval between the grid usage data and fusionsolar PV production data matches, resulting in nice diagrams on PVOutput.org | 2 |
-| meetdata_nl_meter_sysname | meetdata_nl_meter_sysname | Grid transformer name for InfluxDB transformer data | transformer01 |
-| meetdata_nl_meter_ean | meetdata_nl_meter_ean | EAN code for transformer on Kenter's www.meetdata.nl | XXX |
-| meetdata_nl_meter_id | meetdata_nl_meter_id | MeterID as shown on Kenter's www.meetdata.nl | XXX |
-| meetdata_nl_meter2_enabled | meetdata_nl_meter2_enabled | Can be `True` or `False`, determines if a secondary transformer is configured for InfluxDB output | False |
-| meetdata_nl_meter2_sysname | meetdata_nl_meter2_sysname | Grid transformer name for InfluxDB transformer data | transformer02 |
-| meetdata_nl_meter2_ean | meetdata_nl_meter2_ean | EAN code for transformer on Kenter's www.meetdata.nl | XXX |
-| meetdata_nl_meter2_id | meetdata_nl_meter2_id | MeterID as shown on Kenter's www.meetdata.nl | XXX |
+| Parameter | Description | Default |
+| --- | --- | --- |
+| debug_mode | Enables verbose logging | True |
+| fusionsolar_kiosk_site_name | Definition of 'measurement' name for InfluxDB | site01 |
+| fusionsolar_kiosk_enabled | Can be `True` or `False`, determines if fusionsolar kiosk API is enabled | True |
+| fusionsolar_kiosk_api_url | Link to the fusionsolar kiosk data backend | [Click url](https://region01eu5.fusionsolar.huawei.com/rest/pvms/web/kiosk/v1/station-kiosk-file?kk=) |
+| fusionsolar_kiosk_api_kkid | Unique kiosk ID, can be found by looking the kiosk URL and then taking the code after `kk=` | GET_THIS_FROM_KIOSK_URL |
+| fusionsolar_kiosk_fetch_cron_hour | Hour component for python cron job to fetch and process data from fusionsolar. | * |
+| fusionsolar_kiosk_fetch_cron_minute | Minute component for python cron job to fetch and process data from fusionsolar | 0,30 |
+| pvoutput_enabled | Can be `True` or `False`, determines if PVOutput.org API is enabled | False |
+| pvoutput_api_key | API Key for PVOutput.org | yourapikey |
+| pvoutput_system_id | System ID for PVOutput.org, should be numeric | 12345 |
+| pvoutput_record_url | API url for PVOutput.org live output posting | [Click url](https://pvoutput.org/service/r2/addstatus.jsp)
+| pvoutput_batch_url | API url for PVOutput.org historic data batch posting (used for grid data from meetdata.nl) | [Click url](https://pvoutput.org/service/r2/addbatchstatus.jsp)
+| influxdb_enabled | Can be `True` or `False`, determines if InfluxDB processing is enabled | False |
+| influxdb_is_v2 | If `True` the InfluxDBv2 methods are used. If `False` InfluxDBv1 methods are used | True |
+| influxdb_host | Hostname of the influxdb server | localhost |
+| influxdb_port | Port of influxdb server | 8086 |
+| influxdb_v1_db_name | Database name for InfluxDBv1, only required if influx2=False | fusionsolar |
+| influxdb_v1_username | Username for InfluxDBv1, only required if influx2=False | fusionsolar |
+| pvif1passwd | Password for InfluxDBv1, only required if influx2=False | fusionsolar |
+| influxdb_v2_protocol | Protocol for InfluxDBv2, can be `https` or `http`, only required if influx2=True | https |
+| influxdb_v2_org | Organization for InfluxDBv2, only required if influx2=True | acme |
+| influxdb_v2_bucket | Bucket for InfluxDBv2, only required if influx2=True | fusionsolar |
+| influxdb_v2_token | Token for InfluxDBv2, only required if influx2=True | XXXXXXX |
+| mqtt_enabled | Can be `True` or `False`, determines if MQTT publishing is enabled | False |
+| mqtt_host | Hostname of MQTT server | localhost |
+| mqtt_port | Port of MQTT server | 1883 |
+| mqtt_auth | Can be `True` or `False`, determines if MQTT authentication is enabled | False |
+| mqtt_username | MQTT Username | fusionsolar |
+| mqtt_password | MQTT Password | fusionsolar |
+| mqtt_root_topic | MQTT Topic for publishing | pyfusionsolar |
+| meetdata_nl_enabled | Can be `True` or `False`, determines if data is fetched from Kenter's meetdata.nl API | False |
+| meetdata_nl_interval | Interval in seconds to fetch data from meetdata.nl and post to PVOutput and InfluxDB | 43200 |
+| meetdata_nl_api_url | Kenter API url for fetching transformer grid measurements | [Click url](https://webapi.meetdata.nl) |
+| meetdata_nl_clientid | Username for Kenter's API | user |
+| meetdata_nl_password | Password for Kenter's API | passwd |
+| meetdata_nl_days_back | Kenter's meetdata.nl does not provide live data. Data is only available up until an X amount of days back. May vary per transformer. | 3 |
+| meetdata_nl_pvoutput_span | In my case meetdata.nl has datapoints for each 15mins. Setting this to a value of 2, will calculate averages over 2 datapoints spanning half an hour before posting to PVOutput. This way the datapoint interval between the grid usage data and fusionsolar PV production data matches, resulting in nice diagrams on PVOutput.org | 2 |
+| meetdata_nl_meter_sysname | Grid transformer name for InfluxDB transformer data | transformer01 |
+| meetdata_nl_meter_ean | EAN code for transformer on Kenter's www.meetdata.nl | XXX |
+| meetdata_nl_meter_id | MeterID as shown on Kenter's www.meetdata.nl | XXX |
+| meetdata_nl_meter2_enabled | Can be `True` or `False`, determines if a secondary transformer is configured for InfluxDB output | False |
+| meetdata_nl_meter2_sysname | Grid transformer name for InfluxDB transformer data | transformer02 |
+| meetdata_nl_meter2_ean | EAN code for transformer on Kenter's www.meetdata.nl | XXX |
+| meetdata_nl_meter2_id | MeterID as shown on Kenter's www.meetdata.nl | XXX |
 
 # Grafana dashboard example
 A grafana dashboard export is included in the Examples subfolder in the Git repository.
@@ -122,7 +122,9 @@ Result:
 # Changelog
 | Version | Description |
 | --- | --- |
-| 1.1.0 | Implemented pydantic in pvconf.py to support non-environment variable based settings using config.yaml, for those not using docker. 
+| 1.1.0 | **BREAKING CHANGE:** Environment variables for config changed names and structure. Please review the configuration section in README for updated variable names |
+| 1.1.0 | Refactored class names and .py file structure |
+| 1.1.0 | Implemented pydantic to replace pvconf.py, now supporting non-environment variable based settings using config.yaml |
 | 1.0.6 | Fixed a bug  parsing the environment cron settings, which are in string format, but were interpreted as int, causing an exception |
 | 1.0.6 | FusionSolar API will now immediately be queried on startup if debug mode is enabled (so no waiting for cron to trigger is required for testing) |
 | 1.0.5 | Added InfluxDB support for an optional secondary grid telemetry EAN configuration (pvoutput output is only supported on the primary EAN) |

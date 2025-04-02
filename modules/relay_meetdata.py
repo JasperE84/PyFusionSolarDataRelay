@@ -12,7 +12,7 @@ class RelayMeetdata:
         self.logger = logger
         self.logger.debug("RelayMeetdata class instantiated")
 
-        self.gridkenter = FetchMeetdata(conf, logger)
+        self.meetdata_api = FetchMeetdata(conf, logger)
         self.pvoutput = WritePvOutput(conf, logger)
         self.mqtt = WriteMqtt(conf, logger)
         self.influxdb = WriteInfluxDb(self.conf, self.logger)
@@ -22,6 +22,15 @@ class RelayMeetdata:
         self.start()
 
     def start(self):
+         
+        # Fetch meter list once
+        try:
+            self.meetdata_api.fetch_gridkenter_meters()
+        except Exception as e:
+            err_msg = f"Could not fetch meterlist from Meetdata API"
+            self.logger.warning(err_msg, e)
+
+
         self.logger.debug("RelayMeetdata waiting 5sec to initialize docker-compose containers")
         time.sleep(5)
         
@@ -30,12 +39,12 @@ class RelayMeetdata:
         while 1:
             try:
                 for daysback in range(self.conf.meetdata_nl_days_back, self.conf.meetdata_nl_days_back + 1 + daystobackfill):
-                    grid_measurement_data = self.gridkenter.fetch_gridkenter_data(self.conf.meetdata_nl_meter_sysname, self.conf.meetdata_nl_meter_ean, self.conf.meetdata_nl_meter_id, daysback)
+                    grid_measurement_data = self.meetdata_api.fetch_gridkenter_data(self.conf.meetdata_nl_meter_sysname, self.conf.meetdata_nl_meter_connection_id, self.conf.meetdata_nl_meter_metering_point_id, daysback)
                     self.write_gridkenter_to_influxdb(grid_measurement_data)
                     self.write_gridkenter_to_pvoutput(grid_measurement_data)
 
                     if self.conf.meetdata_nl_meter2_enabled:
-                        grid_measurement_data = self.gridkenter.fetch_gridkenter_data(self.conf.meetdata_nl_meter2_sysname, self.conf.meetdata_nl_meter2_ean, self.conf.meetdata_nl_meter2_id, daysback)
+                        grid_measurement_data = self.meetdata_api.fetch_gridkenter_data(self.conf.meetdata_nl_meter2_sysname, self.conf.meetdata_nl_meter2_connection_id, self.conf.meetdata_nl_meter2_metering_point_id, daysback)
                         self.write_gridkenter_to_influxdb(grid_measurement_data)
                         #No support for pvoutput on 2 EAN codes yet (needs summing of kenter data or pvoutput support for 2 distinct systems)
                         #self.write_gridkenter_to_pvoutput(grid_measurement_data)

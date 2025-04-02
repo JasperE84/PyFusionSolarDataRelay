@@ -65,7 +65,7 @@ services:
       - mqtt_auth=False
 
       - meetdata_nl_enabled=False
-      - meetdata_nl_username=my@username.com
+      - meetdata_nl_clientid=my@username.com
       - meetdata_nl_password=secretpassword
 
       - meetdata_nl_meter_sysname=transformer01

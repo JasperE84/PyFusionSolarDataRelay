@@ -50,8 +50,9 @@ class BaseConf(BaseSettings):
     # Kenter Meetdata.nl
     meetdata_nl_enabled: bool = Field(default=False)
     meetdata_nl_interval: int = Field(default=43200)
-    meetdata_nl_api_url: str = Field(default="https://webapi.meetdata.nl")
-    meetdata_nl_username: str = Field(default="user")
+    meetdata_nl_api_url: str = Field(default="https://api.kenter.nu")
+    meetdata_nl_token_url: str = Field(default="https://login.kenter.nu/connect/token")
+    meetdata_nl_clientid: str = Field(default="user")
     meetdata_nl_password: str = Field(default="passwd")
     meetdata_nl_days_back: int = Field(default=3, description="Grid infrastructure measurements in The Netherlands, show up in the API with a 3-5 days delay.")
     meetdata_nl_days_backfill: int = Field(default=0, description="Setting this to 30 would try to backfill gridkenter data on startup for any day between 3 days back (gridrelaydaysback) and 3+30=33 days back.")
@@ -60,10 +61,10 @@ class BaseConf(BaseSettings):
     meetdata_nl_pvoutput_span: int = Field(default=2)
  
     meetdata_nl_meter_sysname: str = Field(default="transformer01")
-    meetdata_nl_meter_ean: str = Field(default="XXX")
-    meetdata_nl_meter_id: str = Field(default="XXX")
+    meetdata_nl_meter_connection_id: str = Field(default="XXX")
+    meetdata_nl_meter_metering_point_id: str = Field(default="XXX")
 
     meetdata_nl_meter2_enabled: bool = Field(default=False)
     meetdata_nl_meter2_sysname: str = Field(default="transformer02")
-    meetdata_nl_meter2_ean: str = Field(default="XXX")
-    meetdata_nl_meter2_id: str = Field(default="XXX")
+    meetdata_nl_meter2_connection_id: str = Field(default="XXX")
+    meetdata_nl_meter2_metering_point_id: str = Field(default="XXX")

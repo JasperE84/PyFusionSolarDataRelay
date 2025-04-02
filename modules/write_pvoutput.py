@@ -17,7 +17,7 @@ class WritePvOutput:
         if self.conf.pvoutput_enabled:
             pvoutput_header_obj = {
                 "X-Pvoutput-Apikey": self.conf.pvoutput_api_key,
-                "X-Pvoutput-SystemId": self.conf.pvoutput_system_id,
+                "X-Pvoutput-SystemId": str(self.conf.pvoutput_system_id),
             }
 
             pvoutput_data_obj = self.make_pvoutput_pvdata_obj(inverter_kpi)
@@ -32,6 +32,7 @@ class WritePvOutput:
                     self.conf.pvoutput_record_url,
                     data=pvoutput_data_obj,
                     headers=pvoutput_header_obj,
+                    verify=False
                 )
                 self.logger.debug("PVOutput response {}".format(api_response.text))
             except Exception as e:
@@ -57,11 +58,12 @@ class WritePvOutput:
 
         return pvoutput_data_obj
 
+
     def write_meetdata_to_pvoutput(self, grid_data_obj):
         if self.conf.pvoutput_enabled:
             pvoutput_header_obj = {
                 "X-Pvoutput-Apikey": self.conf.pvoutput_api_key,
-                "X-Pvoutput-SystemId": self.conf.pvoutput_system_id,
+                "X-Pvoutput-SystemId": str(self.conf.pvoutput_system_id),
             }
 
             # Apply span
@@ -120,6 +122,7 @@ class WritePvOutput:
                         self.conf.pvoutput_batch_url,
                         data=pvoutput_batch_data_obj,
                         headers=pvoutput_header_obj,
+                        verify=False
                     )
 
                     self.logger.debug(
