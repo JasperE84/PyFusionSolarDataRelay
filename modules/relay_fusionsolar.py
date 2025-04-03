@@ -39,9 +39,7 @@ class RelayFusionSolar:
             self.write_pvdata_to_pvoutput(fusionsolar_json_data)
             self.publish_pvdata_to_mqtt(fusionsolar_json_data)
         except:
-            self.logger.exception(
-                "Uncaught exception in FusionSolar data processing loop."
-            )
+            self.logger.exception("Uncaught exception in FusionSolar data processing loop.")
 
         self.logger.debug("Waiting for next FusionSolar interval...")
 

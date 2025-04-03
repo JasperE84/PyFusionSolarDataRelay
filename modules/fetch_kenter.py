@@ -1,11 +1,10 @@
 import requests
-from requests.auth import HTTPBasicAuth
 from datetime import datetime, timedelta
 import json
 from modules.conf_models import BaseConf
 
 
-class FetchMeetdata:
+class FetchKenter:
     def __init__(self, conf: BaseConf, logger):
         """
         :param conf: Configuration object of type BaseConf
@@ -13,19 +12,19 @@ class FetchMeetdata:
         """
         self.conf = conf
         self.logger = logger
-        self.logger.debug("Meetdata class instantiated")
+        self.logger.debug("Kenter class instantiated")
         # Token is fetched on demand via _request_with_token_retry rather than at instantiation.
         self.jwt_token = ""
 
-    def update_meetdata_token(self):
+    def update_kenter_token(self):
         """
-        Updates self.jwt_token by making a request to the Meetdata token endpoint.
+        Updates self.jwt_token by making a request to the Kenter token endpoint.
         Raises an exception if the token cannot be retrieved.
         """
-        token_url = self.conf.meetdata_nl_token_url
+        token_url = self.conf.kenter_token_url
         form_data = {
-            "client_id": self.conf.meetdata_nl_clientid,
-            "client_secret": self.conf.meetdata_nl_password,
+            "client_id": self.conf.kenter_clientid,
+            "client_secret": self.conf.kenter_password,
             "grant_type": "client_credentials",
             "scope": "meetdata.read"
         }
@@ -38,10 +37,10 @@ class FetchMeetdata:
             token_response = response.json()
             access_token = token_response.get("access_token")
             if not access_token:
-                raise Exception("No access token returned from the meetdata token endpoint.")
+                raise Exception("No access token returned from the Kenter token endpoint.")
             self.jwt_token = access_token
         except Exception as e:
-            err_msg = f"Could not update meetdata JWT auth token: {str(e)}"
+            err_msg = f"Could not update Kenter JWT auth token: {str(e)}"
             self.logger.error(err_msg)
             raise Exception(err_msg)
 
@@ -70,8 +69,8 @@ class FetchMeetdata:
                 # If there's another error status, it will be caught below
                 break
             # If we got a 401 first time, refresh token and retry
-            self.logger.debug("Meetdata 401: JWT token expired or not set, refreshing token and retrying request.")
-            self.update_meetdata_token()
+            self.logger.debug("Kenter 401: JWT token expired or not set, refreshing token and retrying request.")
+            self.update_kenter_token()
             headers["Authorization"] = f"Bearer {self.jwt_token}"
 
         # Raise for non-success statuses (other than 200)
@@ -82,20 +81,20 @@ class FetchMeetdata:
 
     def fetch_gridkenter_meters(self):
         """
-        Fetch and log a list of meters from the Meetdata API.
+        Fetch and log a list of meters from the Kenter API.
         Raises an exception if the request or JSON parsing fails.
         """
-        self.logger.info("Requesting meter list from Meetdata API...")
-        url = f"{self.conf.meetdata_nl_api_url}/meetdata/v2/meters"
+        self.logger.info("Requesting meter list from Kenter API...")
+        url = f"{self.conf.kenter_api_url}/meetdata/v2/meters"
 
         try:
             response = self._request_with_token_retry(url, method="GET")
         except Exception as e:
-            raise Exception(f"Error fetching meters from Meetdata API: '{str(e)}'")
+            raise Exception(f"Error fetching meters from Kenter API: '{str(e)}'")
 
         # Parse and log the connections data
         connections_data = response.json()
-        self.logger.info("Current Meetdata connection list:")
+        self.logger.info("Current Kenter connection list:")
         for connection in connections_data:
             for meteringpoint in connection.get("meteringPoints", []):
                 self.logger.info(
@@ -112,7 +111,7 @@ class FetchMeetdata:
     def fetch_gridkenter_data(self, sysname, connection_id, metering_point_id, days_back):
         """
         Fetch daily measurement data for a specific system (sysname) from the
-        Meetdata API by connection ID and metering point ID, going a certain
+        Kenter API by connection ID and metering point ID, going a certain
         number of days back. The function identifies the channel with ID "16180",
         and returns structured data containing net consumption.
 
@@ -123,7 +122,7 @@ class FetchMeetdata:
         :return: Dictionary with structured meter data
         :raises Exception: If fetching fails or the JSON response is invalid
         """
-        self.logger.info(f"Requesting data for {sysname} from Meetdata API...")
+        self.logger.info(f"Requesting data for {sysname} from Kenter API...")
 
         # Prepare date
         req_time = datetime.now() - timedelta(days=days_back)
@@ -132,7 +131,7 @@ class FetchMeetdata:
         req_day = req_time.strftime("%d")
 
         url = (
-            f"{self.conf.meetdata_nl_api_url}/meetdata/v2/measurements/connections/"
+            f"{self.conf.kenter_api_url}/meetdata/v2/measurements/connections/"
             f"{connection_id}/metering-points/{metering_point_id}/days/"
             f"{req_year}/{req_month}/{req_day}"
         )
@@ -140,19 +139,19 @@ class FetchMeetdata:
         try:
             response = self._request_with_token_retry(url, method="GET")
         except Exception as e:
-            raise Exception(f"Error fetching data from Meetdata API: '{str(e)}'")
+            raise Exception(f"Error fetching data from Kenter API: '{str(e)}'")
 
         # Parse JSON
         try:
             response_json = response.json()
         except Exception as e:
-            raise Exception(f"Error while parsing JSON response from Meetdata API: '{str(e)}'")
+            raise Exception(f"Error while parsing JSON response from Kenter API: '{str(e)}'")
 
         # Find first channel that has channelId = '16180'
         channel = next((ch for ch in response_json if ch.get("channelId") == "16180"), None)
         if not channel:
             raise Exception(
-                "Meetdata API response does not contain channelId '16180'. "
+                "Kenter API response does not contain channelId '16180'. "
                 f"Data may not be ready yet. Response: {json.dumps(response_json)}"
             )
 
@@ -181,8 +180,8 @@ class FetchMeetdata:
 
                 return_dict["grid_net_consumption"].append({
                     "timestamp": measure["timestamp"],
-                    "interval_energy": measure["value"] * 1000,      # in Wh
-                    "interval_power_avg": calculated_power,          # in W
+                    "interval_energy_wh": measure["value"] * 1000,      # in Wh
+                    "interval_power_avg_w": calculated_power,          # in W
                 })
 
         return return_dict

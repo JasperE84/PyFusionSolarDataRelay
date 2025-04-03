@@ -142,7 +142,7 @@ class WriteInfluxDb:
         device_type = 'inverter'
 
         tags = {
-            "siteName": self.conf.fusionsolar_kiosk_site_name,
+            "siteName": self.conf.site_name,
             "stationName": inverter_data.stationName,
             "dataSource": inverter_data.dataSource,
             "deviceType": device_type,
@@ -151,8 +151,7 @@ class WriteInfluxDb:
 
         fields = {
             "realTimePower_W": inverter_data.realTimePowerW,
-            "currentPower_Wh": inverter_data.currentPowerW,
-            "cumulativeEnergy_W": inverter_data.cumulativeEnergyWh
+            "cumulativeEnergy_Wh": inverter_data.cumulativeEnergyWh
         }
 
         record = {
@@ -191,8 +190,8 @@ class WriteInfluxDb:
                 "measurement": grid_data_obj["sysname"],
                 "time": datetime.utcfromtimestamp(measurement["timestamp"]).strftime("%Y-%m-%dT%H:%M:%SZ"),
                 "fields": {
-                    "interval_energy": measurement["interval_energy"],
-                    "interval_power_avg": measurement["interval_power_avg"]
+                    "interval_energy_wh": measurement["interval_energy_wh"],
+                    "interval_power_avg_w": measurement["interval_power_avg_w"]
                 }
             })
 

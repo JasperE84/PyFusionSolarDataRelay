@@ -91,27 +91,6 @@ class FetchFusionSolarKiosk:
         else:
             self.lastCumulativeEnergy = cumulative_energy_wh
 
-        # Check for the "powerCurve" key (even though we don't store it in the Kpi class,
-        # we can still validate that it's present).
-        if "powerCurve" not in response_json_data:
-            raise Exception(
-                "Key 'powerCurve' is missing in the FusionSolar Kiosk API response data."
-            )
-
-        # Validate "currentPower" inside powerCurve, if needed for logging or other reasons.
-        if "currentPower" not in response_json_data["powerCurve"]:
-            raise Exception(
-                "Key 'currentPower' is missing under 'powerCurve' in the response."
-            )
-        else:
-            # Convert powerCurve currentPower from kW to W for consistent logging or usage.
-            try:
-                current_power_w = (
-                    float(response_json_data["powerCurve"]["currentPower"]) * 1000
-                )
-            except ValueError as e:
-                raise Exception(f"Failed to convert 'currentPower' to float: {e}")
-
         # Extract station information.
         try:
             station_name = response_json_data["stationOverview"]["stationName"]
@@ -124,7 +103,6 @@ class FetchFusionSolarKiosk:
         self.logger.debug(
             f"realKpi after transformations: "
             f"realTimePowerW={real_time_power_w}, "
-            f"currentPowerW={current_power_w}, "
             f"cumulativeEnergyWh={cumulative_energy_wh}, "
             f"monthEnergyWh={month_energy_wh}, "
             f"dailyEnergyWh={daily_energy_wh}, "
@@ -135,9 +113,8 @@ class FetchFusionSolarKiosk:
         inverter_kpi = FusionSolarInverterKpi(
             stationName=station_name,
             stationDn=station_dn,
-            dataSource="fusionsolar_kiosk",
+            dataSource="kiosk",
             realTimePowerW=real_time_power_w,
-            currentPowerW=current_power_w,
             cumulativeEnergyWh=cumulative_energy_wh,
             monthEnergyWh=month_energy_wh,
             dailyEnergyWh=daily_energy_wh,

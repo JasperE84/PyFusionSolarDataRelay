@@ -4,11 +4,11 @@ from pydantic_settings import BaseSettings
 
 class BaseConf(BaseSettings):
     debug_mode: bool = Field(default=True)
+    site_name: str = Field(default="site01")
 
     fusionsolar_kiosk_enabled: bool = Field(default=True)
     fusionsolar_kiosk_api_url: str = Field(default="https://region01eu5.fusionsolar.huawei.com/rest/pvms/web/kiosk/v1/station-kiosk-file?kk=")
     fusionsolar_kiosk_api_kkid: str = Field(default="GET_THIS_FROM_KIOSK_URL")
-    fusionsolar_kiosk_site_name: str = Field(default="site01")
 
      # The fusionsolar API only updates portal data each half hour, setting to lower value will produce weird PVOutput graph with horizontal bits in it.
     fusionsolar_kiosk_fetch_cron_hour: str = Field(default="*")
@@ -47,24 +47,24 @@ class BaseConf(BaseSettings):
     mqtt_password: str = Field(default="fusionsolar")
     mqtt_root_topic: str = Field(default="pyfusionsolar")
 
-    # Kenter Meetdata.nl
-    meetdata_nl_enabled: bool = Field(default=False)
-    meetdata_nl_interval: int = Field(default=43200)
-    meetdata_nl_api_url: str = Field(default="https://api.kenter.nu")
-    meetdata_nl_token_url: str = Field(default="https://login.kenter.nu/connect/token")
-    meetdata_nl_clientid: str = Field(default="user")
-    meetdata_nl_password: str = Field(default="passwd")
-    meetdata_nl_days_back: int = Field(default=3, description="Grid infrastructure measurements in The Netherlands, show up in the API with a 3-5 days delay.")
-    meetdata_nl_days_backfill: int = Field(default=0, description="Setting this to 30 would try to backfill gridkenter data on startup for any day between 3 days back (gridrelaydaysback) and 3+30=33 days back.")
+    # Kenter Kenter.nl
+    kenter_enabled: bool = Field(default=False)
+    kenter_interval: int = Field(default=43200)
+    kenter_api_url: str = Field(default="https://api.kenter.nu")
+    kenter_token_url: str = Field(default="https://login.kenter.nu/connect/token")
+    kenter_clientid: str = Field(default="user")
+    kenter_password: str = Field(default="passwd")
+    kenter_days_back: int = Field(default=3, description="Grid infrastructure measurements in The Netherlands, show up in the API with a 3-5 days delay.")
+    kenter_days_backfill: int = Field(default=0, description="Setting this to 30 would try to backfill gridkenter data on startup for any day between 3 days back (gridrelaydaysback) and 3+30=33 days back.")
 
-    # If fusionsolar updates every 30mins and meetdata.nl has values per 15min, set this to 2 so that intervals between two datasources match to avoid weird pvoutput graphs.
-    meetdata_nl_pvoutput_span: int = Field(default=2)
+    # If fusionsolar updates every 30mins and klantportaal.kenter.nu has values per 15min, set this to 2 so that intervals between two datasources match to avoid weird pvoutput graphs.
+    kenter_pvoutput_span: int = Field(default=2)
  
-    meetdata_nl_meter_sysname: str = Field(default="transformer01")
-    meetdata_nl_meter_connection_id: str = Field(default="XXX")
-    meetdata_nl_meter_metering_point_id: str = Field(default="XXX")
+    kenter_meter_sysname: str = Field(default="transformer01")
+    kenter_meter_connection_id: str = Field(default="XXX")
+    kenter_meter_metering_point_id: str = Field(default="XXX")
 
-    meetdata_nl_meter2_enabled: bool = Field(default=False)
-    meetdata_nl_meter2_sysname: str = Field(default="transformer02")
-    meetdata_nl_meter2_connection_id: str = Field(default="XXX")
-    meetdata_nl_meter2_metering_point_id: str = Field(default="XXX")
+    kenter_meter2_enabled: bool = Field(default=False)
+    kenter_meter2_sysname: str = Field(default="transformer02")
+    kenter_meter2_connection_id: str = Field(default="XXX")
+    kenter_meter2_metering_point_id: str = Field(default="XXX")

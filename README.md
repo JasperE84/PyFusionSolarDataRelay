@@ -1,7 +1,7 @@
 # Huawei FusionSolar Kiosk to InfluxDB, MQTT, PVOutput and Home Assistant relay
 This is a python project intended to fetch data from the **Huawei FusionSolar** public **kiosk** and relay it to **InfluxDB**/**VictoriaMetrics** and/or **PVOutput.org** and/or **MQTT** and/or **Home Assistant (hass)**. 
 
-Additionally this project can also fetch and relay grid usage data from the Dutch meetdata.nl API provider by **Kenter**.
+Additionally this project can also fetch and relay grid usage data from the Dutch klantportaal.kenter.nu API provider by **Kenter**.
 
 Credits go to the [Grott project](https://github.com/johanmeijer/grott). Many bits of code, structure and ideas are borrowed from there.
 
@@ -44,17 +44,17 @@ Once everything is configured, solar data will flow as follows:
 
 For those of you using Docker, a docker-compose.yml file is provided [here](./Examples/docker-compose.yml) in order to get these different components up and running quickly.
 
-# About Kenter's meetdata.nl
+# About Kenter's klantportaal.kenter.nu
 Kenter provides measurement services for **commercially rented** grid transformers. This project can fetch energy usage data from this API and post it to InfluxDB and PVOutput. MQTT is not supported for posting Kenter data, as Kenter's latest measurement data is usually 3 days old.
 
 # About Kenter's API and matching PVOutput intervals
-Fusion solar data fetching is planned by cron in order to exactly specify at what times the data should reload. This way, it is possible to synchronise the intervals of fusionsolar and gridkenter datapoints, which end up showing on PVOutput. That's relevant because if the gridkenter data class is fetched, meetdata.nl does not provide live measurements. Instead it provides historic measurements with a certain interval (15 minutes interval with the most recent data point 3 days old in my case). If this interval doesn't match the fusionsolar interval, then PVOutput will show distorted graphs because it won't have a datapoint for both PV production and grid usage for each interval. (Fusionsolar kiosk API only updates each half hour). See [this url](https://crontab.guru/) for help with finding the right cron config.
+Fusion solar data fetching is planned by cron in order to exactly specify at what times the data should reload. This way, it is possible to synchronise the intervals of fusionsolar and gridkenter datapoints, which end up showing on PVOutput. That's relevant because if the gridkenter data class is fetched, klantportaal.kenter.nu does not provide live measurements. Instead it provides historic measurements with a certain interval (15 minutes interval with the most recent data point 3 days old in my case). If this interval doesn't match the fusionsolar interval, then PVOutput will show distorted graphs because it won't have a datapoint for both PV production and grid usage for each interval. (Fusionsolar kiosk API only updates each half hour). See [this url](https://crontab.guru/) for help with finding the right cron config.
 
 # Configuration parameter documentation
 | Parameter | Description | Default |
 | --- | --- | --- |
 | debug_mode | Enables verbose logging | True |
-| fusionsolar_kiosk_site_name | Definition of 'measurement' name for InfluxDB | site01 |
+| site_name | Definition of 'measurement' name for InfluxDB | site01 |
 | fusionsolar_kiosk_enabled | Can be `True` or `False`, determines if fusionsolar kiosk API is enabled | True |
 | fusionsolar_kiosk_api_url | Link to the fusionsolar kiosk data backend | [Click url](https://region01eu5.fusionsolar.huawei.com/rest/pvms/web/kiosk/v1/station-kiosk-file?kk=) |
 | fusionsolar_kiosk_api_kkid | Unique kiosk ID, can be found by looking the kiosk URL and then taking the code after `kk=` | GET_THIS_FROM_KIOSK_URL |
@@ -64,7 +64,7 @@ Fusion solar data fetching is planned by cron in order to exactly specify at wha
 | pvoutput_api_key | API Key for PVOutput.org | yourapikey |
 | pvoutput_system_id | System ID for PVOutput.org, should be numeric | 12345 |
 | pvoutput_record_url | API url for PVOutput.org live output posting | [Click url](https://pvoutput.org/service/r2/addstatus.jsp)
-| pvoutput_batch_url | API url for PVOutput.org historic data batch posting (used for grid data from meetdata.nl) | [Click url](https://pvoutput.org/service/r2/addbatchstatus.jsp)
+| pvoutput_batch_url | API url for PVOutput.org historic data batch posting (used for grid data from klantportaal.kenter.nu) | [Click url](https://pvoutput.org/service/r2/addbatchstatus.jsp)
 | influxdb_enabled | Can be `True` or `False`, determines if InfluxDB processing is enabled | False |
 | influxdb_is_v2 | If `True` the InfluxDBv2 methods are used. If `False` InfluxDBv1 methods are used | True |
 | influxdb_host | Hostname of the influxdb server | localhost |
@@ -83,20 +83,20 @@ Fusion solar data fetching is planned by cron in order to exactly specify at wha
 | mqtt_username | MQTT Username | fusionsolar |
 | mqtt_password | MQTT Password | fusionsolar |
 | mqtt_root_topic | MQTT Topic for publishing | pyfusionsolar |
-| meetdata_nl_enabled | Can be `True` or `False`, determines if data is fetched from Kenter's meetdata.nl API | False |
-| meetdata_nl_interval | Interval in seconds to fetch data from meetdata.nl and post to PVOutput and InfluxDB | 43200 |
-| meetdata_nl_api_url | Kenter API url for fetching transformer grid measurements | [Click url](https://webapi.meetdata.nl) |
-| meetdata_nl_clientid | Username for Kenter's API | user |
-| meetdata_nl_password | Password for Kenter's API | passwd |
-| meetdata_nl_days_back | Kenter's meetdata.nl does not provide live data. Data is only available up until an X amount of days back. May vary per transformer. | 3 |
-| meetdata_nl_pvoutput_span | In my case meetdata.nl has datapoints for each 15mins. Setting this to a value of 2, will calculate averages over 2 datapoints spanning half an hour before posting to PVOutput. This way the datapoint interval between the grid usage data and fusionsolar PV production data matches, resulting in nice diagrams on PVOutput.org | 2 |
-| meetdata_nl_meter_sysname | Grid transformer name for InfluxDB transformer data | transformer01 |
-| meetdata_nl_meter_ean | EAN code for transformer on Kenter's www.meetdata.nl | XXX |
-| meetdata_nl_meter_id | MeterID as shown on Kenter's www.meetdata.nl | XXX |
-| meetdata_nl_meter2_enabled | Can be `True` or `False`, determines if a secondary transformer is configured for InfluxDB output | False |
-| meetdata_nl_meter2_sysname | Grid transformer name for InfluxDB transformer data | transformer02 |
-| meetdata_nl_meter2_ean | EAN code for transformer on Kenter's www.meetdata.nl | XXX |
-| meetdata_nl_meter2_id | MeterID as shown on Kenter's www.meetdata.nl | XXX |
+| kenter_enabled | Can be `True` or `False`, determines if data is fetched from Kenter's klantportaal.kenter.nu API | False |
+| kenter_interval | Interval in seconds to fetch data from klantportaal.kenter.nu and post to PVOutput and InfluxDB | 43200 |
+| kenter_api_url | Kenter API url for fetching transformer grid measurements | [Click url](https://webapi.klantportaal.kenter.nu) |
+| kenter_clientid | Username for Kenter's API | user |
+| kenter_password | Password for Kenter's API | passwd |
+| kenter_days_back | Kenter's klantportaal.kenter.nu does not provide live data. Data is only available up until an X amount of days back. May vary per transformer. | 3 |
+| kenter_pvoutput_span | In my case klantportaal.kenter.nu has datapoints for each 15mins. Setting this to a value of 2, will calculate averages over 2 datapoints spanning half an hour before posting to PVOutput. This way the datapoint interval between the grid usage data and fusionsolar PV production data matches, resulting in nice diagrams on PVOutput.org | 2 |
+| kenter_meter_sysname | Grid transformer name for InfluxDB transformer data | transformer01 |
+| kenter_meter_ean | EAN code for transformer on Kenter's www.klantportaal.kenter.nu | XXX |
+| kenter_meter_id | MeterID as shown on Kenter's www.klantportaal.kenter.nu | XXX |
+| kenter_meter2_enabled | Can be `True` or `False`, determines if a secondary transformer is configured for InfluxDB output | False |
+| kenter_meter2_sysname | Grid transformer name for InfluxDB transformer data | transformer02 |
+| kenter_meter2_ean | EAN code for transformer on Kenter's www.klantportaal.kenter.nu | XXX |
+| kenter_meter2_id | MeterID as shown on Kenter's www.klantportaal.kenter.nu | XXX |
 
 # Grafana dashboard example
 A grafana dashboard export is included in the Examples subfolder in the Git repository.
@@ -122,6 +122,8 @@ Result:
 # Changelog
 | Version | Description |
 | --- | --- |
+| 1.1.0 | Removed currentPower kiosk property (fetched from powercurve API obj) in favor of realTimePower |
+| 1.1.0 | Removed functionality to write utility grid consumption (non-pv) to PVOutput |
 | 1.1.0 | **BREAKING CHANGE:** Environment variables for config changed names and structure. Please review the configuration section in README for updated variable names |
 | 1.1.0 | Refactored class names and .py file structure |
 | 1.1.0 | Implemented pydantic to replace pvconf.py, now supporting non-environment variable based settings using config.yaml |
@@ -129,9 +131,9 @@ Result:
 | 1.0.6 | FusionSolar API will now immediately be queried on startup if debug mode is enabled (so no waiting for cron to trigger is required for testing) |
 | 1.0.5 | Added InfluxDB support for an optional secondary grid telemetry EAN configuration (pvoutput output is only supported on the primary EAN) |
 | 1.0.5 | Bugfix for InfluxDB v1 implementation and removed auto-database creation for VictoriaMetrics compatibility |
-| 1.0.3 | Grid transformer usage measurement polling from Kenter's meetdata.nl API has been implemented |
+| 1.0.3 | Grid transformer usage measurement polling from Kenter's klantportaal.kenter.nu API has been implemented |
 | 1.0.3 | Changed docker-compose.yml template not to use host networking mode |
-| 1.0.3 | main.py now uses separate threads for RelayFusionSolar and RelayMeetdata classes |
+| 1.0.3 | main.py now uses separate threads for RelayFusionSolar and RelayKenter classes |
 | 1.0.3 | Implemented apscheduler's cron implementation to be able to specify exact moments to fetch fusionsolar data |
 | 1.0.3 | Code and method name refactoring including PvConf type hints in classes where this class was injected as method parameter |
 

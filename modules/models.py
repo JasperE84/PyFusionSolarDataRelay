@@ -9,7 +9,6 @@ class FusionSolarInverterKpi:
         stationDn: str = "",
         dataSource: str = "",
         realTimePowerW: float = 0.0,
-        currentPowerW: float = 0.0,
         cumulativeEnergyWh: float = 0.0,
         monthEnergyWh: float = 0.0,
         dailyEnergyWh: float = 0.0,
@@ -19,7 +18,6 @@ class FusionSolarInverterKpi:
         self.stationDn = stationDn
         self.dataSource = dataSource
         self.realTimePowerW = realTimePowerW
-        self.currentPowerW = currentPowerW
         self.cumulativeEnergyWh = cumulativeEnergyWh
         self.monthEnergyWh = monthEnergyWh
         self.dailyEnergyWh = dailyEnergyWh
@@ -29,8 +27,6 @@ class FusionSolarInverterKpi:
     stationDn: str
     dataSource: str
     realTimePowerW: float
-    currentPowerW: float
-    currentPowerW: float
     cumulativeEnergyWh: float
     monthEnergyWh: float
     dailyEnergyWh: float

@@ -31,15 +31,14 @@ class WriteMqtt:
         # e.g. rootTopic / kiosk_site_name / sensors / inverters / stationDn
         mqtt_base_topic = (
             f"{self.conf.mqtt_root_topic}/"
-            f"{self.conf.fusionsolar_kiosk_site_name}/sensors/inverters/"
-            f"{station_dn_sanitized}/state"
+            f"{self.conf.site_name}/sensors/inverters/"
+            f"{inverter_data.dataSource}/{station_dn_sanitized}/state"
         )
 
         # Gather the data in a dict
         # Note that 'device' and 'time' are optional—include them if you want 
         # these published to MQTT as well.
         data_points = {
-            "currentPowerW": inverter_data.currentPowerW,
             "realTimePowerW": inverter_data.realTimePowerW,
             "cumulativeEnergyWh": inverter_data.cumulativeEnergyWh,
             "monthEnergyWh": inverter_data.monthEnergyWh,
@@ -59,7 +58,7 @@ class WriteMqtt:
                     retain=False,
                     hostname=self.conf.mqtt_host,
                     port=self.conf.mqtt_port,
-                    client_id=self.conf.fusionsolar_kiosk_site_name,
+                    client_id=self.conf.site_name,
                     keepalive=60,
                     auth=auth_obj,
                 )
@@ -82,7 +81,7 @@ class WriteMqtt:
         else:
             auth_obj = None
 
-        mqtt_root_topic = "{}/{}/sensors/inverters/{}-kiosk".format(self.conf.mqtt_root_topic, self.conf.fusionsolar_kiosk_site_name, re.sub(r'\W+', '-', inverter_data.stationDn))
+        mqtt_root_topic = "{}/{}/sensors/inverters/{}-kiosk".format(self.conf.mqtt_root_topic, self.conf.site_name, re.sub(r'\W+', '-', inverter_data.stationDn))
 
         try:
             self.logger.info("Publishing to MQTT. Data: {}".format(jsonmsg))
@@ -93,7 +92,7 @@ class WriteMqtt:
                 retain=False,
                 hostname=self.conf.mqtt_host,
                 port=self.conf.mqtt_port,
-                client_id=self.conf.fusionsolar_kiosk_site_name,
+                client_id=self.conf.site_name,
                 keepalive=60,
                 auth=auth_obj,
             )
@@ -109,7 +108,7 @@ class WriteMqtt:
 
     def make_json_pvdata_mqtt_obj(self, inverter_data: FusionSolarInverterKpi) -> dict:
         timestamp = datetime.now().replace(microsecond=0).isoformat()
-        device_name = self.conf.fusionsolar_kiosk_site_name
+        device_name = self.conf.site_name
 
         return {
             "device": device_name,
@@ -117,7 +116,6 @@ class WriteMqtt:
             "values": {
                 "stationName": inverter_data.stationName,
                 "stationDn": inverter_data.stationDn,
-                "currentPower": inverter_data.currentPowerW,
                 "realTimePower": inverter_data.realTimePowerW,
                 "cumulativeEnergy": inverter_data.cumulativeEnergyWh,
                 "monthEnergy": inverter_data.monthEnergy,

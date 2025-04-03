@@ -4,7 +4,7 @@ import time
 from threading import Thread
 from modules.conf import Conf
 from modules.relay_fusionsolar import RelayFusionSolar
-from modules.relay_meetdata import RelayMeetdata
+from modules.relay_kenter import RelayKenter
 
 # Logger
 logger = logging.getLogger()
@@ -31,8 +31,8 @@ try:
             fs_thread = Thread(target = RelayFusionSolar, args=[conf, logger])
             fs_thread.daemon = True
             fs_thread.start()
-        if conf.meetdata_nl_enabled:
-            gr_thread = Thread(target = RelayMeetdata, args=[conf, logger])
+        if conf.kenter_enabled:
+            gr_thread = Thread(target = RelayKenter, args=[conf, logger])
             gr_thread.daemon = True
             gr_thread.start()
     while True:

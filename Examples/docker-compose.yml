@@ -42,7 +42,7 @@ services:
       - mosquitto
     environment:
       - debug_mode=True
-      - fusionsolar_kiosk_site_name=site01
+      - site_name=site01
 
       - fusionsolar_kiosk_enabled=True
       - fusionsolar_kiosk_api_kkid=GET_THIS_STRING_FROM_YOUR_KIOSK_URL
@@ -64,18 +64,18 @@ services:
       - mqtt_host=mosquitto
       - mqtt_auth=False
 
-      - meetdata_nl_enabled=False
-      - meetdata_nl_clientid=my@username.com
-      - meetdata_nl_password=secretpassword
+      - kenter_enabled=False
+      - kenter_clientid=my@username.com
+      - kenter_password=secretpassword
 
-      - meetdata_nl_meter_sysname=transformer01
-      - meetdata_nl_meter_ean=000000000000000000
-      - meetdata_nl_meter_id=0000000000
+      - kenter_meter_sysname=transformer01
+      - kenter_meter_ean=000000000000000000
+      - kenter_meter_id=0000000000
 
-      - meetdata_nl_meter2_enabled=False
-      - meetdata_nl_meter2_sysname=transformer02
-      - meetdata_nl_meter2_ean=000000000000000000
-      - meetdata_nl_meter2_id=0000000000
+      - kenter_meter2_enabled=False
+      - kenter_meter2_sysname=transformer02
+      - kenter_meter2_ean=000000000000000000
+      - kenter_meter2_id=0000000000
 
 
 
