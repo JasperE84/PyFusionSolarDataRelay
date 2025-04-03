@@ -25,22 +25,22 @@ class WriteMqtt:
             auth_obj = None
 
         # Clean up stationDn for use in MQTT topic (remove non-alphanumeric)
-        station_dn_sanitized = re.sub(r'\W+', '-', inverter_data.stationDn)
+        station_dn_sanitized = re.sub(r'\W+', '-', inverter_data.station_dn)
 
         # Construct base topic path
         # e.g. rootTopic / kiosk_site_name / sensors / inverters / stationDn
         mqtt_base_topic = (
             f"{self.conf.mqtt_root_topic}/"
             f"{self.conf.site_name}/sensors/inverters/"
-            f"{inverter_data.dataSource}/{station_dn_sanitized}/state"
+            f"{inverter_data.data_source}/{station_dn_sanitized}/state"
         )
 
         # Gather the data in a dict
         # Note that 'device' and 'time' are optional—include them if you want 
         # these published to MQTT as well.
         data_points = {
-            "realTimePowerW": inverter_data.realTimePowerW,
-            "cumulativeEnergyWh": inverter_data.cumulativeEnergyWh,
+            "realTimePowerW": inverter_data.real_time_power_w,
+            "cumulativeEnergyWh": inverter_data.cumulative_energy_wh,
             "monthEnergyWh": inverter_data.monthEnergyWh,
             "dailyEnergyWh": inverter_data.dailyEnergyWh,
             "yearEnergyWh": inverter_data.yearEnergyWh

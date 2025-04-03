@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from modules.conf_models import BaseConf
 from modules.models import FusionSolarInverterKpi
 
@@ -137,21 +137,21 @@ class WriteInfluxDb:
         """
         Creates an InfluxDB JSON record from FusionSolarInverterKpi data.
         """
-        timestamp = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
+        timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
         measurement = 'energy'
         device_type = 'inverter'
 
         tags = {
             "siteName": self.conf.site_name,
-            "stationName": inverter_data.stationName,
-            "dataSource": inverter_data.dataSource,
+            "stationName": inverter_data.station_name,
+            "dataSource": inverter_data.data_source,
             "deviceType": device_type,
-            "stationDn": inverter_data.stationDn,
+            "stationDn": inverter_data.station_dn,
         }
 
         fields = {
-            "realTimePower_W": inverter_data.realTimePowerW,
-            "cumulativeEnergy_Wh": inverter_data.cumulativeEnergyWh
+            "realTimePower_W": inverter_data.real_time_power_w,
+            "cumulativeEnergy_Wh": inverter_data.cumulative_energy_wh
         }
 
         record = {

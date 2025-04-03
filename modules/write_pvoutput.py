@@ -48,8 +48,8 @@ class WritePvOutput:
         pvoutput_data_obj = {
             "d": pvodate,
             "t": pvotime,
-            "v1": inverter_kpi.cumulativeEnergyWh,
-            "v2": inverter_kpi.realTimePowerW,
+            "v1": inverter_kpi.cumulative_energy_wh,
+            "v2": inverter_kpi.real_time_power_w,
             "c1": 2,
         }
 

@@ -14,20 +14,20 @@ class FusionSolarInverterKpi:
         dailyEnergyWh: float = 0.0,
         yearEnergyWh: float = 0.0,
     ):
-        self.stationName = stationName
-        self.stationDn = stationDn
-        self.dataSource = dataSource
-        self.realTimePowerW = realTimePowerW
-        self.cumulativeEnergyWh = cumulativeEnergyWh
+        self.station_name = stationName
+        self.station_dn = stationDn
+        self.data_source = dataSource
+        self.real_time_power_w = realTimePowerW
+        self.cumulative_energy_wh = cumulativeEnergyWh
         self.monthEnergyWh = monthEnergyWh
         self.dailyEnergyWh = dailyEnergyWh
         self.yearEnergyWh = yearEnergyWh
 
-    stationName: str
-    stationDn: str
-    dataSource: str
-    realTimePowerW: float
-    cumulativeEnergyWh: float
+    station_name: str
+    station_dn: str
+    data_source: str
+    real_time_power_w: float
+    cumulative_energy_wh: float
     monthEnergyWh: float
     dailyEnergyWh: float
     yearEnergyWh: float
