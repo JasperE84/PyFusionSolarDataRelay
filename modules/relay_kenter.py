@@ -3,7 +3,7 @@ from modules.models import KenterTransformerKpi
 from modules.write_influxdb import WriteInfluxDb
 from modules.write_pvoutput import WritePvOutput
 from modules.conf_models import BaseConf
-from modules.fetch_kenter import FetchKenter
+from modules.fetch_kenter import FetchKenter, FetchKenterMissingChannel16180
 from modules.write_mqtt import WriteMqtt
 
 
@@ -50,10 +50,10 @@ class RelayKenter:
 
                         # Don't backfill after initial backfill
                         daystobackfill = 0
-                    except:
-                        self.logger.exception(
-                            "Uncaught exception in RelayKenter data processing loop."
-                        )
+                    except FetchKenterMissingChannel16180 as e:
+                        self.logger.error(e)
+                    except Exception as e:
+                        self.logger.exception("Uncaught exception in RelayKenter data processing loop.", e)
 
             self.logger.debug("Waiting for next interval...")
             time.sleep(self.conf.kenter_interval)

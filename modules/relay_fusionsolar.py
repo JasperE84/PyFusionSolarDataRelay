@@ -40,13 +40,13 @@ class RelayFusionSolar:
                     self.write_pvdata_to_influxdb(inverter_data)
                     self.write_pvdata_to_pvoutput(inverter_data, fs_conf)
                     self.publish_pvdata_to_mqtt(inverter_data)
-        except:
-            self.logger.exception("Uncaught exception in FusionSolar data processing loop.")
+        except Exception as e:
+            self.logger.exception("Uncaught exception in FusionSolar data processing loop.", e)
 
         self.logger.debug("Waiting for next FusionSolar interval...")
 
     def write_pvdata_to_pvoutput(self, inverter_data: FusionSolarInverterKpi, fs_conf: FusionSolarKioskMetric):
-        if self.conf.pvoutput_module_enabled and fs_conf.pvoutput_enabled:
+        if self.conf.pvoutput_module_enabled and fs_conf.output_pvoutput:
             try:
                 self.pvoutput.write_pvdata_to_pvoutput(inverter_data, fs_conf)
             except:

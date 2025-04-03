@@ -167,7 +167,7 @@ class WriteInfluxDb:
 
     def write_kenterdata_to_influxdb(self, transformer_data: KenterTransformerKpi):
         ifjson = self.make_kenterdata_influxdb_record(transformer_data)
-        self.logger.info("Writing GridData InfluxDB json records: {}".format(str(ifjson)))
+        self.logger.info(f"Writing GridData InfluxDB record for {transformer_data.descriptive_name}, connectionId: {transformer_data.connection_id}, meteringPointId: {transformer_data.metering_point_id}")
         try:
             if self.conf.influxdb_is_v2:
                 self.logger.debug("Writing GridData to InfluxDB v2...")

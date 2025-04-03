@@ -6,6 +6,10 @@ from modules.conf import Conf
 from modules.relay_fusionsolar import RelayFusionSolar
 from modules.relay_kenter import RelayKenter
 
+# Disable https cert verify disabled warning (Telerik Fiddler)
+import urllib3
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
 # Logger
 logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)

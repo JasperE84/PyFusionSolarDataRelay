@@ -151,9 +151,8 @@ class FetchKenter:
         # Find first channel that has channelId = '16180'
         channel = next((ch for ch in response_json if ch.get("channelId") == "16180"), None)
         if not channel:
-            raise Exception(
-                "Kenter API response does not contain channelId '16180'. "
-                f"Data may not be ready yet. Response: {json.dumps(response_json)}"
+            raise FetchKenterMissingChannel16180(
+                f"Kenter API response for {descriptive_name}, connectionId {connection_id} and meteringPointId {metering_point_id} does not contain channelId '16180'."
             )
 
         return_obj = KenterTransformerKpi(
@@ -186,3 +185,8 @@ class FetchKenter:
                 ))
 
         return return_obj
+    
+
+
+class FetchKenterMissingChannel16180(Exception):
+    pass
