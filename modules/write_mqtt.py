@@ -25,14 +25,14 @@ class WriteMqtt:
             auth_obj = None
 
         # Clean up stationDn for use in MQTT topic (remove non-alphanumeric)
-        station_dn_sanitized = re.sub(r'\W+', '-', inverter_data.station_dn)
+        station_dn_sanitized = re.sub(r'\W+', '-', inverter_data.station_dn).lower()
 
         # Construct base topic path
         # e.g. rootTopic / kiosk_site_descriptive_name / sensors / inverters / stationDn
         mqtt_base_topic = (
-            f"{self.conf.mqtt_root_topic}/"
-            f"{self.conf.site_descriptive_name}/sensors/inverters/"
-            f"{inverter_data.data_source}/{inverter_data.descriptive_name}/{station_dn_sanitized}/state"
+            f"{self.conf.mqtt_root_topic.lower()}/"
+            f"{self.conf.site_descriptive_name.lower()}/sensors/inverters/"
+            f"{inverter_data.data_source.lower()}/{inverter_data.descriptive_name.lower()}/{station_dn_sanitized}/state"
         )
 
         # Gather the data in a dict
