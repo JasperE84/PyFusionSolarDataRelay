@@ -28,22 +28,22 @@ class WriteMqtt:
         station_dn_sanitized = re.sub(r'\W+', '-', inverter_data.station_dn)
 
         # Construct base topic path
-        # e.g. rootTopic / kiosk_site_name / sensors / inverters / stationDn
+        # e.g. rootTopic / kiosk_site_descriptive_name / sensors / inverters / stationDn
         mqtt_base_topic = (
             f"{self.conf.mqtt_root_topic}/"
-            f"{self.conf.site_name}/sensors/inverters/"
-            f"{inverter_data.data_source}/{station_dn_sanitized}/state"
+            f"{self.conf.site_descriptive_name}/sensors/inverters/"
+            f"{inverter_data.data_source}/{inverter_data.descriptive_name}/{station_dn_sanitized}/state"
         )
 
         # Gather the data in a dict
         # Note that 'device' and 'time' are optional—include them if you want 
         # these published to MQTT as well.
         data_points = {
-            "realTimePowerW": inverter_data.real_time_power_w,
-            "cumulativeEnergyWh": inverter_data.cumulative_energy_wh,
-            "monthEnergyWh": inverter_data.monthEnergyWh,
-            "dailyEnergyWh": inverter_data.dailyEnergyWh,
-            "yearEnergyWh": inverter_data.yearEnergyWh
+            "real_time_power_w": inverter_data.real_time_power_w,
+            "month_energy_wh": inverter_data.month_energy_wh,
+            "day_energy_wh": inverter_data.day_energy_wh,
+            "year_energy_wh": inverter_data.year_energy_wh,
+            "lifetime_energy_wh": inverter_data.lifteime_energy_wh,
         }
 
         try:
@@ -58,7 +58,7 @@ class WriteMqtt:
                     retain=False,
                     hostname=self.conf.mqtt_host,
                     port=self.conf.mqtt_port,
-                    client_id=self.conf.site_name,
+                    client_id=self.conf.site_descriptive_name,
                     keepalive=60,
                     auth=auth_obj,
                 )
@@ -69,58 +69,3 @@ class WriteMqtt:
             self.logger.error(f"Connection refused while connecting to MQTT: '{str(e)}'")
         except Exception as e:
             raise Exception(f"Exception while publishing to MQTT: '{str(e)}'")
-
-
-
-"""
-    def publish_pvdata_to_mqtt(self, inverter_data: FusionSolarInverterKpi):
-        jsonmsg = json.dumps(self.make_json_pvdata_mqtt_obj(inverter_data))
-
-        if self.conf.mqtt_auth:
-            auth_obj = dict(username=self.conf.mqtt_username, password=self.conf.mqttpasswd)
-        else:
-            auth_obj = None
-
-        mqtt_root_topic = "{}/{}/sensors/inverters/{}-kiosk".format(self.conf.mqtt_root_topic, self.conf.site_name, re.sub(r'\W+', '-', inverter_data.stationDn))
-
-        try:
-            self.logger.info("Publishing to MQTT. Data: {}".format(jsonmsg))
-            publish.single(
-                mqtt_root_topic,
-                payload=jsonmsg,
-                qos=0,
-                retain=False,
-                hostname=self.conf.mqtt_host,
-                port=self.conf.mqtt_port,
-                client_id=self.conf.site_name,
-                keepalive=60,
-                auth=auth_obj,
-            )
-
-        except TimeoutError as e:
-            self.logger.error("Timeout while publishing to MQTT: '{}'".format(str(e)))
-        except ConnectionRefusedError as e:
-            self.logger.error(
-                "Connection refused while connecting to MQTT: '{}'".format(str(e))
-            )
-        except Exception as e:
-            raise Exception("Exception while publishing to MQTT: '{}'".format(str(e)))
-
-    def make_json_pvdata_mqtt_obj(self, inverter_data: FusionSolarInverterKpi) -> dict:
-        timestamp = datetime.now().replace(microsecond=0).isoformat()
-        device_name = self.conf.site_name
-
-        return {
-            "device": device_name,
-            "time": timestamp,
-            "values": {
-                "stationName": inverter_data.stationName,
-                "stationDn": inverter_data.stationDn,
-                "realTimePower": inverter_data.realTimePowerW,
-                "cumulativeEnergy": inverter_data.cumulativeEnergyWh,
-                "monthEnergy": inverter_data.monthEnergy,
-                "dailyEnergy": inverter_data.dailyEnergy,
-                "yearEnergy": inverter_data.yearEnergy
-            }
-        }
-"""

@@ -1,6 +1,6 @@
 import time
 from apscheduler.schedulers.blocking import BlockingScheduler
-from modules.conf_models import BaseConf
+from modules.conf_models import BaseConf, FusionSolarKioskMetric
 from modules.write_influxdb import WriteInfluxDb
 from modules.write_pvoutput import WritePvOutput
 from modules.fetch_fusionsolar_kiosk import FetchFusionSolarKiosk
@@ -34,28 +34,28 @@ class RelayFusionSolar:
 
     def process_fusionsolar_request(self):
         try:
-            for fsk_conf in self.conf.fusionsolar_kiosks:
-                if fsk_conf.enabled:
-                    fusionsolar_json_data = self.fs_kiosk.fetch_fusionsolar_status(fsk_conf)
-                    self.write_pvdata_to_influxdb(fusionsolar_json_data)
-                    self.write_pvdata_to_pvoutput(fusionsolar_json_data)
-                    self.publish_pvdata_to_mqtt(fusionsolar_json_data)
+            for fs_conf in self.conf.fusionsolar_kiosks:
+                if fs_conf.enabled:
+                    inverter_data = self.fs_kiosk.fetch_fusionsolar_status(fs_conf)
+                    self.write_pvdata_to_influxdb(inverter_data)
+                    self.write_pvdata_to_pvoutput(inverter_data, fs_conf)
+                    self.publish_pvdata_to_mqtt(inverter_data)
         except:
             self.logger.exception("Uncaught exception in FusionSolar data processing loop.")
 
         self.logger.debug("Waiting for next FusionSolar interval...")
 
-    def write_pvdata_to_pvoutput(self, fusionsolar_json_data: FusionSolarInverterKpi):
-        if self.conf.pvoutput_enabled:
+    def write_pvdata_to_pvoutput(self, inverter_data: FusionSolarInverterKpi, fs_conf: FusionSolarKioskMetric):
+        if self.conf.pvoutput_module_enabled and fs_conf.pvoutput_enabled:
             try:
-                self.pvoutput.write_pvdata_to_pvoutput(fusionsolar_json_data)
+                self.pvoutput.write_pvdata_to_pvoutput(inverter_data, fs_conf)
             except:
                 self.logger.exception("Error writing PV data to PVOutput.org")
 
-    def publish_pvdata_to_mqtt(self, fusionsolar_json_data: FusionSolarInverterKpi):
-        if self.conf.mqtt_enabled:
+    def publish_pvdata_to_mqtt(self, inverter_data: FusionSolarInverterKpi):
+        if self.conf.mqtt_module_enabled:
             try:
-                self.mqtt.publish_pvdata_to_mqtt(fusionsolar_json_data)
+                self.mqtt.publish_pvdata_to_mqtt(inverter_data)
             except:
                 self.logger.exception("Error publishing PV data to MQTT")
         else:
@@ -63,13 +63,13 @@ class RelayFusionSolar:
 
 
     def write_pvdata_to_influxdb(self, inverter_data: FusionSolarInverterKpi):
-        if self.conf.influxdb_enabled:
+        if self.conf.influxdb_module_enabled:
             if self.influxdb_initialized == False:
                 self.influxdb_initialized = self.influxdb.initialize()
 
             if self.influxdb_initialized:
-                self.influxdb.pvinflux_write_pvdata(inverter_data)
+                self.influxdb.write_pvdata_to_influxdb(inverter_data)
         else:
-            self.logger.debug("Writing PV data to InfluxDB skipped, InfluxDB client was not initialized yet.")
+            self.logger.debug("Writing PV data to InfluxDB skipped, InfluxDB module disabled.")
 
 

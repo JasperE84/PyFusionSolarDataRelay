@@ -42,45 +42,56 @@ services:
       - mosquitto
     environment:
       - debug_mode=True
-      - site_name=site01
+
+      # Keep descriptive_name lowercase and without spaces, will be used in MQTT topic and InfluxDB record tags
+      - site_descriptive_name=companyname_site_01
 
       # Enable fusionsolar kiosk module
-      - fusionsolar_kiosk_module_enabled=True
+      - fusionsolar_kiosk_processing_enabled=True
       - fusionsolar_kiosk_fetch_cron_minute=0,30 # Please note that the kiosk only seems to update each 30mins
 
       # Define fusionsolar kiosk configuration
       - fusionsolar_kiosks__0__api_kkid=GET_THIS_STRING_FROM_YOUR_KIOSK_URL
-      - fusionsolar_kiosks__0__pvoutput_system_id=12345
+      - fusionsolar_kiosks__0__output_pvoutput_system_id=12345
+      # Optionally disable specific outputs, (if output module is disabled, specific output will be disabled)
+      #- fusionsolar_kiosks__0__output_pvoutput=False
+      #- fusionsolar_kiosks__0__output_mqtt=False
+      #- fusionsolar_kiosks__0__output_influxdb=False
 
       # Define second fusionsolar kiosk configuration
       # - fusionsolar_kiosks__1__api_kkid=GET_THIS_STRING_FROM_YOUR_KIOSK_URL
       # - fusionsolar_kiosks__1__pvoutput_enabled=False
 
+      # Kenter module conf
+      - kenter_module_enabled=False
+      - kenter_clientid=my@username.com
+      - kenter_password=secretpassword
+      # Keep descriptive_name lowercase and without spaces, will be used in MQTT topic and InfluxDB record tags
+      - kenter_metering_points__0__descriptive_name=sommatie_ean
+      - kenter_metering_points__0__connection_id=123456789
+      - kenter_metering_points__0__metering_point_id=987654321
+      #- kenter_metering_points__0__output_mqtt=False
+      #- kenter_metering_points__0__output_influxdb=False
+      #- kenter_metering_points__0__output_pvoutput=False
+
+
+      # InfluxDB module conf
       - influxdb_module_enabled=True
-      - influxdb_is_v2=True
       - influxdb_host=influxdb
+      - influxdb_is_v2=True
       - influxdb_v2_protocol=http
       - influxdb_v2_org=acme
       - influxdb_v2_bucket=fusionsolar
       - influxdb_v2_token=GENERATE_TOKEN_IN_INFLUXDB_ADMIN_PANEL
 
+      # PVOutput module conf
       - pvoutput_module_enabled=True
-      - pvoutput_system_id=123456
       - pvoutput_api_key=GENERATE_THIS_AND_SYSTEMID_ON_PVOUTPUT.ORG
 
+      # MQTT module conf
       - mqtt_module_enabled=True
       - mqtt_host=mosquitto
       - mqtt_auth=False
-
-      - kenter_module_enabled=False
-      - kenter_clientid=my@username.com
-      - kenter_password=secretpassword
-
-      - sysname=transformer01
-      - kenter_meter_ean=000000000000000000
-      - kenter_meter_id=0000000000
-
-
 
     volumes:
       - /etc/localtime:/etc/localtime:ro

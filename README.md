@@ -54,19 +54,22 @@ Fusion solar data fetching is planned by cron in order to exactly specify at wha
 | Parameter | Description | Default |
 | --- | --- | --- |
 | debug_mode | Enables verbose logging | True |
-| site_name | Definition of 'measurement' name for InfluxDB | site01 |
-| fusionsolar_kiosk_processing_enabled | Can be `True` or `False`, determines if fusionsolar kiosk API functionality is enabled | True |
+| site_descriptive_name | Definition of 'measurement' name for InfluxDB | site01 |
+| fusionsolar_kiosk_module_enabled | Can be `True` or `False`, determines if fusionsolar kiosk API functionality is enabled | True |
 | fusionsolar_kiosk_fetch_cron_hour | Hour component for python cron job to fetch and process data from fusionsolar. | * |
 | fusionsolar_kiosk_fetch_cron_minute | Minute component for python cron job to fetch and process data from fusionsolar | 0,30 |
 | fusionsolar_kiosks__0__api_url | Link to the fusionsolar kiosk data backend, multiple records supported by adding an extra param with `__1__` etc. | [Click url](https://region01eu5.fusionsolar.huawei.com/rest/pvms/web/kiosk/v1/station-kiosk-file?kk=) |
 | fusionsolar_kiosks__0__api_kkid | Unique kiosk ID, can be found by looking the kiosk URL and then taking the code after `kk=` | GET_THIS_FROM_KIOSK_URL |
+| fusionsolar_kiosks__0__output_influxdb | Write to influxdb if influx module enabled. Can be `True` or `False` | True |
+| fusionsolar_kiosks__0__output_mqtt | Write to mqtt if mqtt module enabled. Can be `True` or `False` | True |
+| fusionsolar_kiosks__0__pvoutput_enabled | If pvoutput_module_enabled then write this pv metric to pvoutput | `True` |
+| fusionsolar_kiosks__0__output_pvoutput_system_id | System ID for PVOutput.org, should be numeric | 12345 |
 | fusionsolar_kiosks__0__enabled | To disable individual kiosk configurations. Can be `True` or `False` | True |
-| pvoutput_enabled | Can be `True` or `False`, determines if PVOutput.org API is enabled | False |
+| pvoutput_module_enabled | Can be `True` or `False`, determines if PVOutput.org API is enabled | False |
 | pvoutput_api_key | API Key for PVOutput.org | yourapikey |
-| pvoutput_system_id | System ID for PVOutput.org, should be numeric | 12345 |
 | pvoutput_record_url | API url for PVOutput.org live output posting | [Click url](https://pvoutput.org/service/r2/addstatus.jsp)
 | pvoutput_batch_url | API url for PVOutput.org historic data batch posting (used for grid data from klantportaal.kenter.nu) | [Click url](https://pvoutput.org/service/r2/addbatchstatus.jsp)
-| influxdb_enabled | Can be `True` or `False`, determines if InfluxDB processing is enabled | False |
+| influxdb_module_enabled | Can be `True` or `False`, determines if InfluxDB processing is enabled | False |
 | influxdb_is_v2 | If `True` the InfluxDBv2 methods are used. If `False` InfluxDBv1 methods are used | True |
 | influxdb_host | Hostname of the influxdb server | localhost |
 | influxdb_port | Port of influxdb server | 8086 |
@@ -77,27 +80,25 @@ Fusion solar data fetching is planned by cron in order to exactly specify at wha
 | influxdb_v2_org | Organization for InfluxDBv2, only required if influx2=True | acme |
 | influxdb_v2_bucket | Bucket for InfluxDBv2, only required if influx2=True | fusionsolar |
 | influxdb_v2_token | Token for InfluxDBv2, only required if influx2=True | XXXXXXX |
-| mqtt_enabled | Can be `True` or `False`, determines if MQTT publishing is enabled | False |
+| mqtt_module_enabled | Can be `True` or `False`, determines if MQTT publishing is enabled | False |
 | mqtt_host | Hostname of MQTT server | localhost |
 | mqtt_port | Port of MQTT server | 1883 |
 | mqtt_auth | Can be `True` or `False`, determines if MQTT authentication is enabled | False |
 | mqtt_username | MQTT Username | fusionsolar |
 | mqtt_password | MQTT Password | fusionsolar |
 | mqtt_root_topic | MQTT Topic for publishing | pyfusionsolar |
-| kenter_enabled | Can be `True` or `False`, determines if data is fetched from Kenter's klantportaal.kenter.nu API | False |
-| kenter_interval | Interval in seconds to fetch data from klantportaal.kenter.nu and post to PVOutput and InfluxDB | 43200 |
+| kenter_module_enabled | Can be `True` or `False`, determines if data is fetched from Kenter's klantportaal.kenter.nu API | False |
 | kenter_api_url | Kenter API url for fetching transformer grid measurements | [Click url](https://webapi.klantportaal.kenter.nu) |
 | kenter_clientid | Username for Kenter's API | user |
 | kenter_password | Password for Kenter's API | passwd |
+| kenter_interval | Interval in seconds to fetch data from klantportaal.kenter.nu and post to PVOutput and InfluxDB | 43200 |
 | kenter_days_back | Kenter's klantportaal.kenter.nu does not provide live data. Data is only available up until an X amount of days back. May vary per transformer. | 3 |
-| kenter_pvoutput_span | In my case klantportaal.kenter.nu has datapoints for each 15mins. Setting this to a value of 2, will calculate averages over 2 datapoints spanning half an hour before posting to PVOutput. This way the datapoint interval between the grid usage data and fusionsolar PV production data matches, resulting in nice diagrams on PVOutput.org | 2 |
-| kenter_meter_sysname | Grid transformer name for InfluxDB transformer data | transformer01 |
-| kenter_meter_ean | EAN code for transformer on Kenter's www.klantportaal.kenter.nu | XXX |
-| kenter_meter_id | MeterID as shown on Kenter's www.klantportaal.kenter.nu | XXX |
-| kenter_meter2_enabled | Can be `True` or `False`, determines if a secondary transformer is configured for InfluxDB output | False |
-| kenter_meter2_sysname | Grid transformer name for InfluxDB transformer data | transformer02 |
-| kenter_meter2_ean | EAN code for transformer on Kenter's www.klantportaal.kenter.nu | XXX |
-| kenter_meter2_id | MeterID as shown on Kenter's www.klantportaal.kenter.nu | XXX |
+| kenter_days_backfill | How many additional days before days_back to process on startup  | 0 |
+| kenter_metering_points__0__descriptive_name | Grid transformer name for InfluxDB transformer data | transformer01 |
+| kenter_metering_points__0__connection_id | ConnectionId as shown in meter list on startup stdout (EAN code) | XXX |
+| kenter_metering_points__0__metering_point_id | MeteringPointId as shown in meter list on startup stdout | XXX |
+| kenter_metering_points__0__output_influxdb | Write to influxdb if influx module enabled. Can be `True` or `False` | True |
+| kenter_metering_points__0__output_mqtt | Write to mqtt if mqtt module enabled. Can be `True` or `False` | True |
 
 # Grafana dashboard example
 A grafana dashboard export is included in the Examples subfolder in the Git repository.

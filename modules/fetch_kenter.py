@@ -2,6 +2,7 @@ import requests
 from datetime import datetime, timedelta
 import json
 from modules.conf_models import BaseConf
+from modules.models import KenterTransformerKpi, KenterTransformerMeasurement
 
 
 class FetchKenter:
@@ -108,21 +109,21 @@ class FetchKenter:
                     )
                 )
 
-    def fetch_gridkenter_data(self, sysname, connection_id, metering_point_id, days_back):
+    def fetch_gridkenter_data(self, descriptive_name, connection_id, metering_point_id, days_back) -> KenterTransformerKpi:
         """
-        Fetch daily measurement data for a specific system (sysname) from the
+        Fetch daily measurement data for a specific system (descriptive_name) from the
         Kenter API by connection ID and metering point ID, going a certain
         number of days back. The function identifies the channel with ID "16180",
         and returns structured data containing net consumption.
 
-        :param sysname: Arbitrary system name/identifier
+        :param descriptive_name: Arbitrary system name/identifier
         :param connection_id: Connection ID to query
         :param metering_point_id: Metering point ID to query
         :param days_back: How many days back to retrieve data
         :return: Dictionary with structured meter data
         :raises Exception: If fetching fails or the JSON response is invalid
         """
-        self.logger.info(f"Requesting data for {sysname} from Kenter API...")
+        self.logger.info(f"Requesting data for {descriptive_name} from Kenter API...")
 
         # Prepare date
         req_time = datetime.now() - timedelta(days=days_back)
@@ -155,12 +156,12 @@ class FetchKenter:
                 f"Data may not be ready yet. Response: {json.dumps(response_json)}"
             )
 
-        return_dict = {
-            "sysname": sysname,
-            "ean": connection_id,
-            "meter_id": metering_point_id,
-            "grid_net_consumption": [],
-        }
+        return_obj = KenterTransformerKpi(
+            descriptive_name=descriptive_name,
+            connection_id=connection_id,
+            metering_point_id=metering_point_id,
+            measurements=[]
+        )
 
         prev_ts = None
         for measure in channel.get("Measurements", []):
@@ -178,10 +179,10 @@ class FetchKenter:
                 # Calculate power load [kW] from energy [kWh], then convert to W
                 calculated_power = round(measure["value"] * 3600 / seconds_from_prev_ts, 3) * 1000
 
-                return_dict["grid_net_consumption"].append({
-                    "timestamp": measure["timestamp"],
-                    "interval_energy_wh": measure["value"] * 1000,      # in Wh
-                    "interval_power_avg_w": calculated_power,          # in W
-                })
+                return_obj.measurements.append(KenterTransformerMeasurement(
+                    timestamp = measure["timestamp"],
+                    interval_energy_wh = measure["value"] * 1000,     # in Wh
+                    interval_power_avg_w = calculated_power,          # in W
+                ))
 
-        return return_dict
+        return return_obj

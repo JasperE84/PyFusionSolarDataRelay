@@ -1,33 +1,71 @@
-class FusionSolarInverterKpi:
-    """
-    Holds the KPI values for a FusionSolar inverter fetched from the kiosk's API.
-    """
+from typing import List
 
+
+class KenterTransformerMeasurement:
     def __init__(
         self,
-        stationName: str = "",
-        stationDn: str = "",
-        dataSource: str = "",
-        realTimePowerW: float = 0.0,
-        cumulativeEnergyWh: float = 0.0,
-        monthEnergyWh: float = 0.0,
-        dailyEnergyWh: float = 0.0,
-        yearEnergyWh: float = 0.0,
+        timestamp: int = 0,
+        interval_energy_wh: float = 0.0,
+        interval_power_avg_w: float = 0.0,
     ):
-        self.station_name = stationName
-        self.station_dn = stationDn
-        self.data_source = dataSource
-        self.real_time_power_w = realTimePowerW
-        self.cumulative_energy_wh = cumulativeEnergyWh
-        self.monthEnergyWh = monthEnergyWh
-        self.dailyEnergyWh = dailyEnergyWh
-        self.yearEnergyWh = yearEnergyWh
+        self.timestamp = timestamp
+        self.interval_energy_wh = interval_energy_wh
+        self.interval_power_avg_w = interval_power_avg_w
 
+    timestamp: int
+    interval_energy_wh: float
+    interval_power_avg_w: float  
+
+
+class KenterTransformerKpi:
+    def __init__(
+        self,
+        descriptive_name: str = "",
+        connection_id: str = "",
+        metering_point_id: str = "",
+        measurements: List[KenterTransformerMeasurement] = []
+    ):
+        self.descriptive_name = descriptive_name
+        self.connection_id = connection_id
+        self.metering_point_id = metering_point_id
+        self.measurements = measurements
+
+    descriptive_name: str
+    connection_id: str
+    metering_point_id: str
+    measurements: List[KenterTransformerMeasurement]
+
+
+class FusionSolarInverterKpi:
+    def __init__(
+        self,
+        descriptive_name: str = "",
+        station_name: str = "",
+        station_dn: str = "",
+        data_source: str = "",
+        real_time_power_w: float = 0.0,
+        cumulative_energy_wh: float = 0.0,
+        month_energy_wh: float = 0.0,
+        day_energy_wh: float = 0.0,
+        year_energy_wh: float = 0.0,
+    ):
+        self.descriptive_name = descriptive_name
+        self.station_name = station_name
+        self.station_dn = station_dn
+        self.data_source = data_source
+        self.real_time_power_w = real_time_power_w
+        self.lifteime_energy_wh = cumulative_energy_wh
+        self.month_energy_wh = month_energy_wh
+        self.day_energy_wh = day_energy_wh
+        self.year_energy_wh = year_energy_wh
+
+    descriptive_name: str
     station_name: str
     station_dn: str
     data_source: str
     real_time_power_w: float
-    cumulative_energy_wh: float
-    monthEnergyWh: float
-    dailyEnergyWh: float
-    yearEnergyWh: float
+    lifteime_energy_wh: float
+    month_energy_wh: float
+    day_energy_wh: float
+    year_energy_wh: float
+

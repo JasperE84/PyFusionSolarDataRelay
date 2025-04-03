@@ -1,7 +1,7 @@
 import requests
 import json
 import html
-from modules.conf_models import BaseConf, FusionSolarKioskConf
+from modules.conf_models import BaseConf, FusionSolarKioskMetric
 from modules.models import *
 
 
@@ -12,13 +12,13 @@ class FetchFusionSolarKiosk:
         self.lastCumulativeEnergy = 0
         self.logger.debug("FetchFusionSolarKiosk class instantiated")
 
-    def fetch_fusionsolar_status(self, fsk_conf: FusionSolarKioskConf) -> FusionSolarInverterKpi:
+    def fetch_fusionsolar_status(self, fs_conf: FusionSolarKioskMetric) -> FusionSolarInverterKpi:
         self.logger.info("Requesting data from FetchFusionSolarKiosk API...")
 
         # Fetch the data.
         try:
             response = requests.get(
-                f"{fsk_conf.api_url}{fsk_conf.api_kkid}",
+                f"{fs_conf.api_url}{fs_conf.api_kkid}",
                 verify=False,
             )
         except Exception as e:
@@ -101,7 +101,7 @@ class FetchFusionSolarKiosk:
             )
 
         self.logger.debug(
-            f"realKpi after transformations: "
+            f"FusionSolarKiosk metrics after transformations for {fs_conf.descriptive_name} / {station_name} / {station_dn}: "
             f"realTimePowerW={real_time_power_w}, "
             f"cumulativeEnergyWh={cumulative_energy_wh}, "
             f"monthEnergyWh={month_energy_wh}, "
@@ -111,14 +111,15 @@ class FetchFusionSolarKiosk:
 
         # Populate and return the inverter kpi object without altering the original response dictionary.
         inverter_kpi = FusionSolarInverterKpi(
-            stationName=station_name,
-            stationDn=station_dn,
-            dataSource="kiosk",
-            realTimePowerW=real_time_power_w,
-            cumulativeEnergyWh=cumulative_energy_wh,
-            monthEnergyWh=month_energy_wh,
-            dailyEnergyWh=daily_energy_wh,
-            yearEnergyWh=year_energy,
+            descriptive_name=fs_conf.descriptive_name,
+            station_name=station_name,
+            station_dn=station_dn,
+            data_source="kiosk",
+            real_time_power_w=real_time_power_w,
+            cumulative_energy_wh=cumulative_energy_wh,
+            month_energy_wh=month_energy_wh,
+            day_energy_wh=daily_energy_wh,
+            year_energy_wh=year_energy,
         )
 
         return inverter_kpi
