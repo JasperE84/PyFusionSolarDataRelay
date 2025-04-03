@@ -1,7 +1,7 @@
 import requests
 import json
 import html
-from modules.conf_models import BaseConf
+from modules.conf_models import BaseConf, FusionSolarKioskConf
 from modules.models import *
 
 
@@ -12,13 +12,13 @@ class FetchFusionSolarKiosk:
         self.lastCumulativeEnergy = 0
         self.logger.debug("FetchFusionSolarKiosk class instantiated")
 
-    def fetch_fusionsolar_status(self) -> FusionSolarInverterKpi:
+    def fetch_fusionsolar_status(self, fsk_conf: FusionSolarKioskConf) -> FusionSolarInverterKpi:
         self.logger.info("Requesting data from FetchFusionSolarKiosk API...")
 
         # Fetch the data.
         try:
             response = requests.get(
-                f"{self.conf.fusionsolar_kiosk_api_url}{self.conf.fusionsolar_kiosk_api_kkid}",
+                f"{fsk_conf.api_url}{fsk_conf.api_kkid}",
                 verify=False,
             )
         except Exception as e:

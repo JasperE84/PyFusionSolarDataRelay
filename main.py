@@ -27,7 +27,7 @@ else:
 # Start RelayFusionSolar and KenterRelay
 try:
     if __name__ == '__main__':
-        if conf.fusionsolar_kiosk_enabled:
+        if conf.fusionsolar_kiosk_processing_enabled:
             fs_thread = Thread(target = RelayFusionSolar, args=[conf, logger])
             fs_thread.daemon = True
             fs_thread.start()

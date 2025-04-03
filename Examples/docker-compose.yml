@@ -44,8 +44,8 @@ services:
       - debug_mode=True
       - site_name=site01
 
-      - fusionsolar_kiosk_enabled=True
-      - fusionsolar_kiosk_api_kkid=GET_THIS_STRING_FROM_YOUR_KIOSK_URL
+      - fusionsolar_kiosk_processing_enabled=True
+      - fusionsolar_kiosks__0__api_kkid=GET_THIS_STRING_FROM_YOUR_KIOSK_URL
       - fusionsolar_kiosk_fetch_cron_minute=0,30 # Please note that the kiosk only seems to update each 30mins
       
       - influxdb_enabled=True

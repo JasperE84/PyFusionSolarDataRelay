@@ -34,10 +34,12 @@ class RelayFusionSolar:
 
     def process_fusionsolar_request(self):
         try:
-            fusionsolar_json_data = self.fs_kiosk.fetch_fusionsolar_status()
-            self.write_pvdata_to_influxdb(fusionsolar_json_data)
-            self.write_pvdata_to_pvoutput(fusionsolar_json_data)
-            self.publish_pvdata_to_mqtt(fusionsolar_json_data)
+            for fsk_conf in self.conf.fusionsolar_kiosks:
+                if fsk_conf.enabled:
+                    fusionsolar_json_data = self.fs_kiosk.fetch_fusionsolar_status(fsk_conf)
+                    self.write_pvdata_to_influxdb(fusionsolar_json_data)
+                    self.write_pvdata_to_pvoutput(fusionsolar_json_data)
+                    self.publish_pvdata_to_mqtt(fusionsolar_json_data)
         except:
             self.logger.exception("Uncaught exception in FusionSolar data processing loop.")
 

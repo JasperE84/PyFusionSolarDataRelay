@@ -1,18 +1,63 @@
-from typing import List, Literal
-from pydantic import BaseModel, Field, field_validator
-from pydantic_settings import BaseSettings
+import json
+import os
+from typing import Any, List
+from pydantic import Field 
+from pydantic.fields import FieldInfo
+from pydantic_settings import (
+    BaseSettings,
+    EnvSettingsSource,
+    PydanticBaseSettingsSource,
+    SettingsConfigDict,
+)
+
+class PydanticCustomParser(EnvSettingsSource):
+    def prepare_field_value(self, field_name: str, field: FieldInfo, value: Any, value_is_complex: bool) -> Any:
+        if field_name == 'fusionsolar_kiosks':
+            prefix = "FUSIONSOLAR_KIOSKS__"
+            kiosks_map = {}
+            for key, val in os.environ.items():
+                if key.startswith(prefix):
+                    # Example: FUSIONSOLAR_KIOSKS__0__FUSIONSOLAR_KIOSK_API_URL
+                    # Split out the index and field name
+                    _, idx_str, field_found_name = key.split("__", 2)
+                    try:
+                        idx = int(idx_str)
+                    except ValueError:
+                        # If the middle portion is not an integer, ignore
+                        continue
+                    if idx not in kiosks_map:
+                        kiosks_map[idx] = {}
+                    # Put the raw string into the kiosk map under the correct field
+                    kiosks_map[idx][field_found_name.lower()] = val
+
+            # Sort keys numerically and build a list
+            kiosks_list = []
+            for idx in sorted(kiosks_map.keys()):
+                kiosks_list.append(kiosks_map[idx])
+
+            value = json.dumps(kiosks_list)
+
+        ret = super(PydanticCustomParser, self).prepare_field_value(field_name, field, value, value_is_complex)
+        return ret
+
+class FusionSolarKioskConf(BaseSettings):
+    enabled: bool = Field(default=True)
+    api_url: str = Field(default="https://region01eu5.fusionsolar.huawei.com/rest/pvms/web/kiosk/v1/station-kiosk-file?kk=")
+    api_kkid: str = Field(default="GET_THIS_FROM_KIOSK_URL")
 
 class BaseConf(BaseSettings):
+    model_config = SettingsConfigDict(
+        env_nested_delimiter='__'
+    )
+
     debug_mode: bool = Field(default=True)
     site_name: str = Field(default="site01")
 
-    fusionsolar_kiosk_enabled: bool = Field(default=True)
-    fusionsolar_kiosk_api_url: str = Field(default="https://region01eu5.fusionsolar.huawei.com/rest/pvms/web/kiosk/v1/station-kiosk-file?kk=")
-    fusionsolar_kiosk_api_kkid: str = Field(default="GET_THIS_FROM_KIOSK_URL")
-
-     # The fusionsolar API only updates portal data each half hour, setting to lower value will produce weird PVOutput graph with horizontal bits in it.
+    # FusionSolar
+    fusionsolar_kiosk_processing_enabled: bool = Field(default=True)
+    fusionsolar_kiosks : List[FusionSolarKioskConf] = Field(default=[])
     fusionsolar_kiosk_fetch_cron_hour: str = Field(default="*")
-    fusionsolar_kiosk_fetch_cron_minute: str = Field(default="0,30")
+    fusionsolar_kiosk_fetch_cron_minute: str = Field(default="0,30", description="The fusionsolar API only updates portal data each half hour, setting to lower value will produce weird PVOutput graph with horizontal bits in it.")
 
     # InfluxDB settings
     influxdb_enabled: bool = Field(default=False)
@@ -68,3 +113,14 @@ class BaseConf(BaseSettings):
     kenter_meter2_sysname: str = Field(default="transformer02")
     kenter_meter2_connection_id: str = Field(default="XXX")
     kenter_meter2_metering_point_id: str = Field(default="XXX")
+
+    @classmethod
+    def settings_customise_sources(
+        cls,
+        settings_cls: type[BaseSettings],
+        init_settings: PydanticBaseSettingsSource,
+        env_settings: PydanticBaseSettingsSource,
+        dotenv_settings: PydanticBaseSettingsSource,
+        file_secret_settings: PydanticBaseSettingsSource,
+    ) -> tuple[PydanticBaseSettingsSource, ...]:
+        return (PydanticCustomParser(settings_cls),)

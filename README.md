@@ -55,11 +55,12 @@ Fusion solar data fetching is planned by cron in order to exactly specify at wha
 | --- | --- | --- |
 | debug_mode | Enables verbose logging | True |
 | site_name | Definition of 'measurement' name for InfluxDB | site01 |
-| fusionsolar_kiosk_enabled | Can be `True` or `False`, determines if fusionsolar kiosk API is enabled | True |
-| fusionsolar_kiosk_api_url | Link to the fusionsolar kiosk data backend | [Click url](https://region01eu5.fusionsolar.huawei.com/rest/pvms/web/kiosk/v1/station-kiosk-file?kk=) |
-| fusionsolar_kiosk_api_kkid | Unique kiosk ID, can be found by looking the kiosk URL and then taking the code after `kk=` | GET_THIS_FROM_KIOSK_URL |
+| fusionsolar_kiosk_processing_enabled | Can be `True` or `False`, determines if fusionsolar kiosk API functionality is enabled | True |
 | fusionsolar_kiosk_fetch_cron_hour | Hour component for python cron job to fetch and process data from fusionsolar. | * |
 | fusionsolar_kiosk_fetch_cron_minute | Minute component for python cron job to fetch and process data from fusionsolar | 0,30 |
+| fusionsolar_kiosks__0__api_url | Link to the fusionsolar kiosk data backend, multiple records supported by adding an extra param with `__1__` etc. | [Click url](https://region01eu5.fusionsolar.huawei.com/rest/pvms/web/kiosk/v1/station-kiosk-file?kk=) |
+| fusionsolar_kiosks__0__api_kkid | Unique kiosk ID, can be found by looking the kiosk URL and then taking the code after `kk=` | GET_THIS_FROM_KIOSK_URL |
+| fusionsolar_kiosks__0__enabled | To disable individual kiosk configurations. Can be `True` or `False` | True |
 | pvoutput_enabled | Can be `True` or `False`, determines if PVOutput.org API is enabled | False |
 | pvoutput_api_key | API Key for PVOutput.org | yourapikey |
 | pvoutput_system_id | System ID for PVOutput.org, should be numeric | 12345 |
