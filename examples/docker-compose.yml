@@ -44,11 +44,19 @@ services:
       - debug_mode=True
       - site_name=site01
 
-      - fusionsolar_kiosk_processing_enabled=True
-      - fusionsolar_kiosks__0__api_kkid=GET_THIS_STRING_FROM_YOUR_KIOSK_URL
+      # Enable fusionsolar kiosk module
+      - fusionsolar_kiosk_module_enabled=True
       - fusionsolar_kiosk_fetch_cron_minute=0,30 # Please note that the kiosk only seems to update each 30mins
-      
-      - influxdb_enabled=True
+
+      # Define fusionsolar kiosk configuration
+      - fusionsolar_kiosks__0__api_kkid=GET_THIS_STRING_FROM_YOUR_KIOSK_URL
+      - fusionsolar_kiosks__0__pvoutput_system_id=12345
+
+      # Define second fusionsolar kiosk configuration
+      # - fusionsolar_kiosks__1__api_kkid=GET_THIS_STRING_FROM_YOUR_KIOSK_URL
+      # - fusionsolar_kiosks__1__pvoutput_enabled=False
+
+      - influxdb_module_enabled=True
       - influxdb_is_v2=True
       - influxdb_host=influxdb
       - influxdb_v2_protocol=http
@@ -56,26 +64,21 @@ services:
       - influxdb_v2_bucket=fusionsolar
       - influxdb_v2_token=GENERATE_TOKEN_IN_INFLUXDB_ADMIN_PANEL
 
-      - pvoutput_enabled=True
+      - pvoutput_module_enabled=True
       - pvoutput_system_id=123456
       - pvoutput_api_key=GENERATE_THIS_AND_SYSTEMID_ON_PVOUTPUT.ORG
 
-      - mqtt_enabled=True
+      - mqtt_module_enabled=True
       - mqtt_host=mosquitto
       - mqtt_auth=False
 
-      - kenter_enabled=False
+      - kenter_module_enabled=False
       - kenter_clientid=my@username.com
       - kenter_password=secretpassword
 
-      - kenter_meter_sysname=transformer01
+      - sysname=transformer01
       - kenter_meter_ean=000000000000000000
       - kenter_meter_id=0000000000
-
-      - kenter_meter2_enabled=False
-      - kenter_meter2_sysname=transformer02
-      - kenter_meter2_ean=000000000000000000
-      - kenter_meter2_id=0000000000
 
 
 
