@@ -12,14 +12,14 @@ from modules.conf_env_list_parser import ConfEnvListParser
 class BaseMetricConf(BaseSettings):
     enabled: bool = Field(default=True)
     output_influxdb: bool = Field(default=True)
-    output_mqtt: bool = Field(default=True)
-    output_pvoutput: bool = Field(default=True)
 
 
 class FusionSolarKioskMetric(BaseMetricConf):
     descriptive_name: str = Field(default="inverter01")
     api_url: str = Field(default="https://region01eu5.fusionsolar.huawei.com/rest/pvms/web/kiosk/v1/station-kiosk-file?kk=")
     api_kkid: str = Field(default="GET_THIS_FROM_KIOSK_URL")
+    output_mqtt: bool = Field(default=True)
+    output_pvoutput: bool = Field(default=True)
     output_pvoutput_system_id: int = Field(default=0)
 
 

@@ -1,3 +1,4 @@
+import logging
 import requests
 from datetime import datetime, timedelta
 import json
@@ -6,11 +7,7 @@ from modules.models import KenterTransformerKpi, KenterTransformerMeasurement
 
 
 class FetchKenter:
-    def __init__(self, conf: BaseConf, logger):
-        """
-        :param conf: Configuration object of type BaseConf
-        :param logger: Logger object
-        """
+    def __init__(self, conf: BaseConf, logger: logging.Logger):
         self.conf = conf
         self.logger = logger
         self.logger.debug("Kenter class instantiated")
@@ -18,17 +15,8 @@ class FetchKenter:
         self.jwt_token = ""
 
     def update_kenter_token(self):
-        """
-        Updates self.jwt_token by making a request to the Kenter token endpoint.
-        Raises an exception if the token cannot be retrieved.
-        """
         token_url = self.conf.kenter_token_url
-        form_data = {
-            "client_id": self.conf.kenter_clientid,
-            "client_secret": self.conf.kenter_password,
-            "grant_type": "client_credentials",
-            "scope": "meetdata.read"
-        }
+        form_data = {"client_id": self.conf.kenter_clientid, "client_secret": self.conf.kenter_password, "grant_type": "client_credentials", "scope": "meetdata.read"}
         headers = {"Content-Type": "application/x-www-form-urlencoded"}
 
         try:
@@ -41,30 +29,20 @@ class FetchKenter:
                 raise Exception("No access token returned from the Kenter token endpoint.")
             self.jwt_token = access_token
         except Exception as e:
-            err_msg = f"Could not update Kenter JWT auth token: {str(e)}"
+            err_msg = f"Could not retrieve valid Kenter JWT auth token: {e}"
             self.logger.error(err_msg)
             raise Exception(err_msg)
 
     def _request_with_token_retry(self, url, method="GET", **kwargs):
-        """
-        Internal helper to make a request with the current JWT token. If a 401 is
-        encountered, refresh the token once and retry.
-
-        :param url: Full endpoint URL
-        :param method: HTTP method (e.g., 'GET', 'POST')
-        :param kwargs: Additional arguments to pass directly to requests.*
-        :return: requests.Response
-        """
         # Ensure headers exist
         headers = kwargs.pop("headers", {})
         headers["Authorization"] = f"Bearer {self.jwt_token}"
         headers.setdefault("Accept", "application/json")
 
-        attempt_methods = [method.upper()]
         # Attempt the request up to two times (in case we need to refresh token).
         for attempt in range(2):
             self.logger.debug(f"Fetching URL: {url} (attempt {attempt + 1})")
-            response = requests.request(attempt_methods[0], url, headers=headers, verify=False, **kwargs)
+            response = requests.request(method.upper(), url, headers=headers, verify=False, **kwargs)
             # If not 401 or second attempt, break
             if response.status_code != 401 or attempt == 1:
                 # If there's another error status, it will be caught below
@@ -81,17 +59,13 @@ class FetchKenter:
         return response
 
     def fetch_gridkenter_meters(self):
-        """
-        Fetch and log a list of meters from the Kenter API.
-        Raises an exception if the request or JSON parsing fails.
-        """
         self.logger.info("Requesting meter list from Kenter API...")
         url = f"{self.conf.kenter_api_url}/meetdata/v2/meters"
 
         try:
             response = self._request_with_token_retry(url, method="GET")
         except Exception as e:
-            raise Exception(f"Error fetching meters from Kenter API: '{str(e)}'")
+            raise Exception(f"Error in Kenter meter list API HTTP request. Error info: {e}")
 
         # Parse and log the connections data
         connections_data = response.json()
@@ -100,30 +74,11 @@ class FetchKenter:
             for meteringpoint in connection.get("meteringPoints", []):
                 self.logger.info(
                     "connectionId: {}, meteringPointId: {}, productType: {}, "
-                    "meteringPointType: {}, meterNumber: {}".format(
-                        connection.get("connectionId"),
-                        meteringpoint.get("meteringPointId"),
-                        meteringpoint.get("productType"),
-                        meteringpoint.get("meteringPointType"),
-                        meteringpoint.get("meterNumber")
-                    )
+                    "meteringPointType: {}, meterNumber: {}".format(connection.get("connectionId"), meteringpoint.get("meteringPointId"), meteringpoint.get("productType"), meteringpoint.get("meteringPointType"), meteringpoint.get("meterNumber"))
                 )
 
     def fetch_gridkenter_data(self, descriptive_name, connection_id, metering_point_id, days_back) -> KenterTransformerKpi:
-        """
-        Fetch daily measurement data for a specific system (descriptive_name) from the
-        Kenter API by connection ID and metering point ID, going a certain
-        number of days back. The function identifies the channel with ID "16180",
-        and returns structured data containing net consumption.
-
-        :param descriptive_name: Arbitrary system name/identifier
-        :param connection_id: Connection ID to query
-        :param metering_point_id: Metering point ID to query
-        :param days_back: How many days back to retrieve data
-        :return: Dictionary with structured meter data
-        :raises Exception: If fetching fails or the JSON response is invalid
-        """
-        self.logger.info(f"Requesting data for {descriptive_name} from Kenter API...")
+        self.logger.info(f"Requesting Kenter API meter data for  [{descriptive_name}], connectionId: [{connection_id}] meteringPointId: [{metering_point_id}]...")
 
         # Prepare date
         req_time = datetime.now() - timedelta(days=days_back)
@@ -131,36 +86,25 @@ class FetchKenter:
         req_month = req_time.strftime("%m")
         req_day = req_time.strftime("%d")
 
-        url = (
-            f"{self.conf.kenter_api_url}/meetdata/v2/measurements/connections/"
-            f"{connection_id}/metering-points/{metering_point_id}/days/"
-            f"{req_year}/{req_month}/{req_day}"
-        )
+        url = f"{self.conf.kenter_api_url}/meetdata/v2/measurements/connections/" f"{connection_id}/metering-points/{metering_point_id}/days/" f"{req_year}/{req_month}/{req_day}"
 
         try:
             response = self._request_with_token_retry(url, method="GET")
         except Exception as e:
-            raise Exception(f"Error fetching data from Kenter API: '{str(e)}'")
+            raise Exception(f"Error in Kenter meter measurement data API HTTP request. Error info: {e}")
 
         # Parse JSON
         try:
             response_json = response.json()
         except Exception as e:
-            raise Exception(f"Error while parsing JSON response from Kenter API: '{str(e)}'")
+            raise Exception(f"Error while parsing JSON response from Kenter API. Error info: {e}")
 
         # Find first channel that has channelId = '16180'
         channel = next((ch for ch in response_json if ch.get("channelId") == "16180"), None)
         if not channel:
-            raise FetchKenterMissingChannel16180(
-                f"Kenter API response for {descriptive_name}, connectionId {connection_id} and meteringPointId {metering_point_id} does not contain channelId '16180'."
-            )
+            raise FetchKenterMissingChannel16180(f"Kenter API response for {descriptive_name}, connectionId {connection_id} and meteringPointId {metering_point_id} does not contain channelId '16180'.")
 
-        return_obj = KenterTransformerKpi(
-            descriptive_name=descriptive_name,
-            connection_id=connection_id,
-            metering_point_id=metering_point_id,
-            measurements=[]
-        )
+        return_obj = KenterTransformerKpi(descriptive_name=descriptive_name, connection_id=connection_id, metering_point_id=metering_point_id, measurements=[])
 
         prev_ts = None
         for measure in channel.get("Measurements", []):
@@ -178,14 +122,15 @@ class FetchKenter:
                 # Calculate power load [kW] from energy [kWh], then convert to W
                 calculated_power = round(measure["value"] * 3600 / seconds_from_prev_ts, 3) * 1000
 
-                return_obj.measurements.append(KenterTransformerMeasurement(
-                    timestamp = measure["timestamp"],
-                    interval_energy_wh = measure["value"] * 1000,     # in Wh
-                    interval_power_avg_w = calculated_power,          # in W
-                ))
+                return_obj.measurements.append(
+                    KenterTransformerMeasurement(
+                        timestamp=measure["timestamp"],
+                        interval_energy_wh=measure["value"] * 1000,  # in Wh
+                        interval_power_avg_w=calculated_power,  # in W
+                    )
+                )
 
         return return_obj
-    
 
 
 class FetchKenterMissingChannel16180(Exception):

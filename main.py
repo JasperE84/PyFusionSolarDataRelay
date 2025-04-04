@@ -12,7 +12,7 @@ import urllib3
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 # Logger
-logger = logging.getLogger()
+logger: logging.Logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
 streamHandler = logging.StreamHandler(sys.stdout)
 formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
@@ -25,9 +25,10 @@ conf = Conf(logger).read_and_validate_config()
 if conf.debug_mode:
     logger.debug("Enabled verbose logging")
     logger.setLevel(logging.DEBUG)
-    logger.debug(conf.model_dump_json(indent=2, exclude_unset=False, exclude_defaults=False))
+    logger.debug(conf.model_dump_json(indent=2, exclude_defaults=False))
 else:
     logger.setLevel(logging.INFO)
+    # logger.info(conf.model_dump_json(indent=2, exclude_defaults=False))
 
 # Start RelayFusionSolar and KenterRelay
 try:

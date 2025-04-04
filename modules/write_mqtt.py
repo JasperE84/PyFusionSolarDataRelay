@@ -5,6 +5,7 @@ from datetime import datetime
 from modules.conf_models import BaseConf
 from modules.models import FusionSolarInverterKpi
 
+
 class WriteMqtt:
     def __init__(self, conf: BaseConf, logger):
         self.conf = conf
@@ -17,26 +18,19 @@ class WriteMqtt:
         """
         # Prepare connection/auth info
         if self.conf.mqtt_auth:
-            auth_obj = dict(
-                username=self.conf.mqtt_username,
-                password=self.conf.mqtt_password
-            )
+            auth_obj = dict(username=self.conf.mqtt_username, password=self.conf.mqtt_password)
         else:
             auth_obj = None
 
         # Clean up stationDn for use in MQTT topic (remove non-alphanumeric)
-        station_dn_sanitized = re.sub(r'\W+', '-', inverter_data.station_dn).lower()
+        station_dn_sanitized = re.sub(r"\W+", "-", inverter_data.station_dn).lower()
 
         # Construct base topic path
         # e.g. rootTopic / kiosk_site_descriptive_name / sensors / inverters / stationDn
-        mqtt_base_topic = (
-            f"{self.conf.mqtt_root_topic.lower()}/"
-            f"{self.conf.site_descriptive_name.lower()}/sensors/inverters/"
-            f"{inverter_data.data_source.lower()}/{inverter_data.descriptive_name.lower()}/{station_dn_sanitized}/state"
-        )
+        mqtt_base_topic = f"{self.conf.mqtt_root_topic.lower()}/" f"{self.conf.site_descriptive_name.lower()}/sensors/inverters/" f"{inverter_data.data_source.lower()}/{inverter_data.descriptive_name.lower()}/{station_dn_sanitized}/state"
 
         # Gather the data in a dict
-        # Note that 'device' and 'time' are optional—include them if you want 
+        # Note that 'device' and 'time' are optional—include them if you want
         # these published to MQTT as well.
         data_points = {
             "real_time_power_w": inverter_data.real_time_power_w,
@@ -64,8 +58,8 @@ class WriteMqtt:
                 )
 
         except TimeoutError as e:
-            self.logger.error(f"Timeout while publishing to MQTT: '{str(e)}'")
+            self.logger.error(f"Timeout while publishing to MQTT: '{e}'")
         except ConnectionRefusedError as e:
-            self.logger.error(f"Connection refused while connecting to MQTT: '{str(e)}'")
+            self.logger.error(f"Connection refused while connecting to MQTT: '{e}'")
         except Exception as e:
-            raise Exception(f"Exception while publishing to MQTT: '{str(e)}'")
+            raise Exception(f"Exception while publishing to MQTT: '{e}'")

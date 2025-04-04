@@ -47,7 +47,7 @@ services:
       - site_descriptive_name=companyname_site_01
 
       # Enable fusionsolar kiosk module
-      - fusionsolar_kiosk_processing_enabled=True
+      - fusionsolar_kiosk_module_enabled=True
       - fusionsolar_kiosk_fetch_cron_minute=0,30 # Please note that the kiosk only seems to update each 30mins
 
       # Define fusionsolar kiosk configuration

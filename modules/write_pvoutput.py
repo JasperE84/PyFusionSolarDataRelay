@@ -8,7 +8,7 @@ class WritePvOutput:
     def __init__(self, conf: BaseConf, logger):
         self.conf = conf
         self.logger = logger
-        self.logger.debug("PvOutputOrg class instantiated")
+        self.logger.debug("WritePvOutput class instantiated")
 
     def write_pvdata_to_pvoutput(self, inverter_kpi: FusionSolarInverterKpi, fs_conf: FusionSolarKioskMetric):
         if self.conf.pvoutput_module_enabled:
