@@ -27,6 +27,7 @@ class KenterMeterMetric(BaseMetricConf):
     descriptive_name: str = Field(default="transformer01")
     connection_id: str = Field(default="XXX")
     metering_point_id: str = Field(default="XXX")
+    channel_id: str = Field(default="16180", description="See kenter API docs, 16180 is delivery for allocation with transformer correction factor for billing, 10180 is delivery kWh from an individual meter")
 
 
 class BaseConf(BaseSettings):
@@ -54,8 +55,8 @@ class BaseConf(BaseSettings):
     kenter_clientid: str = Field(default="user")
     kenter_password: str = Field(default="passwd")
     kenter_interval: int = Field(default=43200)
-    kenter_days_back: int = Field(default=1, description="Grid infrastructure measurements in The Netherlands, show up in the API with a 3-5 days delay.")
-    kenter_days_backfill: int = Field(default=4, description="Setting this to 30 would try to backfill gridkenter data on startup for any day between 3 days back (gridrelaydaysback) and 3+30=33 days back.")
+    kenter_days_back: int = Field(default=0, description="Grid infrastructure measurements in The Netherlands, show up in the API with a 3-5 days delay.")
+    kenter_days_backfill: int = Field(default=5, description="Setting this to 30 would try to backfill gridkenter data on startup for any day between 3 days back (gridrelaydaysback) and 3+30=33 days back.")
     kenter_metering_points: List[KenterMeterMetric] = Field(default=[])
 
     #

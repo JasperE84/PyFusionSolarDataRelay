@@ -77,14 +77,14 @@ class FetchKenter:
                     "meteringPointType: {}, meterNumber: {}".format(connection.get("connectionId"), meteringpoint.get("meteringPointId"), meteringpoint.get("productType"), meteringpoint.get("meteringPointType"), meteringpoint.get("meterNumber"))
                 )
 
-    def fetch_gridkenter_data(self, descriptive_name, connection_id, metering_point_id, days_back) -> KenterTransformerKpi:
-        self.logger.info(f"Requesting Kenter API meter data for  [{descriptive_name}], connectionId: [{connection_id}] meteringPointId: [{metering_point_id}]...")
-
+    def fetch_gridkenter_data(self, descriptive_name, connection_id, metering_point_id, channel_id, days_back) -> KenterTransformerKpi:
         # Prepare date
         req_time = datetime.now() - timedelta(days=days_back)
         req_year = req_time.strftime("%Y")
         req_month = req_time.strftime("%m")
         req_day = req_time.strftime("%d")
+
+        self.logger.info(f"Requesting Kenter API meter data for {req_year}/{req_month}/{req_day} [{descriptive_name}], connectionId: [{connection_id}] meteringPointId: [{metering_point_id}]...")
 
         url = f"{self.conf.kenter_api_url}/meetdata/v2/measurements/connections/" f"{connection_id}/metering-points/{metering_point_id}/days/" f"{req_year}/{req_month}/{req_day}"
 
@@ -99,12 +99,12 @@ class FetchKenter:
         except Exception as e:
             raise Exception(f"Error while parsing JSON response from Kenter API. Error info: {e}")
 
-        # Find first channel that has channelId = '16180'
-        channel = next((ch for ch in response_json if ch.get("channelId") == "16180"), None)
+        # Find first channel that has configured channelId
+        channel = next((ch for ch in response_json if ch.get("channelId") == channel_id), None)
         if not channel:
-            raise FetchKenterMissingChannel16180(f"Kenter API response for {descriptive_name}, connectionId {connection_id} and meteringPointId {metering_point_id} does not contain channelId '16180'.")
+            raise FetchKenterMissingChannelId(f"Kenter API response for {descriptive_name}, connectionId {connection_id} and meteringPointId {metering_point_id} does not contain channelId '{channel_id}'.")
 
-        return_obj = KenterTransformerKpi(descriptive_name=descriptive_name, connection_id=connection_id, metering_point_id=metering_point_id, measurements=[])
+        return_obj = KenterTransformerKpi(descriptive_name=descriptive_name, connection_id=connection_id, metering_point_id=metering_point_id, channel_id=channel_id, measurements=[])
 
         prev_ts = None
         for measure in channel.get("Measurements", []):
@@ -133,5 +133,5 @@ class FetchKenter:
         return return_obj
 
 
-class FetchKenterMissingChannel16180(Exception):
+class FetchKenterMissingChannelId(Exception):
     pass

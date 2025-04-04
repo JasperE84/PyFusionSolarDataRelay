@@ -37,7 +37,7 @@ class WriteInfluxDb:
             self.classes_instantiated = self.instantiate()
 
         ifjson = self.make_kenterdata_influxdb_record(transformer_data)
-        self.logger.info(f"Writing GridData InfluxDB record for transformer {transformer_data.descriptive_name}, connectionId: {transformer_data.connection_id}, meteringPointId: {transformer_data.metering_point_id}")
+        self.logger.info(f"Writing GridData InfluxDB record for transformer [{transformer_data.descriptive_name}], connectionId: [{transformer_data.connection_id}], meteringPointId: [{transformer_data.metering_point_id}]")
         try:
             if self.conf.influxdb_is_v2:
                 self.logger.debug("Writing GridData to InfluxDB v2...")
@@ -82,6 +82,7 @@ class WriteInfluxDb:
             "transformer_descriptive_name": transformer_data.descriptive_name,
             "connection_id": transformer_data.connection_id,
             "metering_point_id": transformer_data.metering_point_id,
+            "channel_id": transformer_data.channel_id,
             "device_type": device_type,
         }
 

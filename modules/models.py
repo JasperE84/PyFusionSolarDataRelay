@@ -23,16 +23,19 @@ class KenterTransformerKpi:
         descriptive_name: str = "",
         connection_id: str = "",
         metering_point_id: str = "",
+        channel_id: str = "",
         measurements: List[KenterTransformerMeasurement] = []
     ):
         self.descriptive_name = descriptive_name
         self.connection_id = connection_id
         self.metering_point_id = metering_point_id
+        self.channel_id = channel_id
         self.measurements = measurements
 
     descriptive_name: str
     connection_id: str
     metering_point_id: str
+    channel_id: str
     measurements: List[KenterTransformerMeasurement]
 
 
