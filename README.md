@@ -7,8 +7,8 @@ Additionally this project can also fetch and relay grid usage data from the Dutc
 [![License](https://img.shields.io/badge/License-MIT-2ea44f)](#license)
 
 # Installation
-This project is currently intented to run as a Docker container and fetches its config from environment variables. Yet the project can be run standalone. 
-A local settings file (such as .yml or .ini) has not been implemented yet, but pvconf.py can easily be modified to override standard settings.
+This project is currently intented to run as a Docker container and fetches its config from environment variables. The project can also be started standalone by putting a config.yaml file in the root directory where main.py is.
+Configuration examples are in the examples folder.
 
 [![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white)](https://hub.docker.com/r/jsprnl/pyfusionsolardatarelay)
 
@@ -34,7 +34,7 @@ MQTT is an OASIS standard messaging protocol for the Internet of Things (IoT). I
 # About Home Assistant
 Home Assistant (hass) is an open source home automation platform. Hass features an energy dashboard in which energy generation, storage and usage data can be combined in a dashboard giving a total overview of energy flow. Using MQTT, the power and energy generation data from Huawei's FusionSolar Kiosk can be fed into Home Assistant. This project can then act as a data source for the solar production section of the HASS energy dashboard.
 
-Hass can easily be connected to an MQTT using the MQTT integration, which can be set up using the hass web interface. Once hass is connected to MQTT, a change in configuration.yaml is required in order to add the energy sensors to hass. A [configuration.yaml example file](./Examples/configuration.yaml) which shows how to do this is provided in the Examples subfolder of this project. 
+Hass can easily be connected to an MQTT using the MQTT integration, which can be set up using the hass web interface. Once hass is connected to MQTT, a change in configuration.yaml is required in order to add the energy sensors to hass. A [configuration.yaml example file](./examples/home_assistant/configuration.yaml) which shows how to do this is provided in the Examples subfolder of this project. 
 
 Once everything is configured, solar data will flow as follows: 
 
