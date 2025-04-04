@@ -60,7 +60,7 @@ services:
 
       # Define second fusionsolar kiosk configuration
       # - fusionsolar_kiosks__1__api_kkid=GET_THIS_STRING_FROM_YOUR_KIOSK_URL
-      # - fusionsolar_kiosks__1__pvoutput_enabled=False
+      # - fusionsolar_kiosks__1__output_pvoutput=False
 
       # Kenter module conf
       - kenter_module_enabled=False

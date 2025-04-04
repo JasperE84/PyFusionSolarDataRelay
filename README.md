@@ -3,8 +3,6 @@ This is a python project intended to fetch data from the **Huawei FusionSolar** 
 
 Additionally this project can also fetch and relay grid usage data from the Dutch klantportaal.kenter.nu API provider by **Kenter**.
 
-Credits go to the [Grott project](https://github.com/johanmeijer/grott). Many bits of code, structure and ideas are borrowed from there.
-
 [![GitHub release](https://img.shields.io/github/release/JasperE84/PyFusionSolarDataRelay?include_prereleases=&sort=semver&color=2ea44f)](https://github.com/JasperE84/PyFusionSolarDataRelay/releases/)
 [![License](https://img.shields.io/badge/License-MIT-2ea44f)](#license)
 
@@ -16,8 +14,8 @@ A local settings file (such as .yml or .ini) has not been implemented yet, but p
 
 Check out [Examples/docker-compose.yml](https://github.com/JasperE84/PyFusionSolarDataRelay/blob/main/Examples/docker-compose.yml) for a docker configuration example.
 
-# Breaking changes in the release
-The fusionsolarinterval configuration paramters has been replaced by two cron settings defaulting to poll fusionsolar data each half our.
+# Breaking changes in the latest release
+Environment variables for config changed names and structure. Please review the configuration section in README for updated variable names. Additionaly, functionality to write electrical energy usage from utility grid has been removed.
 
 # About Huawei FusionSolar Kiosk mode
 FusionSolar is Huawei's online monitoring platform for their PV inverters. FusionSolar features a kiosk mode. When enabled, a kiosk url is generated which is publically accessible. The kiosk web app fetches its data from a JSON backend. It is this backend where this project fetches the PV data. 
@@ -45,41 +43,53 @@ Once everything is configured, solar data will flow as follows:
 For those of you using Docker, a docker-compose.yml file is provided [here](./Examples/docker-compose.yml) in order to get these different components up and running quickly.
 
 # About Kenter's klantportaal.kenter.nu
-Kenter provides measurement services for **commercially rented** grid transformers. This project can fetch energy usage data from this API and post it to InfluxDB and PVOutput. MQTT is not supported for posting Kenter data, as Kenter's latest measurement data is usually 3 days old.
-
-# About Kenter's API and matching PVOutput intervals
-Fusion solar data fetching is planned by cron in order to exactly specify at what times the data should reload. This way, it is possible to synchronise the intervals of fusionsolar and gridkenter datapoints, which end up showing on PVOutput. That's relevant because if the gridkenter data class is fetched, klantportaal.kenter.nu does not provide live measurements. Instead it provides historic measurements with a certain interval (15 minutes interval with the most recent data point 3 days old in my case). If this interval doesn't match the fusionsolar interval, then PVOutput will show distorted graphs because it won't have a datapoint for both PV production and grid usage for each interval. (Fusionsolar kiosk API only updates each half hour). See [this url](https://crontab.guru/) for help with finding the right cron config.
+Kenter provides measurement services for **commercially rented** grid transformers. This project can fetch energy usage data from this API and post it to InfluxDB. MQTT/PVOutput is not supported for posting Kenter data, as Kenter's latest measurement data is usually 3 days old and PVOutput imposes challenges on having the datapoint timestamps between grid usage and PV output synchronous. 
 
 # Configuration parameter documentation
 | Parameter | Description | Default |
 | --- | --- | --- |
-| debug_mode | Enables verbose logging | True |
-| site_descriptive_name | Definition of 'measurement' name for InfluxDB | site01 |
+| debug_mode | Enables verbose logging | False |
+| fetch_on_startup | Starts API fetching and processing on startup one, then schedule cron jobs | False |
+| site_descriptive_name | Descriptive name for complete site. Use lowercase, and no special characters. This will be used for MQTT topics and InfluxDB record tags | site01 |
 | fusionsolar_kiosk_module_enabled | Can be `True` or `False`, determines if fusionsolar kiosk API functionality is enabled | True |
 | fusionsolar_kiosk_fetch_cron_hour | Hour component for python cron job to fetch and process data from fusionsolar. | * |
 | fusionsolar_kiosk_fetch_cron_minute | Minute component for python cron job to fetch and process data from fusionsolar | 0,30 |
+| fusionsolar_kiosks__0__descriptive_name | Descriptive name for PV system for which this kiosk entity provides data. Use lowercase, and no special characters. This will be used for MQTT topics and InfluxDB record tags | inverter01 |
+| fusionsolar_kiosks__0__enabled | To disable individual kiosk configurations. Can be `True` or `False` | True |
 | fusionsolar_kiosks__0__api_url | Link to the fusionsolar kiosk data backend, multiple records supported by adding an extra param with `__1__` etc. | [Click url](https://region01eu5.fusionsolar.huawei.com/rest/pvms/web/kiosk/v1/station-kiosk-file?kk=) |
 | fusionsolar_kiosks__0__api_kkid | Unique kiosk ID, can be found by looking the kiosk URL and then taking the code after `kk=` | GET_THIS_FROM_KIOSK_URL |
 | fusionsolar_kiosks__0__output_influxdb | Write to influxdb if influx module enabled. Can be `True` or `False` | True |
 | fusionsolar_kiosks__0__output_mqtt | Write to mqtt if mqtt module enabled. Can be `True` or `False` | True |
-| fusionsolar_kiosks__0__pvoutput_enabled | If pvoutput_module_enabled then write this pv metric to pvoutput | `True` |
+| fusionsolar_kiosks__0__output_pvoutput | If pvoutput_module_enabled then write this pv metric to pvoutput | `True` |
 | fusionsolar_kiosks__0__output_pvoutput_system_id | System ID for PVOutput.org, should be numeric | 12345 |
-| fusionsolar_kiosks__0__enabled | To disable individual kiosk configurations. Can be `True` or `False` | True |
-| pvoutput_module_enabled | Can be `True` or `False`, determines if PVOutput.org API is enabled | False |
-| pvoutput_api_key | API Key for PVOutput.org | yourapikey |
-| pvoutput_record_url | API url for PVOutput.org live output posting | [Click url](https://pvoutput.org/service/r2/addstatus.jsp)
-| pvoutput_batch_url | API url for PVOutput.org historic data batch posting (used for grid data from klantportaal.kenter.nu) | [Click url](https://pvoutput.org/service/r2/addbatchstatus.jsp)
+| kenter_module_enabled | Can be `True` or `False`, determines if data is fetched from Kenter's klantportaal.kenter.nu API | False |
+| kenter_api_url | Kenter API url for fetching transformer grid measurements | [Click url](https://api.kenter.nu) |
+| kenter_token_url | Kenter API url for fetching auth token | [Click url](https://login.kenter.nu/connect/token) |
+| kenter_clientid | Username for Kenter's API | user |
+| kenter_password | Password for Kenter's API | passwd |
+| kenter_fetch_cron_hour | Hour component for python cron job to fetch and process data from Kenter. | 8 |
+| kenter_fetch_cron_minute | Minute component for python cron job to fetch and process data from Kenter | 0 |
+| kenter_days_back | Kenter's klantportaal.kenter.nu does not provide live data. Data is only available up until an X amount of days back. May vary per transformer. | 1 |
+| kenter_days_backfill | How many additional days before days_back to process on startup  | 0 |
+| kenter_metering_points__0__descriptive_name | Descriptive name for transformer. Use lowercase, and no special characters. This will be used for MQTT topics and InfluxDB record tags | transformer01 |
+| kenter_metering_points__0__connection_id | ConnectionId as shown in meter list on startup stdout (EAN code) | XXX |
+| kenter_metering_points__0__metering_point_id | MeteringPointId as shown in meter list on startup stdout | XXX |
+| kenter_metering_points__0__channel_id | See kenter API docs, 16180 is delivery for allocation with transformer correction factor for billing, 10180 is delivery kWh from an individual meter | 16180 |
+| kenter_metering_points__0__output_influxdb | Write to influxdb if influx module enabled. Can be `True` or `False` | True |
 | influxdb_module_enabled | Can be `True` or `False`, determines if InfluxDB processing is enabled | False |
 | influxdb_is_v2 | If `True` the InfluxDBv2 methods are used. If `False` InfluxDBv1 methods are used | True |
 | influxdb_host | Hostname of the influxdb server | localhost |
 | influxdb_port | Port of influxdb server | 8086 |
 | influxdb_v1_db_name | Database name for InfluxDBv1, only required if influx2=False | fusionsolar |
 | influxdb_v1_username | Username for InfluxDBv1, only required if influx2=False | fusionsolar |
-| pvif1passwd | Password for InfluxDBv1, only required if influx2=False | fusionsolar |
+| influxdb_v1_password | Password for InfluxDBv1, only required if influx2=False | fusionsolar |
 | influxdb_v2_protocol | Protocol for InfluxDBv2, can be `https` or `http`, only required if influx2=True | https |
 | influxdb_v2_org | Organization for InfluxDBv2, only required if influx2=True | acme |
 | influxdb_v2_bucket | Bucket for InfluxDBv2, only required if influx2=True | fusionsolar |
 | influxdb_v2_token | Token for InfluxDBv2, only required if influx2=True | XXXXXXX |
+| pvoutput_module_enabled | Can be `True` or `False`, determines if PVOutput.org API is enabled | False |
+| pvoutput_record_url | API url for PVOutput.org live output posting | [Click url](https://pvoutput.org/service/r2/addstatus.jsp)
+| pvoutput_api_key | API Key for PVOutput.org | yourapikey |
 | mqtt_module_enabled | Can be `True` or `False`, determines if MQTT publishing is enabled | False |
 | mqtt_host | Hostname of MQTT server | localhost |
 | mqtt_port | Port of MQTT server | 1883 |
@@ -87,19 +97,7 @@ Fusion solar data fetching is planned by cron in order to exactly specify at wha
 | mqtt_username | MQTT Username | fusionsolar |
 | mqtt_password | MQTT Password | fusionsolar |
 | mqtt_root_topic | MQTT Topic for publishing | pyfusionsolar |
-| kenter_module_enabled | Can be `True` or `False`, determines if data is fetched from Kenter's klantportaal.kenter.nu API | False |
-| kenter_api_url | Kenter API url for fetching transformer grid measurements | [Click url](https://webapi.klantportaal.kenter.nu) |
-| kenter_clientid | Username for Kenter's API | user |
-| kenter_password | Password for Kenter's API | passwd |
-| kenter_fetch_cron_hour | Hour component for python cron job to fetch and process data from Kenter. | 8 |
-| kenter_fetch_cron_minute | Minute component for python cron job to fetch and process data from Kenter | 0 |
-| kenter_days_back | Kenter's klantportaal.kenter.nu does not provide live data. Data is only available up until an X amount of days back. May vary per transformer. | 3 |
-| kenter_days_backfill | How many additional days before days_back to process on startup  | 0 |
-| kenter_metering_points__0__descriptive_name | Grid transformer name for InfluxDB transformer data | transformer01 |
-| kenter_metering_points__0__connection_id | ConnectionId as shown in meter list on startup stdout (EAN code) | XXX |
-| kenter_metering_points__0__metering_point_id | MeteringPointId as shown in meter list on startup stdout | XXX |
-| kenter_metering_points__0__output_influxdb | Write to influxdb if influx module enabled. Can be `True` or `False` | True |
-| kenter_metering_points__0__output_mqtt | Write to mqtt if mqtt module enabled. Can be `True` or `False` | True |
+
 
 # Grafana dashboard example
 A grafana dashboard export is included in the Examples subfolder in the Git repository.
@@ -126,7 +124,7 @@ Result:
 | Version | Description |
 | --- | --- |
 | 1.1.0 | Removed currentPower kiosk property (fetched from powercurve API obj) in favor of realTimePower |
-| 1.1.0 | Removed functionality to write utility grid consumption (non-pv) to PVOutput |
+| 1.1.0 | Removed functionality to write utility grid consumption (non-pv) to PVOutput (InfluxDB fully supported!) |
 | 1.1.0 | **BREAKING CHANGE:** Environment variables for config changed names and structure. Please review the configuration section in README for updated variable names |
 | 1.1.0 | Refactored class names and .py file structure |
 | 1.1.0 | Implemented pydantic to replace pvconf.py, now supporting non-environment variable based settings using config.yaml |

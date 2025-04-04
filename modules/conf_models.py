@@ -37,7 +37,7 @@ class BaseConf(BaseSettings):
     # General settings
     #
     debug_mode: bool = Field(default=False)
-    fetch_on_startup: bool = Field(default=True, description="Do not wait for cron for initial data fetching")
+    fetch_on_startup: bool = Field(default=False, description="Do not wait for cron for initial data fetching")
     site_descriptive_name: str = Field(default="site01")
 
     #
@@ -83,7 +83,6 @@ class BaseConf(BaseSettings):
     # PVOutput.org
     pvoutput_module_enabled: bool = Field(default=False)
     pvoutput_record_url: str = Field(default="https://pvoutput.org/service/r2/addstatus.jsp")
-    pvoutput_batch_url: str = Field(default="https://pvoutput.org/service/r2/addbatchstatus.jsp")
     pvoutput_api_key: str = Field(default="yourapikey")
 
     # MQTT
