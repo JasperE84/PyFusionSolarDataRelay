@@ -22,6 +22,19 @@ class FusionSolarKioskMetric(BaseMetricConf):
     output_pvoutput: bool = Field(default=True)
     output_pvoutput_system_id: int = Field(default=0)
 
+class FusionSolarOpenApiInverter(BaseMetricConf):
+    descriptive_name: str = Field(default="inverter01")
+    dev_id: str = Field(default="")
+    dev_type_id: int = Field(default=1)
+    output_mqtt: bool = Field(default=True)
+    output_pvoutput: bool = Field(default=True)
+    output_pvoutput_system_id: int = Field(default=0)
+
+class FusionSolarOpenApiMeter(BaseMetricConf):
+    descriptive_name: str = Field(default="meter01")
+    dev_id: str = Field(default="")
+    dev_type_id: int = Field(default=17)
+    output_mqtt: bool = Field(default=True)
 
 class KenterMeterMetric(BaseMetricConf):
     descriptive_name: str = Field(default="transformer01")
@@ -43,11 +56,21 @@ class BaseConf(BaseSettings):
     #
     # Inputs
     #
-    # FusionSolar
+    # FusionSolar KIOSK
     fusionsolar_kiosk_module_enabled: bool = Field(default=True)
     fusionsolar_kiosks: List[FusionSolarKioskMetric] = Field(default=[])
     fusionsolar_kiosk_fetch_cron_hour: str = Field(default="*")
     fusionsolar_kiosk_fetch_cron_minute: str = Field(default="0,30", description="The fusionsolar API only updates portal data each half hour, setting to lower value will produce weird PVOutput graph with horizontal bits in it.")
+
+    # FusionSolar OpenAPI
+    fusionsolar_open_api_module_enabled: bool = Field(default=True)
+    fusionsolar_open_api_inverters: List[FusionSolarOpenApiInverter] = Field(default=[])
+    fusionsolar_open_api_meters: List[FusionSolarOpenApiMeter] = Field(default=[])
+    fusionsolar_open_api_endpoint: str = Field(default="https://eu5.fusionsolar.huawei.com")
+    fusionsolar_open_api_user_name: str = Field(default="")
+    fusionsolar_open_api_system_code: str = Field(default="")
+    fusionsolar_open_api_cron_hour: str = Field(default="0")
+    fusionsolar_open_api_cron_minute: str = Field(default="1")
 
     # Kenter Kenter.nl
     kenter_module_enabled: bool = Field(default=False)

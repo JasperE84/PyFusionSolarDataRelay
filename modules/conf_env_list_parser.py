@@ -7,7 +7,7 @@ from typing import Any
 
 class ConfEnvListParser(EnvSettingsSource):
     def prepare_field_value(self, field_name: str, field: FieldInfo, value: Any, value_is_complex: bool) -> Any:
-        if field_name in ["fusionsolar_kiosks", "kenter_metering_points"]:
+        if field_name in ["fusionsolar_kiosks", "kenter_metering_points", "fusionsolar_open_api_inverters", "fusionsolar_open_api_meters"]:
             prefix = f"{field_name.upper()}__"
             kiosks_map = {}
             for key, val in os.environ.items():
