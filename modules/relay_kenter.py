@@ -1,5 +1,6 @@
 import logging
 import time
+from apscheduler.schedulers.blocking import BlockingScheduler
 from modules.models import KenterTransformerKpi
 from modules.write_influxdb import WriteInfluxDb
 from modules.write_pvoutput import WritePvOutput
@@ -20,42 +21,51 @@ class RelayKenter:
         self.influxdb = WriteInfluxDb(self.conf, self.logger)
 
         self.logger.info("Starting RelayKenter on separate thread")
-        self.logger.debug("RelayKenter waiting 5sec to initialize docker-compose containers")
-        time.sleep(5)
 
-        self.start()
-
-    def start(self):
         # Fetch meter list once
         try:
             self.kenter_api.fetch_gridkenter_meters()
         except Exception as e:
             self.logger.exception(f"Could not fetch meterlist from Kenter API {e}")
 
+        self.logger.debug("RelayKenter waiting 5sec to initialize docker-compose containers")
+        time.sleep(5)
+
+        if self.conf.fetch_on_startup:
+            self.logger.info("Starting process_kenter_meters() at init, before waiting for cron, because fetch_on_startup is set")
+            self.process_kenter_meters()
+
+        self.logger.info(f"Setting cron trigger to run kenter meter processing at hour: [{self.conf.fusionsolar_kiosk_fetch_cron_hour}], minute: [{self.conf.fusionsolar_kiosk_fetch_cron_minute}]")
+        sched = BlockingScheduler(standalone=True)
+        sched.add_job(self.process_kenter_meters, trigger="cron", hour=self.conf.kenter_fetch_cron_hour, minute=self.conf.kenter_fetch_cron_minute)
+        sched.start()
+
+    def process_kenter_meters(self):
         # Run API fetch loop for each day to process for each metering point
         daystobackfill = self.conf.kenter_days_backfill
-        while 1:
-            for meter in self.conf.kenter_metering_points:
-                if meter.enabled:
-                    for daysback in range(self.conf.kenter_days_back, self.conf.kenter_days_back + 1 + daystobackfill):
-                        try:
-                            transformer_data = self.kenter_api.fetch_gridkenter_data(meter.descriptive_name, meter.connection_id, meter.metering_point_id, meter.channel_id, daysback)
-                            self.write_gridkenter_to_influxdb(transformer_data, meter)
-                        except FetchKenterMissingChannelId as e:
-                            self.logger.warning(f"Channel {meter.channel_id} not available for date, or available at all for kenter meter [{meter.descriptive_name}], connectionId: [{meter.connection_id}] meteringPointId: [{meter.metering_point_id}].")
-                        except Exception as e:
-                            self.logger.exception(f"Exception while processing keter meter [{meter.descriptive_name}], connectionId: [{meter.connection_id}] meteringPointId: [{meter.metering_point_id}]:\n{e}")
-                        
-                        # Go easy on the API to avoid HTTP status 429 (too many requests)
-                        time.sleep(5)
-                else:
-                    self.logger.info(f"Skipping disabled kenter meter [{meter.descriptive_name}], connectionId: [{meter.connection_id}] meteringPointId: [{meter.metering_point_id}]...")
+        for meter in self.conf.kenter_metering_points:
+            if meter.enabled:
+                for daysback in range(self.conf.kenter_days_back, self.conf.kenter_days_back + 1 + daystobackfill):
+                    try:
+                        transformer_data = self.kenter_api.fetch_gridkenter_data(meter.descriptive_name, meter.connection_id, meter.metering_point_id, meter.channel_id, daysback)
+                        self.write_gridkenter_to_influxdb(transformer_data, meter)
+                    except FetchKenterMissingChannelId as e:
+                        self.logger.warning(
+                            f"Channel {meter.channel_id} not available for date, or available at all for kenter meter [{meter.descriptive_name}], connectionId: [{meter.connection_id}] meteringPointId: [{meter.metering_point_id}]."
+                        )
+                    except Exception as e:
+                        self.logger.exception(f"Exception while processing keter meter [{meter.descriptive_name}], connectionId: [{meter.connection_id}] meteringPointId: [{meter.metering_point_id}]:\n{e}")
 
-            # Don't backfill after initial backfill
-            daystobackfill = 0
+                    # Go easy on the API to avoid HTTP status 429 (too many requests)
+                    time.sleep(5)
+            else:
+                self.logger.info(f"Skipping disabled kenter meter [{meter.descriptive_name}], connectionId: [{meter.connection_id}] meteringPointId: [{meter.metering_point_id}]...")
 
-            self.logger.debug("Waiting for next interval...")
-            time.sleep(self.conf.kenter_interval)
+        # Don't backfill after initial backfill
+        daystobackfill = 0
+
+        self.logger.debug("Waiting for next cron job...")
+
 
     def write_gridkenter_to_influxdb(self, transformer_data: KenterTransformerKpi, meter_conf: KenterMeterMetric):
         if self.conf.influxdb_module_enabled and meter_conf.output_influxdb:
@@ -66,4 +76,3 @@ class RelayKenter:
                 self.logger.exception(f"Error publishing Kenter data to InfluxDB for meter [{transformer_data.descriptive_name}], connectionId: [{transformer_data.connection_id}] meteringPointId: [{transformer_data.metering_point_id}]: {e}")
         else:
             self.logger.info(f"InfluxDB output disabled for Kenter meter [{transformer_data.descriptive_name}], connectionId: [{transformer_data.connection_id}] meteringPointId: [{transformer_data.metering_point_id}]...")
-

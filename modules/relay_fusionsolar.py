@@ -24,8 +24,8 @@ class RelayFusionSolar:
         self.logger.debug("RelayFusionSolar waiting 5sec to initialize docker-compose containers")
         time.sleep(5)
 
-        if self.conf.debug_mode:
-            self.logger.info("Starting process_fusionsolar_kiosks() at init, before waiting for cron, because we're in debug mode")
+        if self.conf.fetch_on_startup:
+            self.logger.info("Starting process_fusionsolar_kiosks() at init, before waiting for cron, because fetch_on_startup is set")
             self.process_fusionsolar_kiosks()
 
         self.logger.info(f"Setting cron trigger to run fusionsolar kiosk processing at hour: [{self.conf.fusionsolar_kiosk_fetch_cron_hour}], minute: [{self.conf.fusionsolar_kiosk_fetch_cron_minute}]")

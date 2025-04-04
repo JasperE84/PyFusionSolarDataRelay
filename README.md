@@ -91,7 +91,8 @@ Fusion solar data fetching is planned by cron in order to exactly specify at wha
 | kenter_api_url | Kenter API url for fetching transformer grid measurements | [Click url](https://webapi.klantportaal.kenter.nu) |
 | kenter_clientid | Username for Kenter's API | user |
 | kenter_password | Password for Kenter's API | passwd |
-| kenter_interval | Interval in seconds to fetch data from klantportaal.kenter.nu and post to PVOutput and InfluxDB | 43200 |
+| kenter_fetch_cron_hour | Hour component for python cron job to fetch and process data from Kenter. | 8 |
+| kenter_fetch_cron_minute | Minute component for python cron job to fetch and process data from Kenter | 0 |
 | kenter_days_back | Kenter's klantportaal.kenter.nu does not provide live data. Data is only available up until an X amount of days back. May vary per transformer. | 3 |
 | kenter_days_backfill | How many additional days before days_back to process on startup  | 0 |
 | kenter_metering_points__0__descriptive_name | Grid transformer name for InfluxDB transformer data | transformer01 |

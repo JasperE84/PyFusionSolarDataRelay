@@ -36,7 +36,8 @@ class BaseConf(BaseSettings):
     #
     # General settings
     #
-    debug_mode: bool = Field(default=True)
+    debug_mode: bool = Field(default=False)
+    fetch_on_startup: bool = Field(default=True, description="Do not wait for cron for initial data fetching")
     site_descriptive_name: str = Field(default="site01")
 
     #
@@ -54,9 +55,10 @@ class BaseConf(BaseSettings):
     kenter_token_url: str = Field(default="https://login.kenter.nu/connect/token")
     kenter_clientid: str = Field(default="user")
     kenter_password: str = Field(default="passwd")
-    kenter_interval: int = Field(default=43200)
-    kenter_days_back: int = Field(default=0, description="Grid infrastructure measurements in The Netherlands, show up in the API with a 3-5 days delay.")
-    kenter_days_backfill: int = Field(default=5, description="Setting this to 30 would try to backfill gridkenter data on startup for any day between 3 days back (gridrelaydaysback) and 3+30=33 days back.")
+    kenter_fetch_cron_hour: str = Field(default="8")
+    kenter_fetch_cron_minute: str = Field(default="0")
+    kenter_days_back: int = Field(default=1, description="Grid infrastructure measurements in The Netherlands, show up in the API with a 3-5 days delay.")
+    kenter_days_backfill: int = Field(default=0, description="Setting this to 30 would try to backfill gridkenter data on startup for any day between 3 days back (gridrelaydaysback) and 3+30=33 days back.")
     kenter_metering_points: List[KenterMeterMetric] = Field(default=[])
 
     #
