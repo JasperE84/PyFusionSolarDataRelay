@@ -9,19 +9,19 @@ from modules.write_mqtt import WriteMqtt
 from modules.models import *
 
 
-class RelayFusionSolar:
+class RelayFusionSolarKiosk:
     def __init__(self, conf: BaseConf, logger: logging.Logger):
         self.conf = conf
         self.logger = logger
-        self.logger.debug("RelayFusionSolar class instantiated")
+        self.logger.debug("RelayFusionSolarKioskKiosk class instantiated")
 
         self.fs_kiosk = FetchFusionSolarKiosk(conf, logger)
         self.pvoutput = WritePvOutput(conf, logger)
         self.mqtt = WriteMqtt(conf, logger)
         self.influxdb = WriteInfluxDb(self.conf, self.logger)
 
-        self.logger.info("Starting RelayFusionSolar on separate thread...")
-        self.logger.debug("RelayFusionSolar waiting 5sec to initialize docker-compose containers")
+        self.logger.info("Starting RelayFusionSolarKiosk on separate thread...")
+        self.logger.debug("RelayFusionSolarKiosk waiting 5sec to initialize docker-compose containers")
         time.sleep(5)
 
         if self.conf.fetch_on_startup:

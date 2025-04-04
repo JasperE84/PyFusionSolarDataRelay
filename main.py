@@ -3,7 +3,8 @@ import logging
 import time
 from threading import Thread
 from modules.conf import Conf
-from modules.relay_fusionsolar import RelayFusionSolar
+from modules.relay_fusionsolar_kiosk import RelayFusionSolarKiosk
+from modules.relay_fusionsolar_open_api import RelayFusionSolarOpenApi
 from modules.relay_kenter import RelayKenter
 
 # Disable https cert verify disabled warning (Telerik Fiddler)
@@ -34,7 +35,11 @@ else:
 try:
     if __name__ == "__main__":
         if conf.fusionsolar_kiosk_module_enabled:
-            fs_thread = Thread(target=RelayFusionSolar, args=[conf, logger])
+            fs_thread = Thread(target=RelayFusionSolarKiosk, args=[conf, logger])
+            fs_thread.daemon = True
+            fs_thread.start()
+        if conf.fusionsolar_open_api_module_enabled:
+            fs_thread = Thread(target=RelayFusionSolarOpenApi, args=[conf, logger])
             fs_thread.daemon = True
             fs_thread.start()
         if conf.kenter_module_enabled:
