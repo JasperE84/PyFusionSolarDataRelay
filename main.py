@@ -8,6 +8,7 @@ from modules.relay_kenter import RelayKenter
 
 # Disable https cert verify disabled warning (Telerik Fiddler)
 import urllib3
+
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 # Logger
@@ -24,19 +25,19 @@ conf = Conf(logger).read_and_validate_config()
 if conf.debug_mode:
     logger.debug("Enabled verbose logging")
     logger.setLevel(logging.DEBUG)
-    print(conf.model_dump_json())
+    logger.debug(conf.model_dump_json(indent=2, exclude_unset=False, exclude_defaults=False))
 else:
     logger.setLevel(logging.INFO)
 
 # Start RelayFusionSolar and KenterRelay
 try:
-    if __name__ == '__main__':
+    if __name__ == "__main__":
         if conf.fusionsolar_kiosk_module_enabled:
-            fs_thread = Thread(target = RelayFusionSolar, args=[conf, logger])
+            fs_thread = Thread(target=RelayFusionSolar, args=[conf, logger])
             fs_thread.daemon = True
             fs_thread.start()
         if conf.kenter_module_enabled:
-            gr_thread = Thread(target = RelayKenter, args=[conf, logger])
+            gr_thread = Thread(target=RelayKenter, args=[conf, logger])
             gr_thread.daemon = True
             gr_thread.start()
     while True:
@@ -44,4 +45,3 @@ try:
 except KeyboardInterrupt:
     logger.info("Ctrl C - Stopping relay")
     sys.exit(0)
-
