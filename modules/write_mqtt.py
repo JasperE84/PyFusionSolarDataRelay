@@ -34,9 +34,7 @@ class WriteMqtt:
         # these published to MQTT as well.
         data_points = {
             "real_time_power_w": inverter_data.real_time_power_w,
-            "month_energy_wh": inverter_data.month_energy_wh,
             "day_energy_wh": inverter_data.day_energy_wh,
-            "year_energy_wh": inverter_data.year_energy_wh,
             "lifetime_energy_wh": inverter_data.lifteime_energy_wh,
         }
 

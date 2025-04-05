@@ -1,52 +1,240 @@
-import logging
-import requests
 import json
-import html
+import os
+import logging
 import time
-from functools import wraps
-from threading import Lock
+from typing import Any, Dict, Optional
+import requests
+from modules.decorators import rate_limit
 from modules.conf_models import BaseConf, FusionSolarOpenApiInverter
 from modules.models import *
+
+DEVICE_CACHE_FILE_PATH = "cache/fusion_solar_openapi_devices.json"
+STATION_CACHE_FILE_PATH = "cache/fusion_solar_openapi_stations.json"
+CACHE_EXPIRATION_SECONDS = 24 * 3600  # 24 hours in seconds
 
 
 class FetchFusionSolarOpenApi:
     def __init__(self, conf: BaseConf, logger: logging.Logger):
         self.conf = conf
         self.logger = logger
-        self.lastCumulativeEnergy = 0
         self.jwt_token = ""
+        self.station_list = []
+        self.device_list = []
         self.logger.debug("FetchFusionSolarOpenApi class instantiated")
 
-    def rate_limit(max_calls, period):
-        def decorator(func):
-            last_reset = [time.time()]  # Using a list to allow access to the nonlocal variable in closures
-            call_count = [0]
-            lock = Lock()
+    def update_station_list(self, force_api_update: bool = False) -> None:
+        """
+        Fetch, cache, and store the list of stations from the FusionSolar OpenAPI.
+        If a previous cache file exists and is younger than 24 hours, it will be used
+        unless force_api_update is True. Otherwise, the API is called, and the response
+        is written to the cache file.
 
-            @wraps(func)
-            def wrapper(*args, **kwargs):
-                with lock:
-                    current_time = time.time()
-                    # Reset the rate limit counter periodically
-                    if current_time - last_reset[0] >= period:
-                        last_reset[0] = current_time
-                        call_count[0] = 0
+        :param force_api_update: If True, always ignore the cache and call the FusionSolar OpenAPI.
+        """
+        # According to your requirement, /thirdData/getStationList does NOT need a request body.
+        response = self._fetch_and_cache_fusionsolar_data(
+            force_api_update=force_api_update,
+            endpoint="/thirdData/getStationList",
+            request_data=None,
+            cache_file_path=STATION_CACHE_FILE_PATH
+        )
+        self.station_list = response.get("data", [])
 
-                    if call_count[0] < max_calls:
-                        call_count[0] += 1
-                        return func(*args, **kwargs)
+    def update_device_list(self, force_api_update: bool = False) -> None:
+        """
+        Fetch, cache, and store the list of devices from the FusionSolar OpenAPI.
+        If a previously cached file exists and is younger than 24 hours, it will be used
+        unless force_api_update is True. Otherwise, the API is called, and the response
+        is written to the cache file.
+
+        :param force_api_update: If True, always ignore the cache and call the FusionSolar OpenAPI.
+        """
+        # The /thirdData/getDevList endpoint expects station codes in the POST body according to your snippet.
+        if not self.station_list:
+            self.update_station_list()
+
+        stations_str = ",".join(item["stationCode"] for item in self.station_list if "stationCode" in item)
+        data = {"stationCodes": stations_str}
+        
+        response = self._fetch_and_cache_fusionsolar_data(
+            force_api_update=force_api_update,
+            endpoint="/thirdData/getDevList",
+            request_data=data,
+            cache_file_path=DEVICE_CACHE_FILE_PATH
+        )
+        self.device_list = response.get("data", [])
+
+    @rate_limit(max_calls=1, period=300)
+    def fetch_fusionsolar_inverter_device_kpis(self) -> List[FusionSolarInverterKpi]:
+        """
+        Retrieve real-time KPIs from the FusionSolar OpenAPI.
+        Uses rate limiting to avoid frequent calls.
+
+        :return: A list of FusionSolarInverterKpi objects containing inverter metrics.
+        """
+        self.logger.info(f"Requesting realtimeKpi's for inverters from FusionSolarOpenAPI.")
+
+        # Ensure the device list is populated
+        if not self.device_list:
+            self.update_device_list()
+
+        url = f"{self.conf.fusionsolar_open_api_url}/thirdData/getDevRealKpi"
+        devices_str = ",".join(str(item["id"]) for item in self.device_list if "id" in item and "devTypeId" in item and item["devTypeId"] == 1)
+        data = {"devTypeId": 1, "devIds": devices_str}
+
+        response_json = self._fetch_fusionsolar_data_request(url, data)
+        kpi_data = response_json.get("data", [])
+
+        inverter_kpis = []
+        for dev_json in kpi_data:
+            try:
+                real_time_power_w = float(dev_json["dataItemMap"]["active_power"]) * 1000
+                cumulative_energy_wh = float(dev_json["dataItemMap"]["total_cap"]) * 1000
+                daily_energy_wh = float(dev_json["dataItemMap"]["day_cap"]) * 1000
+            except KeyError as missing_key:
+                raise Exception(f"Key '{missing_key}' is missing from the API response data section.")
+            except ValueError as val_err:
+                raise Exception(f"Failed to convert FusionSolarOpenAPI data values to float: {val_err}")
+
+            self.logger.debug(f"Metrics for {""} after transformations: " f"realTimePowerW={real_time_power_w}, " f"cumulativeEnergyWh={cumulative_energy_wh}, " f"dailyEnergyWh={daily_energy_wh}")
+
+            matching_device = next((dev for dev in self.device_list if dev.get("id") == dev_json["devId"]), None)
+            matching_station = next((stat for stat in self.station_list if stat.get("stationCode") == matching_device["stationCode"]), None)
+            matching_conf = next((inv for inv in self.conf.fusionsolar_open_api_inverters if inv.dev_id == str(dev_json["devId"])), None)
+
+            descriptive_name = matching_conf.descriptive_name if matching_conf else ""
+            station_dn = matching_device.get("stationCode") if matching_device else "unknown"
+            station_name = matching_station.get("stationName") if matching_station else "unknown"
+
+
+            # Populate the inverter KPI model without altering the original response.
+            inverter_kpi = FusionSolarInverterKpi(
+                descriptive_name=descriptive_name,
+                station_name=station_name,
+                station_dn=station_dn,
+                data_source="open_api",
+                real_time_power_w=real_time_power_w,
+                cumulative_energy_wh=cumulative_energy_wh,
+                day_energy_wh=daily_energy_wh,
+            )
+
+            inverter_kpis.append(inverter_kpi)
+
+        return inverter_kpis
+
+    def _fetch_and_cache_fusionsolar_data(
+        self,
+        force_api_update: bool,
+        endpoint: str,
+        request_data: Optional[Dict[str, Any]],
+        cache_file_path: str
+    ) -> Dict[str, Any]:
+        """
+        Shared method to handle FusionSolar data fetching and caching.
+
+        :param force_api_update: If True, always ignore cache and fetch fresh data.
+        :param endpoint: URL path (suffix) for the FusionSolar OpenAPI.
+        :param request_data: Data to be sent in the POST request body.
+        :param cache_file_path: File path to store/read the response cache.
+        :return: The JSON response with the "data" field containing the relevant list.
+        """
+        self.logger.info(f"Updating data from FusionSolar API with endpoint: {endpoint}, cache path: {cache_file_path}")
+
+        # 1. Check for an existing cache file if we're not forcing an update.
+        if not force_api_update and os.path.isfile(cache_file_path):
+            try:
+                with open(cache_file_path, "r", encoding="utf-8") as cache_file:
+                    cache_content = json.load(cache_file)
+
+                cached_timestamp = cache_content.get("timestamp")
+                cached_response = cache_content.get("api_response", {})
+                cached_data = cached_response.get("data", [])
+
+                # Ensure the cached data is present and not expired (> 24 hours old).
+                if cached_timestamp and isinstance(cached_data, list):
+                    age_in_seconds = time.time() - cached_timestamp
+                    if age_in_seconds < CACHE_EXPIRATION_SECONDS:
+                        # Cache is valid, so return from cache
+                        self.logger.info(
+                            f"Loaded data from cache (last updated {round(age_in_seconds)} seconds ago). "
+                            f"Number of items: {len(cached_data)}"
+                        )
+                        return cached_response
                     else:
-                        time_to_wait = period - (current_time - last_reset[0])
-                        print(f"Rate limit exceeded. Try again in {time_to_wait:.2f} seconds.")
-                        time.sleep(time_to_wait)
-                        return wrapper(*args, **kwargs)
+                        self.logger.info(
+                            "Cache file found, but it's older than 24 hours. "
+                            "Will fetch new data from API."
+                        )
+                else:
+                    self.logger.warning(
+                        "Cache file does not contain valid format or data. "
+                        "Will fetch new data from API."
+                    )
+            except (json.JSONDecodeError, OSError) as exc:
+                self.logger.warning(
+                    f"Failed to parse or read cache file properly: {exc}. "
+                    "Will fetch new data from API."
+                )
 
-            return wrapper
+        # 2. If cache is invalid, expired, or force_api_update is True, call the API.
+        self.logger.info("Fetching data from FusionSolar OpenAPI...")
+        url = f"{self.conf.fusionsolar_open_api_url}{endpoint}"
 
-        return decorator
+        try:
+            response_json = self._fetch_fusionsolar_data_request(url, request_data)
+        except Exception as exc:
+            raise Exception(f"Error fetching data from FusionSolar OpenAPI. Info: {exc}")
 
-    def update_open_api_token(self):
-        token_url = f"{self.conf.fusionsolar_open_api_endpoint}/thirdData/login"
+        # 3. Write the updated response to the cache file with a timestamp.
+        try:
+            cache_content = {
+                "timestamp": time.time(),
+                "api_response": response_json
+            }
+            with open(cache_file_path, "w", encoding="utf-8") as cache_file:
+                json.dump(cache_content, cache_file, ensure_ascii=False, indent=2)
+
+            self.logger.info(
+                f"Data fetched from API and cached. Number of items: {len(response_json.get('data', []))}"
+            )
+        except OSError as exc:
+            self.logger.error(f"Failed to write data to cache file: {exc}")
+
+        return response_json
+
+
+    def _fetch_fusionsolar_data_request(self, url: str, data: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Make a POST request to the given URL with the provided data and raise
+        an exception for any issues.
+
+        :param url: The FusionSolar OpenAPI endpoint.
+        :param data: JSON payload for the request.
+        :return: A dictionary representing the JSON response.
+        """
+        try:
+            response = self._request_with_token_retry(url, method="POST", json=data)
+            response.raise_for_status()
+        except Exception as exc:
+            raise Exception(f"Error in FusionSolarOpenAPI HTTP request. Error info: {exc}")
+
+        try:
+            response_json = response.json()
+        except Exception as exc:
+            content = response.content.decode("utf-8") or ""
+            raise Exception("Error parsing JSON from FusionSolarOpenAPI response. " f"Check the API URL. Error info: {exc}\n" f"First 200 chars of response for diagnosis: {content[:200].replace(chr(10), ' ')}")
+
+        if "data" not in response_json:
+            raise Exception("FusionSolarOpenAPI response invalid: Missing 'data' key.")
+
+        return response_json
+
+    def update_open_api_token(self) -> None:
+        """
+        Obtain or refresh the JWT token from the FusionSolar OpenAPI and store it
+        for subsequent requests.
+        """
+        token_url = f"{self.conf.fusionsolar_open_api_url}/thirdData/login"
         headers = {"Content-Type": "application/json"}
         data = {"userName": self.conf.fusionsolar_open_api_user_name, "systemCode": self.conf.fusionsolar_open_api_system_code}
 
@@ -58,123 +246,72 @@ class FetchFusionSolarOpenApi:
             # Attempt to parse the top-level JSON.
             try:
                 response_json = response.json()
-            except Exception as e:
+            except Exception as exc:
                 content = response.content.decode("utf-8") or ""
-                raise Exception(f"Error parsing JSON from FetchFusionSolarOpenApi APIresponse. Check the API url. Error info: {e}\n" f"First 200 chars of response for diagnosis: {content[:200].replace(chr(10), ' ')}")
+                raise Exception("Error parsing JSON from FusionSolarOpenAPI token response. " f"Check the API URL. Error info: {exc}\n" f"First 200 chars: {content[:200].replace(chr(10), ' ')}")
 
-            # Check for success key in response JSON data
-            if not 'success' in response_json:
-                raise Exception(f"No success property found in FetchFusionSolarOpenApi APIresponse. Check the API url. Error info: {e}\n" f"First 200 chars of response for diagnosis: {content[:200].replace(chr(10), ' ')}")
+            if "success" not in response_json:
+                raise Exception("No 'success' property found in FusionSolarOpenAPI token response.")
 
-            auth_success = response_json.get("success")
-            if not auth_success:
-                raise Exception(f"Authentication with FusionSolar OpenApi failed. Error info: {token_response.get('message')}")
+            if not response_json.get("success", False):
+                message = response_json.get("message", "Unknown error while fetching token")
+                raise Exception(f"Authentication with FusionSolar OpenAPI failed. Error: {message}")
+
+            # Capture the JWT token from the response cookies
             self.jwt_token = response.cookies.get("XSRF-TOKEN")
-        except Exception as e:
-            err_msg = f"Could not retrieve valid FusionSolar OpenAPI JWT auth token: {e}"
+            if not self.jwt_token:
+                raise Exception("Failed to retrieve XSRF-TOKEN from the response cookies.")
+
+        except Exception as exc:
+            err_msg = f"Could not retrieve valid FusionSolar OpenAPI JWT auth token: {exc}"
             self.logger.error(err_msg)
             raise Exception(err_msg)
 
-    def _request_with_token_retry(self, url, method="GET", **kwargs):
-        # Ensure headers exist
+    def _request_with_token_retry(self, url: str, method: str = "GET", **kwargs) -> requests.Response:
+        """
+        Generic request method that includes the JWT token in the headers.
+        Retries once if the token is expired and needs refreshing.
+
+        :param url: The target URL for the request.
+        :param method: HTTP method (GET, POST, etc.)
+        :param kwargs: Additional parameters for requests.request (e.g., json=payload).
+        :return: A requests.Response object.
+        """
         headers = kwargs.pop("headers", {})
         headers["XSRF-TOKEN"] = self.jwt_token
         headers.setdefault("Content-Type", "application/json")
 
-        # Attempt the request up to two times (in case we need to refresh token).
         for attempt in range(2):
             self.logger.debug(f"Fetching URL: {url} (attempt {attempt + 1})")
             response = requests.request(method.upper(), url, headers=headers, verify=False, **kwargs)
             response.raise_for_status()
 
-            # Attempt to parse the top-level JSON.
+            # Check JSON content for success status
             try:
                 response_json = response.json()
-            except Exception as e:
+            except Exception as exc:
                 content = response.content.decode("utf-8") or ""
-                raise Exception(f"Error parsing JSON from FetchFusionSolarOpenApi APIresponse. Check the API url. Error info: {e}\n" f"First 200 chars of response for diagnosis: {content[:200].replace(chr(10), ' ')}")
+                raise Exception(f"Failed to parse JSON from FusionSolarOpenAPI. Error info: {exc}\n" f"First 200 chars of response: {content[:200].replace(chr(10), ' ')}")
 
-            # Check for success key in response JSON data
-            if not 'success' in response_json:
-                raise Exception(f"No success property found in FetchFusionSolarOpenApi APIresponse. Check the API url. Error info: {e}\n" f"First 200 chars of response for diagnosis: {content[:200].replace(chr(10), ' ')}")
+            # If no "success" property is found, something is wrong
+            if "success" not in response_json:
+                raise Exception(f"No 'success' property found in FusionSolarOpenAPI response.")
 
-            # If not success or second attempt, break
-            if response_json.get("success") or attempt == 1:
-                # If there's another error status, it will be caught below
+            # If there's a failCode and it's 305 -> token needs refresh
+            if "failCode" in response_json:
+                if (not response_json.get("success")) and response_json["failCode"] == 305:
+                    self.logger.debug("FusionSolar: JWT token expired or invalid. Refreshing token...")
+                    self.update_open_api_token()
+                    headers["XSRF-TOKEN"] = self.jwt_token
+                elif not response_json.get("success"):
+                    fail_code = response_json.get("failCode", "Unknown")
+                    message = response_json.get("message", "No message provided")
+                    raise Exception(f"FusionSolarOpenAPI request failed. failCode: {fail_code}, message: {message}")
+                else:
+                    # If success is True, no further retry needed
+                    break
+            else:
+                # No failCode indicates request was likely successful
                 break
 
-            # No success on first try? Then refresh token!
-            self.logger.debug("FusionSolar: JWT token expired or not set, refreshing token and retrying request.")
-            self.update_open_api_token()
-            headers["XSRF-TOKEN"] = self.jwt_token
-
         return response
-
-    @rate_limit(max_calls=1, period=10)
-    def fetch_fusionsolar_status(self, fs_conf: FusionSolarOpenApiInverter) -> List[FusionSolarInverterKpi]:
-        self.logger.info(f"Requesting data for {fs_conf.descriptive_name} dev_id={fs_conf.dev_id} from FetchFusionSolarOpenApi API...")
-
-        data = {"devIds": fs_conf.dev_id, "devTypeId": fs_conf.dev_type_id}
-
-        # Fetch the data.
-        try:
-            response = self._request_with_token_retry(f"{self.conf.fusionsolar_open_api_endpoint}/thirdData/getDevRealKpi", method="POST", json=data)
-            response.raise_for_status()
-        except Exception as e:
-            raise Exception("Error in FetchFusionSolarOpenApi API HTTP request. Error info: {e}")
-
-        # Attempt to parse the top-level JSON.
-        try:
-            response_json = response.json()
-        except Exception as e:
-            content = response.content.decode("utf-8") or ""
-            raise Exception(f"Error parsing JSON from FetchFusionSolarOpenApi APIresponse. Check the API url and KKID value. Error info: {e}\n" f"First 200 chars of response for diagnosis: {content[:200].replace(chr(10), ' ')}")
-
-        # The top-level JSON should contain a "data" key with encoded JSON.
-        if "data" not in response_json:
-            raise Exception(f"FetchFusionSolarOpenApi API response invalid, does not contain 'data' key.")
-  
-        inverter_kpis = []
-
-        for dev_json in response_json["data"]:
-
-            # Verify the "realKpi" key is present before accessing it.
-            if "active_power" not in dev_json["dataItemMap"]:
-                raise Exception("Key 'active_power' is missing in the FusionSolarOpenApi API response data element.")
-
-            # Extract KPI values and convert kW to W (multiplying by 1000).
-            try:
-                real_time_power_w = float(dev_json["dataItemMap"]["active_power"]) * 1000
-                cumulative_energy_wh = float(dev_json["dataItemMap"]["total_cap"]) * 1000
-                daily_energy_wh = float(dev_json["dataItemMap"]["day_cap"]) * 1000
-            except KeyError as missing_key:
-                raise Exception(f"Key '{missing_key}' is missing from the 'data' section of the FusionSolarOpenApi API response.")
-            except ValueError as e:
-                raise Exception(f"Failed to convert FusionSolarOpenApi data values to float: {e}")
-
-
-            self.logger.debug(
-                f"FusionSolarOpenApi metrics after transformations for {fs_conf.descriptive_name}"
-                f"realTimePowerW={real_time_power_w}, "
-                f"cumulativeEnergyWh={cumulative_energy_wh}, "
-                #f"monthEnergyWh={month_energy_wh}, "
-                f"dailyEnergyWh={daily_energy_wh}, "
-                #f"yearEnergyWh={year_energy}"
-            )
-
-            # Populate and return the inverter kpi object without altering the original response dictionary.
-            inverter_kpi = FusionSolarInverterKpi(
-                descriptive_name=fs_conf.descriptive_name,
-                #station_name=station_name,
-                #station_dn=station_dn,
-                data_source="open_api",
-                real_time_power_w=real_time_power_w,
-                cumulative_energy_wh=cumulative_energy_wh,
-                #month_energy_wh=month_energy_wh,
-                day_energy_wh=daily_energy_wh,
-                #year_energy_wh=year_energy,
-            )
-
-            inverter_kpis.append(inverter_kpi)
-
-        return inverter_kpis

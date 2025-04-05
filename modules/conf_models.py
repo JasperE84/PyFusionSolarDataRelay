@@ -66,7 +66,7 @@ class BaseConf(BaseSettings):
     fusionsolar_open_api_module_enabled: bool = Field(default=True)
     fusionsolar_open_api_inverters: List[FusionSolarOpenApiInverter] = Field(default=[])
     fusionsolar_open_api_meters: List[FusionSolarOpenApiMeter] = Field(default=[])
-    fusionsolar_open_api_endpoint: str = Field(default="https://eu5.fusionsolar.huawei.com")
+    fusionsolar_open_api_url: str = Field(default="https://eu5.fusionsolar.huawei.com")
     fusionsolar_open_api_user_name: str = Field(default="")
     fusionsolar_open_api_system_code: str = Field(default="")
     fusionsolar_open_api_cron_hour: str = Field(default="0")

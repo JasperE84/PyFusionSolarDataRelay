@@ -43,14 +43,14 @@ class FusionSolarInverterKpi:
     def __init__(
         self,
         descriptive_name: str = "",
+
         station_name: str = "",
         station_dn: str = "",
         data_source: str = "",
+
         real_time_power_w: float = 0.0,
         cumulative_energy_wh: float = 0.0,
-        month_energy_wh: float = 0.0,
         day_energy_wh: float = 0.0,
-        year_energy_wh: float = 0.0,
     ):
         self.descriptive_name = descriptive_name
         self.station_name = station_name
@@ -58,9 +58,7 @@ class FusionSolarInverterKpi:
         self.data_source = data_source
         self.real_time_power_w = real_time_power_w
         self.lifteime_energy_wh = cumulative_energy_wh
-        self.month_energy_wh = month_energy_wh
         self.day_energy_wh = day_energy_wh
-        self.year_energy_wh = year_energy_wh
 
     descriptive_name: str
     station_name: str
@@ -68,7 +66,4 @@ class FusionSolarInverterKpi:
     data_source: str
     real_time_power_w: float
     lifteime_energy_wh: float
-    month_energy_wh: float
     day_energy_wh: float
-    year_energy_wh: float
-

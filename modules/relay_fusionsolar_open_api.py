@@ -33,24 +33,30 @@ class RelayFusionSolarOpenApi:
         sched.start()
 
     def process_fusionsolar_open_apis(self):
-        for fs_conf in self.conf.fusionsolar_open_api_inverters:
-            if fs_conf.enabled:
-                try:
-                    self.logger.info(f"Processing fusionsolar open_api inverters {fs_conf.descriptive_name}, with dev_id {fs_conf.dev_id}...")
-                    inverter_data = self.fs_open_api.fetch_fusionsolar_status(fs_conf)
+        self.process_fusionsolar_inverters()
+        # ToDo: Implement meters too
+
+        self.logger.info("Waiting for next FusionSolar interval...")
+
+    def process_fusionsolar_inverters(self):
+        try:
+            self.logger.info(f"Processing fusionsolar open_api inverters...")
+            inverter_data = self.fs_open_api.fetch_fusionsolar_inverter_device_kpis()
+
+
+            for fs_conf in self.conf.fusionsolar_open_api_inverters:
+                if fs_conf.enabled:
+                    pass
                     #for inverter in inverter_data:
                     #    self.write_pvdata_to_influxdb(inverter, fs_conf)
                     #    self.write_pvdata_to_pvoutput(inverter, fs_conf)
                     #    self.publish_pvdata_to_mqtt(inverter, fs_conf)
-                except Exception as e:
-                    self.logger.exception(f"Exception while processing fusionsolar open_api inverter [{fs_conf.descriptive_name}] with dev_id [{fs_conf.dev_id}]:\n{e}")
-            else:
-                self.logger.info(f"Skipping disabled fusionsolar open_api {fs_conf.descriptive_name}, with dev_id {fs_conf.dev_id}...")
+                else:
+                    self.logger.info(f"Skipping disabled fusionsolar open_api {fs_conf.descriptive_name}, with dev_id {fs_conf.dev_id}...")
 
 
-        # ToDo: Implement meters too
-
-        self.logger.info("Waiting for next FusionSolar interval...")
+        except Exception as e:
+            self.logger.exception(f"Exception while processing fusionsolar open_api inverters:\n{e}")
 
     def write_pvdata_to_pvoutput(self, inverter_data: FusionSolarInverterKpi, fs_conf: FusionSolarOpenApiInverter):
         if self.conf.pvoutput_module_enabled and fs_conf.output_pvoutput:

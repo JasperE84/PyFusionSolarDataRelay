@@ -57,9 +57,7 @@ class FetchFusionSolarKiosk:
         try:
             real_time_power_w = float(response_json_data["realKpi"]["realTimePower"]) * 1000
             cumulative_energy_wh = float(response_json_data["realKpi"]["cumulativeEnergy"]) * 1000
-            month_energy_wh = float(response_json_data["realKpi"]["monthEnergy"]) * 1000
             daily_energy_wh = float(response_json_data["realKpi"]["dailyEnergy"]) * 1000
-            year_energy = float(response_json_data["realKpi"]["yearEnergy"]) * 1000
         except KeyError as missing_key:
             raise Exception(f"Key '{missing_key}' is missing from the 'realKpi' section of the FusionSolarKiosk API response.")
         except ValueError as e:
@@ -82,9 +80,7 @@ class FetchFusionSolarKiosk:
             f"FusionSolarKiosk metrics after transformations for {fs_conf.descriptive_name} / {station_name} / {station_dn}: "
             f"realTimePowerW={real_time_power_w}, "
             f"cumulativeEnergyWh={cumulative_energy_wh}, "
-            f"monthEnergyWh={month_energy_wh}, "
             f"dailyEnergyWh={daily_energy_wh}, "
-            f"yearEnergyWh={year_energy}"
         )
 
         # Populate and return the inverter kpi object without altering the original response dictionary.
@@ -95,9 +91,7 @@ class FetchFusionSolarKiosk:
             data_source="kiosk",
             real_time_power_w=real_time_power_w,
             cumulative_energy_wh=cumulative_energy_wh,
-            month_energy_wh=month_energy_wh,
             day_energy_wh=daily_energy_wh,
-            year_energy_wh=year_energy,
         )
 
         return inverter_kpi
