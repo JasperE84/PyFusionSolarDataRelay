@@ -1,7 +1,7 @@
 import requests
 import json
 import html
-from modules.conf_models import BaseConf, FusionSolarKioskMetric
+from modules.conf_models import BaseConf, FusionSolarKioskSettings
 from modules.models import *
 
 
@@ -9,16 +9,15 @@ class FetchFusionSolarKiosk:
     def __init__(self, conf: BaseConf, logger):
         self.conf = conf
         self.logger = logger
-        self.lastCumulativeEnergy = 0
         self.logger.debug("FetchFusionSolarKiosk class instantiated")
 
-    def fetch_fusionsolar_status(self, fs_conf: FusionSolarKioskMetric) -> FusionSolarInverterKpi:
-        self.logger.info(f"Requesting data for {fs_conf.descriptive_name} kkid={fs_conf.api_kkid} from FetchFusionSolarKiosk API...")
+    def fetch_fusionsolar_status(self, kiosk_settings: FusionSolarKioskSettings) -> FusionSolarInverterMeasurement:
+        self.logger.info(f"Requesting data for {kiosk_settings.descriptive_name} kkid={kiosk_settings.api_kkid} from FetchFusionSolarKiosk API...")
 
         # Fetch the data.
         try:
             response = requests.get(
-                f"{fs_conf.api_url}{fs_conf.api_kkid}",
+                f"{kiosk_settings.api_url}{kiosk_settings.api_kkid}",
                 verify=False,
             )
             response.raise_for_status()
@@ -57,12 +56,6 @@ class FetchFusionSolarKiosk:
         except ValueError as e:
             raise Exception(f"Failed to convert FusionSolarKiosk realKpi values to float: {e}")
 
-        # Fix FusionSolar quirk at midnight (ensure cumulativeEnergy does not decrease).
-        if self.lastCumulativeEnergy != 0 and lifetime_energy_wh < self.lastCumulativeEnergy:
-            lifetime_energy_wh = self.lastCumulativeEnergy
-        else:
-            self.lastCumulativeEnergy = lifetime_energy_wh
-
         # Extract station information.
         try:
             station_name = response_json_data["stationOverview"]["stationName"]
@@ -71,15 +64,15 @@ class FetchFusionSolarKiosk:
             raise Exception(f"The key '{missing_key}' is missing from the 'stationOverview' section of the FusionSolarKiosk API response.")
 
         self.logger.debug(
-            f"FusionSolarKiosk metrics after transformations for {fs_conf.descriptive_name} / {station_name} / {station_dn}: " f"realTimePowerW={real_time_power_w}, " f"cumulativeEnergyWh={lifetime_energy_wh}, " f"dailyEnergyWh={daily_energy_wh}, "
+            f"FusionSolarKiosk metrics after transformations for {kiosk_settings.descriptive_name} / {station_name} / {station_dn}: " f"realTimePowerW={real_time_power_w}, " f"cumulativeEnergyWh={lifetime_energy_wh}, " f"dailyEnergyWh={daily_energy_wh}, "
         )
 
         # Populate and return the inverter kpi object without altering the original response dictionary.
-        inverter_kpi = FusionSolarInverterKpi(
-            conf=fs_conf,
+        inverter_kpi = FusionSolarInverterMeasurement(
+            settings=kiosk_settings,
             station_name=station_name,
             station_dn=station_dn,
-            device_dn='station',
+            device_dn="",
             data_source="kiosk",
             real_time_power_w=real_time_power_w,
             lifetime_energy_wh=lifetime_energy_wh,

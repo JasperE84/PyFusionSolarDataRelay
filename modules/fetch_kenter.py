@@ -3,7 +3,7 @@ import requests
 from datetime import datetime, timedelta
 import json
 from modules.conf_models import BaseConf
-from modules.models import KenterTransformerKpi, KenterTransformerMeasurement
+from modules.models import KenterTransformerMeasurements, KenterTransformerMeasurement
 
 
 class FetchKenter:
@@ -58,7 +58,7 @@ class FetchKenter:
 
         return response
 
-    def fetch_gridkenter_meters(self):
+    def print_gridkenter_meters(self):
         self.logger.info("Requesting meter list from Kenter API...")
         url = f"{self.conf.kenter_api_url}/meetdata/v2/meters"
 
@@ -77,7 +77,7 @@ class FetchKenter:
                     "meteringPointType: {}, meterNumber: {}".format(connection.get("connectionId"), meteringpoint.get("meteringPointId"), meteringpoint.get("productType"), meteringpoint.get("meteringPointType"), meteringpoint.get("meterNumber"))
                 )
 
-    def fetch_gridkenter_data(self, descriptive_name, connection_id, metering_point_id, channel_id, days_back) -> KenterTransformerKpi:
+    def fetch_gridkenter_data(self, descriptive_name, connection_id, metering_point_id, channel_id, days_back) -> KenterTransformerMeasurements:
         # Prepare date
         req_time = datetime.now() - timedelta(days=days_back)
         req_year = req_time.strftime("%Y")
@@ -104,7 +104,7 @@ class FetchKenter:
         if not channel:
             raise FetchKenterMissingChannelId(f"Kenter API response for {descriptive_name}, connectionId {connection_id} and meteringPointId {metering_point_id} does not contain channelId '{channel_id}'.")
 
-        return_obj = KenterTransformerKpi(descriptive_name=descriptive_name, connection_id=connection_id, metering_point_id=metering_point_id, channel_id=channel_id, measurements=[])
+        return_obj = KenterTransformerMeasurements(descriptive_name=descriptive_name, connection_id=connection_id, metering_point_id=metering_point_id, channel_id=channel_id, measurements=[])
 
         prev_ts = None
         for measure in channel.get("Measurements", []):

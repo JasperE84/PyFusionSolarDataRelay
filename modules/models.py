@@ -1,6 +1,6 @@
 from typing import List
 
-from modules.conf_models import FusionSolarOpenApiInverter
+from modules.conf_models import FusionSolarOpenApiInverterSettings
 
 
 class KenterTransformerMeasurement:
@@ -19,7 +19,7 @@ class KenterTransformerMeasurement:
     interval_power_avg_w: float
 
 
-class KenterTransformerKpi:
+class KenterTransformerMeasurements:
     def __init__(self, descriptive_name: str = "", connection_id: str = "", metering_point_id: str = "", channel_id: str = "", measurements: List[KenterTransformerMeasurement] = []):
         self.descriptive_name = descriptive_name
         self.connection_id = connection_id
@@ -34,44 +34,53 @@ class KenterTransformerKpi:
     measurements: List[KenterTransformerMeasurement]
 
 
-class FusionSolarInverterKpi:
+class FusionSolarInverterMeasurement:
     def __init__(
         self,
-        conf: FusionSolarOpenApiInverter = None,
+        settings: FusionSolarOpenApiInverterSettings = None,
         station_name: str = "",
         station_dn: str = "",
         device_dn: str = "",
+        device_name: str = "",
+        device_model: str = "",
+        device_id: str = "",
         data_source: str = "",
         real_time_power_w: float = 0.0,
         lifetime_energy_wh: float = 0.0,
         day_energy_wh: float = 0.0,
     ):
-        self.conf = conf
+        self.settings = settings
         self.station_name = station_name
         self.station_dn = station_dn
         self.device_dn = device_dn
+        self.device_name = device_name
+        self.device_model = device_model
+        self.device_id = device_id
         self.data_source = data_source
         self.real_time_power_w = real_time_power_w
         self.lifetime_energy_wh = lifetime_energy_wh
         self.day_energy_wh = day_energy_wh
 
-    conf: FusionSolarOpenApiInverter
+    settings: FusionSolarOpenApiInverterSettings
     station_name: str
     station_dn: str
     device_dn: str
+    device_name: str
+    device_model: str
+    device_id: str
     data_source: str
     real_time_power_w: float
     lifetime_energy_wh: float
     day_energy_wh: float
 
     @property
-    def descriptive_name(self) -> str:
-        if self.conf is not None:
-            return self.conf.descriptive_name
-        return "not_configured"
-    
+    def settings_descriptive_name(self) -> str:
+        if self.settings is not None:
+            return self.settings.descriptive_name
+        return ""
+
     @property
-    def dev_id(self) -> str:
-        if self.conf is not None:
-            return self.conf.dev_id
+    def settings_device_id(self) -> str:
+        if self.settings is not None:
+            return self.settings.dev_id
         return ""

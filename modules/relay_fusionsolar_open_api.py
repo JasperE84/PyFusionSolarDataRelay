@@ -1,7 +1,7 @@
 import logging
 import time
 from apscheduler.schedulers.blocking import BlockingScheduler
-from modules.conf_models import BaseConf, FusionSolarOpenApiInverter
+from modules.conf_models import BaseConf, FusionSolarOpenApiInverterSettings
 from modules.write_influxdb import WriteInfluxDb
 from modules.write_pvoutput import WritePvOutput
 from modules.fetch_fusion_solar_open_api import FetchFusionSolarOpenApi
@@ -34,53 +34,61 @@ class RelayFusionSolarOpenApi:
         sched.start()
 
     def process_fusionsolar_open_apis(self):
-        self.process_fusionsolar_inverters()
+        self.process_fusionsolar_openapi_inverters()
         # ToDo: Implement meters too
 
         self.logger.info("Waiting for next FusionSolar interval...")
 
-    def process_fusionsolar_inverters(self):
+    def process_fusionsolar_openapi_inverters(self):
         try:
             self.logger.info(f"Processing fusionsolar OpenAPI inverters...")
-            inverter_kpis = self.fs_open_api.fetch_fusionsolar_inverter_device_kpis()
+            inverter_measurements = self.fs_open_api.fetch_fusionsolar_inverter_device_kpis()
 
-            for inverter_kpi in inverter_kpis:
-                if not (inverter_kpi.conf is not None and inverter_kpi.conf.enabled == False):
-                    self.write_pvdata_to_influxdb(inverter_kpi)
-                    self.publish_pvdata_to_mqtt(inverter_kpi)
-                    self.write_pvdata_to_pvoutput(inverter_kpi)
+            for inverter_measurement in inverter_measurements:
+                if not (inverter_measurement.settings is not None and inverter_measurement.settings.enabled == False):
+                    self.write_pvdata_to_influxdb(inverter_measurement)
+                    self.publish_pvdata_to_mqtt(inverter_measurement)
+                    self.write_pvdata_to_pvoutput(inverter_measurement)
                 else:
-                    self.logger.info(f"Skipping disabled fusionsolar open_api {inverter_kpi.descriptive_name}, with dev_id {inverter_kpi.dev_id}...")
+                    self.logger.info(f"Skipping disabled fusionsolar open_api {inverter_measurement.settings_descriptive_name}, with dev_id {inverter_measurement.settings_device_id}...")
 
         except Exception as e:
             self.logger.exception(f"Exception while processing fusionsolar open_api inverters:\n{e}")
 
-    def write_pvdata_to_pvoutput(self, inverter_kpi: FusionSolarInverterKpi):
-        if self.conf.pvoutput_module_enabled and (inverter_kpi.conf is not None and inverter_kpi.conf.output_pvoutput):
+    def write_pvdata_to_pvoutput(self, inverter_measurement: FusionSolarInverterMeasurement):
+        if self.conf.pvoutput_module_enabled and (inverter_measurement.settings is not None and inverter_measurement.settings.output_pvoutput):
             try:
-                self.pvoutput.write_pvdata_to_pvoutput(inverter_kpi, inverter_kpi.conf.dev_id, inverter_kpi.conf.output_pvoutput_system_id)
+                self.pvoutput.write_pvdata_to_pvoutput(inverter_measurement, inverter_measurement.settings.dev_id, inverter_measurement.settings.output_pvoutput_system_id)
             except Exception as e:
                 # Log but do not raise, other outputs should proceed.
-                self.logger.exception(f"Error writing PV data to PVOutput.org for fusionsolar open_api [{inverter_kpi.descriptive_name}] with dev_id [{inverter_kpi.dev_id}]: {e}")
+                self.logger.exception(
+                    f"Error writing PV data to PVOutput.org for fusionsolar open_api [{inverter_measurement.settings_descriptive_name}] with dev_id [{inverter_measurement.settings_device_id}]: {e}"
+                )
         else:
             self.logger.debug(f"Skipping publishing to InfluxDB, module disabled, or PVOutput disabled in fusionsolar open_api config.")
 
-    def publish_pvdata_to_mqtt(self, inverter_kpi: FusionSolarInverterKpi):
-        if self.conf.mqtt_module_enabled and ((inverter_kpi.conf is not None and inverter_kpi.conf.output_mqtt) or self.conf.fusionsolar_open_api_mqtt_for_discovered_dev):
+    def publish_pvdata_to_mqtt(self, inverter_measurement: FusionSolarInverterMeasurement):
+        if self.conf.mqtt_module_enabled and ((inverter_measurement.settings is not None and inverter_measurement.settings.output_mqtt) or self.conf.fusionsolar_open_api_mqtt_for_discovered_dev):
             try:
-                self.mqtt.publish_pvdata_to_mqtt(inverter_kpi)
+                self.mqtt.publish_pvdata_to_mqtt(inverter_measurement)
             except Exception as e:
                 # Log but do not raise, other outputs should proceed.
-                self.logger.exception(f"Error publishing PV data to MQTT for fusionsolar open_api [{inverter_kpi.descriptive_name}] with dev_id [{inverter_kpi.dev_id}]: {e}")
+                self.logger.exception(
+                    f"Error publishing PV data to MQTT for fusionsolar open_api [{inverter_measurement.settings_descriptive_name}] with dev_id [{inverter_measurement.settings_device_id}]: {e}"
+                )
         else:
             self.logger.debug(f"Skipping publishing to MQTT, module disabled, or MQTT output disabled in fusionsolar open_api config.")
 
-    def write_pvdata_to_influxdb(self, inverter_kpi: FusionSolarInverterKpi):
-        if self.conf.influxdb_module_enabled and ((inverter_kpi.conf is not None and inverter_kpi.conf.output_influxdb) or self.conf.fusionsolar_open_api_influxdb_for_discovered_dev):
+    def write_pvdata_to_influxdb(self, inverter_measurement: FusionSolarInverterMeasurement):
+        if self.conf.influxdb_module_enabled and (
+            (inverter_measurement.settings is not None and inverter_measurement.settings.output_influxdb) or self.conf.fusionsolar_open_api_influxdb_for_discovered_dev
+        ):
             try:
-                self.influxdb.write_pvdata_to_influxdb(inverter_kpi)
+                self.influxdb.write_pvdata_to_influxdb(inverter_measurement)
             except Exception as e:
                 # Log but do not raise, other outputs should proceed.
-                self.logger.exception(f"Error publishing PV data to InfluxDB for fusionsolar open_api [{inverter_kpi.descriptive_name}] with dev_id [{inverter_kpi.dev_id}]: {e}")
+                self.logger.exception(
+                    f"Error publishing PV data to InfluxDB for fusionsolar open_api [{inverter_measurement.settings_descriptive_name}] with dev_id [{inverter_measurement.settings_device_id}]: {e}"
+                )
         else:
             self.logger.debug(f"Skipping publishing to InfluxDB, module disabled, or InfluxDB output disabled in fusionsolar open_api config.")

@@ -1,7 +1,7 @@
 import requests
 import time
-from modules.conf_models import BaseConf, FusionSolarKioskMetric
-from modules.models import FusionSolarInverterKpi
+from modules.conf_models import BaseConf, FusionSolarKioskSettings
+from modules.models import FusionSolarInverterMeasurement
 
 
 class WritePvOutput:
@@ -10,7 +10,7 @@ class WritePvOutput:
         self.logger = logger
         self.logger.debug("WritePvOutput class instantiated")
 
-    def write_pvdata_to_pvoutput(self, inverter_kpi: FusionSolarInverterKpi, dev_id: str, pvoutput_system_id: int):
+    def write_pvdata_to_pvoutput(self, measurement: FusionSolarInverterMeasurement, dev_id: str, pvoutput_system_id: int):
         if self.conf.pvoutput_module_enabled:
             if pvoutput_system_id == 0:
                 self.logger.info(f"Skipping PVOutput API call for (kk)id: {dev_id}, output_pvoutput_system_id is not configured")
@@ -20,7 +20,7 @@ class WritePvOutput:
                     "X-Pvoutput-SystemId": str(pvoutput_system_id),
                 }
 
-                pvoutput_data_obj = self.make_pvoutput_pvdata_obj(inverter_kpi)
+                pvoutput_data_obj = self.make_pvoutput_pvdata_obj(measurement)
 
                 try:
                     self.logger.info(
@@ -44,7 +44,7 @@ class WritePvOutput:
         else:
             self.logger.debug("PVOutput writing disabled")
 
-    def make_pvoutput_pvdata_obj(self, inverter_kpi: FusionSolarInverterKpi):
+    def make_pvoutput_pvdata_obj(self, inverter_kpi: FusionSolarInverterMeasurement):
         localtime = time.localtime()
         pvodate = time.strftime("%Y%m%d", localtime)
         pvotime = time.strftime("%H:%M", localtime)

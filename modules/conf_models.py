@@ -9,12 +9,12 @@ from pydantic_settings import (
 from modules.conf_env_list_parser import ConfEnvListParser
 
 
-class BaseMetricConf(BaseSettings):
+class BaseMetricSettings(BaseSettings):
     enabled: bool = Field(default=True)
     output_influxdb: bool = Field(default=True)
 
 
-class FusionSolarKioskMetric(BaseMetricConf):
+class FusionSolarKioskSettings(BaseMetricSettings):
     descriptive_name: str = Field(default="inverter01")
     api_url: str = Field(default="https://region01eu5.fusionsolar.huawei.com/rest/pvms/web/kiosk/v1/station-kiosk-file?kk=")
     api_kkid: str = Field(default="GET_THIS_FROM_KIOSK_URL")
@@ -23,7 +23,7 @@ class FusionSolarKioskMetric(BaseMetricConf):
     output_pvoutput_system_id: int = Field(default=0)
 
 
-class FusionSolarOpenApiInverter(BaseMetricConf):
+class FusionSolarOpenApiInverterSettings(BaseMetricSettings):
     descriptive_name: str = Field(default="inverter01")
     dev_id: str = Field(default="")
     output_mqtt: bool = Field(default=True)
@@ -31,14 +31,14 @@ class FusionSolarOpenApiInverter(BaseMetricConf):
     output_pvoutput_system_id: int = Field(default=0)
 
 
-class FusionSolarOpenApiMeter(BaseMetricConf):
+class FusionSolarOpenApiMeterSettings(BaseMetricSettings):
     descriptive_name: str = Field(default="meter01")
     dev_id: str = Field(default="")
     dev_type_id: int = Field(default=17)
     output_mqtt: bool = Field(default=True)
 
 
-class KenterMeterMetric(BaseMetricConf):
+class KenterMeterSettings(BaseMetricSettings):
     descriptive_name: str = Field(default="transformer01")
     connection_id: str = Field(default="XXX")
     metering_point_id: str = Field(default="XXX")
@@ -60,7 +60,7 @@ class BaseConf(BaseSettings):
     #
     # FusionSolar KIOSK
     fusionsolar_kiosk_module_enabled: bool = Field(default=True)
-    fusionsolar_kiosks: List[FusionSolarKioskMetric] = Field(default=[])
+    fusionsolar_kiosks: List[FusionSolarKioskSettings] = Field(default=[])
     fusionsolar_kiosk_fetch_cron_hour: str = Field(default="*")
     fusionsolar_kiosk_fetch_cron_minute: str = Field(default="0,30", description="The fusionsolar API only updates portal data each half hour, setting to lower value will produce weird PVOutput graph with horizontal bits in it.")
 
@@ -71,8 +71,8 @@ class BaseConf(BaseSettings):
     fusionsolar_open_api_system_code: str = Field(default="")
     fusionsolar_open_api_cron_hour: str = Field(default="*")
     fusionsolar_open_api_cron_minute: str = Field(default="*/5", description="Beware of API limits and throttling: https://support.huawei.com/enterprise/en/doc/EDOC1100379184/b71c4d05/flow-control-using-the-api-account#EN-US_TOPIC_0000001652426426")
-    fusionsolar_open_api_inverters: List[FusionSolarOpenApiInverter] = Field(default=[])
-    fusionsolar_open_api_meters: List[FusionSolarOpenApiMeter] = Field(default=[])
+    fusionsolar_open_api_inverters: List[FusionSolarOpenApiInverterSettings] = Field(default=[])
+    fusionsolar_open_api_meters: List[FusionSolarOpenApiMeterSettings] = Field(default=[])
     fusionsolar_open_api_mqtt_for_discovered_dev: bool = Field(default=False, description="Write KPI's to MQTT for devices discovered over the API without a matching dev_id")
     fusionsolar_open_api_influxdb_for_discovered_dev: bool = Field(default=False, description="Write KPI's to InfluxDB for devices discovered over the API without a matching dev_id")
 
@@ -86,7 +86,7 @@ class BaseConf(BaseSettings):
     kenter_fetch_cron_minute: str = Field(default="0")
     kenter_days_back: int = Field(default=1, description="Grid infrastructure measurements in The Netherlands, show up in the API with a 3-5 days delay.")
     kenter_days_backfill: int = Field(default=0, description="Setting this to 30 would try to backfill gridkenter data on startup for any day between 3 days back (gridrelaydaysback) and 3+30=33 days back.")
-    kenter_metering_points: List[KenterMeterMetric] = Field(default=[])
+    kenter_metering_points: List[KenterMeterSettings] = Field(default=[])
 
     #
     # Outputs

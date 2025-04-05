@@ -3,7 +3,7 @@ import json
 import paho.mqtt.publish as publish
 from datetime import datetime
 from modules.conf_models import BaseConf
-from modules.models import FusionSolarInverterKpi
+from modules.models import FusionSolarInverterMeasurement
 
 
 class WriteMqtt:
@@ -12,7 +12,7 @@ class WriteMqtt:
         self.logger = logger
         self.logger.debug("WriteMqtt class instantiated")
 
-    def publish_pvdata_to_mqtt(self, inverter_data: FusionSolarInverterKpi):
+    def publish_pvdata_to_mqtt(self, measurement: FusionSolarInverterMeasurement):
         """
         Publish each field of the inverter data as a separate MQTT topic.
         """
@@ -23,19 +23,31 @@ class WriteMqtt:
             auth_obj = None
 
         # Clean up stationDn for use in MQTT topic (remove non-alphanumeric)
-        station_dn_sanitized = re.sub(r"\W+", "-", inverter_data.station_dn).lower()
+        station_dn_sanitized = re.sub(r"\W+", "-", measurement.station_dn)
 
         # Construct base topic path
         # e.g. rootTopic / kiosk_site_descriptive_name / sensors / inverters / stationDn
-        mqtt_base_topic = f"{self.conf.mqtt_root_topic.lower()}/" f"{self.conf.site_descriptive_name.lower()}/sensors/inverters/" f"{inverter_data.data_source.lower()}/{inverter_data.descriptive_name.lower()}/{station_dn_sanitized}/state"
+        def append_if_not_empty(base, addition):
+            return f"{base}/{addition}" if addition else base
+        
+        # Start with the root topic and sequentially append other parts if they are not empty
+        mqtt_base_topic = self.conf.mqtt_root_topic.lower()
+
+        # Sequentially build the topic string, checking each segment for emptiness
+        mqtt_base_topic = append_if_not_empty(mqtt_base_topic, self.conf.site_descriptive_name.lower())
+        mqtt_base_topic = append_if_not_empty(mqtt_base_topic, "sensors/inverters")
+        mqtt_base_topic = append_if_not_empty(mqtt_base_topic, measurement.data_source.lower())
+        mqtt_base_topic = append_if_not_empty(mqtt_base_topic, measurement.settings_descriptive_name.lower())
+        mqtt_base_topic = append_if_not_empty(mqtt_base_topic, station_dn_sanitized.lower())
+        mqtt_base_topic = append_if_not_empty(mqtt_base_topic, "state")
 
         # Gather the data in a dict
         # Note that 'device' and 'time' are optional—include them if you want
         # these published to MQTT as well.
         data_points = {
-            "real_time_power_w": inverter_data.real_time_power_w,
-            "day_energy_wh": inverter_data.day_energy_wh,
-            "lifetime_energy_wh": inverter_data.lifetime_energy_wh,
+            "real_time_power_w": measurement.real_time_power_w,
+            "day_energy_wh": measurement.day_energy_wh,
+            "lifetime_energy_wh": measurement.lifetime_energy_wh,
         }
 
         try:

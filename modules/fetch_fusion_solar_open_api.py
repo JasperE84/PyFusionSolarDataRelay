@@ -5,7 +5,7 @@ import time
 from typing import Any, Dict, Optional
 import requests
 from modules.decorators import rate_limit
-from modules.conf_models import BaseConf, FusionSolarOpenApiInverter
+from modules.conf_models import BaseConf, FusionSolarOpenApiInverterSettings
 from modules.models import *
 
 DEVICE_CACHE_FILE_PATH = "cache/fusion_solar_openapi_devices.json"
@@ -54,15 +54,15 @@ class FetchFusionSolarOpenApi:
         response = self._fetch_and_cache_fusionsolar_data(force_api_update=force_api_update, endpoint="/thirdData/getDevList", request_data=data, cache_file_path=DEVICE_CACHE_FILE_PATH)
         self.device_list = response.get("data", [])
 
-    #@rate_limit(max_calls=1, period=300)
-    def fetch_fusionsolar_inverter_device_kpis(self) -> List[FusionSolarInverterKpi]:
+    @rate_limit(max_calls=1, period=60)
+    def fetch_fusionsolar_inverter_device_kpis(self) -> List[FusionSolarInverterMeasurement]:
         """
         Retrieve real-time KPIs from the FusionSolar OpenAPI.
         Uses rate limiting to avoid frequent calls.
 
         :return: A list of FusionSolarInverterKpi objects containing inverter metrics.
         """
-        self.logger.info(f"Requesting realtimeKpi's for inverters from FusionSolarOpenAPI.")
+        self.logger.info(f"Requesting inverter realtimeKpi's from FusionSolarOpenAPI.")
 
         # Ensure the device list is populated
         if not self.device_list:
@@ -73,14 +73,14 @@ class FetchFusionSolarOpenApi:
         data = {"devTypeId": 1, "devIds": devices_str}
 
         response_json = self._fetch_fusionsolar_data_request(url, data)
-        kpi_data = response_json.get("data", [])
+        api_measurement_list = response_json.get("data", [])
 
-        inverter_kpis = []
-        for dev_json in kpi_data:
+        inverter_measurements = []
+        for api_measurement in api_measurement_list:
             try:
-                real_time_power_w = float(dev_json["dataItemMap"]["active_power"]) * 1000
-                lifetime_energy_wh = float(dev_json["dataItemMap"]["total_cap"]) * 1000
-                daily_energy_wh = float(dev_json["dataItemMap"]["day_cap"]) * 1000
+                real_time_power_w = float(api_measurement["dataItemMap"]["active_power"]) * 1000
+                lifetime_energy_wh = float(api_measurement["dataItemMap"]["total_cap"]) * 1000
+                daily_energy_wh = float(api_measurement["dataItemMap"]["day_cap"]) * 1000
             except KeyError as missing_key:
                 raise Exception(f"Key '{missing_key}' is missing from the API response data section.")
             except ValueError as val_err:
@@ -88,29 +88,36 @@ class FetchFusionSolarOpenApi:
 
             self.logger.debug(f"Metrics for {""} after transformations: " f"realTimePowerW={real_time_power_w}, " f"lifetimeEnergyWh={lifetime_energy_wh}, " f"dailyEnergyWh={daily_energy_wh}")
 
-            matching_device = next((dev for dev in self.device_list if dev.get("id") == dev_json["devId"]), None)
+            matching_device = next((dev for dev in self.device_list if dev.get("id") == api_measurement["devId"]), None)
             matching_station = next((stat for stat in self.station_list if stat.get("stationCode") == matching_device["stationCode"]), None)
-            matching_conf = next((inv for inv in self.conf.fusionsolar_open_api_inverters if inv.dev_id == str(dev_json["devId"])), None)
+            matching_conf = next((inv for inv in self.conf.fusionsolar_open_api_inverters if inv.dev_id == str(api_measurement["devId"])), None)
 
-            station_dn = matching_device.get("stationCode") if matching_device else "unknown"
-            station_name = matching_station.get("stationName") if matching_station else "unknown"
-            device_dn = matching_device["devDn"]
+            station_dn = matching_device.get("stationCode", "")
+            station_name = matching_station.get("stationName", "")
+            device_id = str(api_measurement.get("devId", ""))
+
+            device_dn = matching_device.get("devDn", "")
+            device_name = matching_device.get("devName", "")
+            device_model = matching_device.get("model", "")
 
             # Populate the inverter KPI model without altering the original response.
-            inverter_kpi = FusionSolarInverterKpi(
-                conf=matching_conf,
+            api_measurement = FusionSolarInverterMeasurement(
+                settings=matching_conf,
                 station_name=station_name,
                 station_dn=station_dn,
                 device_dn=device_dn,
+                device_name=device_name,
+                device_model=device_model,
+                device_id=device_id,
                 data_source="open_api",
                 real_time_power_w=real_time_power_w,
                 lifetime_energy_wh=lifetime_energy_wh,
                 day_energy_wh=daily_energy_wh,
             )
 
-            inverter_kpis.append(inverter_kpi)
+            inverter_measurements.append(api_measurement)
 
-        return inverter_kpis
+        return inverter_measurements
 
     def _fetch_and_cache_fusionsolar_data(self, force_api_update: bool, endpoint: str, request_data: Optional[Dict[str, Any]], cache_file_path: str) -> Dict[str, Any]:
         """

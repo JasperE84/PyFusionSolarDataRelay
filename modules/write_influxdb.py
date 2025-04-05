@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 from modules.conf_models import BaseConf
-from modules.models import FusionSolarInverterKpi, KenterTransformerKpi
+from modules.models import FusionSolarInverterMeasurement, KenterTransformerMeasurements
 
 
 class WriteInfluxDb:
@@ -11,71 +11,79 @@ class WriteInfluxDb:
         self.import_client_classes()
         self.classes_instantiated = False
 
-    def write_pvdata_to_influxdb(self, inverter_data: FusionSolarInverterKpi):
+    def write_pvdata_to_influxdb(self, measurement: FusionSolarInverterMeasurement):
         if self.classes_instantiated == False:
             self.classes_instantiated = self.instantiate()
 
-        ifjson = self.make_fsolar_kiosk_influxdb_record(inverter_data)
-        self.logger.info(f"Writing InfluxDB FusionSolarKiosk record for inverter: {inverter_data.descriptive_name} [{inverter_data.station_dn}]")
+        influxdb_record = self.make_inverter_measurement_influxdb_record(measurement)
+        self.logger.info(f"Writing InfluxDB FusionSolarKiosk record for inverter: {measurement.settings_descriptive_name} [{measurement.station_dn}]")
         try:
             if self.conf.influxdb_is_v2:
                 self.logger.debug("Writing PvData to InfluxDB v2...")
                 self.ifwrite_api.write(
                     bucket=self.conf.influxdb_v2_bucket,
                     org=self.conf.influxdb_v2_org,
-                    record=ifjson,
+                    record=influxdb_record,
                     write_precision="s",
                 )
             else:
                 self.logger.debug("Writing PvData to InfluxDB v1...")
-                self.influxclient.write_points(ifjson, time_precision="s")
+                self.influxclient.write_points(influxdb_record, time_precision="s")
         except Exception as e:
             self.logger.exception(f"InfluxDB PvData write error: '{e}'")
 
-    def write_kenterdata_to_influxdb(self, transformer_data: KenterTransformerKpi):
+    def write_kenterdata_to_influxdb(self, measurement: KenterTransformerMeasurements):
         if self.classes_instantiated == False:
             self.classes_instantiated = self.instantiate()
 
-        ifjson = self.make_kenterdata_influxdb_record(transformer_data)
-        self.logger.info(f"Writing GridData InfluxDB record for transformer [{transformer_data.descriptive_name}], connectionId: [{transformer_data.connection_id}], meteringPointId: [{transformer_data.metering_point_id}]")
+        influxdb_record = self.make_kenterdata_influxdb_record(measurement)
+        self.logger.info(f"Writing GridData InfluxDB record for transformer [{measurement.descriptive_name}], connectionId: [{measurement.connection_id}], meteringPointId: [{measurement.metering_point_id}]")
         try:
             if self.conf.influxdb_is_v2:
                 self.logger.debug("Writing GridData to InfluxDB v2...")
                 self.ifwrite_api.write(
                     bucket=self.conf.influxdb_v2_bucket,
                     org=self.conf.influxdb_v2_org,
-                    record=ifjson,
+                    record=influxdb_record,
                     write_precision="s",
                 )
             else:
                 self.logger.debug("Writing GridData to InfluxDB v1...")
-                self.influxclient.write_points(ifjson, time_precision="s")
+                self.influxclient.write_points(influxdb_record, time_precision="s")
         except Exception as e:
             self.logger.exception("InfluxDB GridData write error: '{}'".format(str(e)))
 
-    def make_fsolar_kiosk_influxdb_record(self, inverter_data: FusionSolarInverterKpi) -> list[dict]:
+    def make_inverter_measurement_influxdb_record(self, measurement: FusionSolarInverterMeasurement) -> list[dict]:
         timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
         measurement = "energy"
         device_type = "inverter"
 
-        tags = {
+        raw_tags = {
             "site_descriptive_name": self.conf.site_descriptive_name,
-            "inverter_descriptive_name": inverter_data.descriptive_name,
-            "station_name": inverter_data.station_name,
-            "data_source": inverter_data.data_source,
+            "inverter_descriptive_name": measurement.settings_descriptive_name,
             "device_type": device_type,
-            "station_dn": inverter_data.station_dn,
-        }
+            "data_source": measurement.data_source,
 
-        fields = {"real_time_power_w": inverter_data.real_time_power_w, "liftetime_energy_wh": inverter_data.lifetime_energy_wh}
+            "station_name": measurement.station_name,
+            "station_dn": measurement.station_dn,
+
+            "device_id" : measurement.device_id,
+            "device_dn": measurement.device_dn,
+            "device_name" : measurement.device_name,
+            "device_model" : measurement.device_model,
+        }
+        # Do not set tag if string is empty
+        tags = {key: value for key, value in raw_tags.items() if value}
+
+        fields = {"real_time_power_w": measurement.real_time_power_w, "liftetime_energy_wh": measurement.lifetime_energy_wh}
         record = {"measurement": measurement, "time": timestamp, "fields": fields, "tags": tags}
         return [record]
 
-    def make_kenterdata_influxdb_record(self, transformer_data: KenterTransformerKpi):
-        measurement_str = "energy"
+    def make_kenterdata_influxdb_record(self, transformer_data: KenterTransformerMeasurements):
+        influxdb_measurement_str = "energy"
         device_type = "grid_transformer"
 
-        influx_measurement_list = []
+        influxdb_records = []
 
         tags = {
             "site_descriptive_name": self.conf.site_descriptive_name,
@@ -88,10 +96,10 @@ class WriteInfluxDb:
 
         for measurement in transformer_data.measurements:
             fields = {"interval_power_avg_w": measurement.interval_power_avg_w, "interval_energy_wh": measurement.interval_energy_wh}
-            record = {"measurement": measurement_str, "time": datetime.fromtimestamp(measurement.timestamp, tz=timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"), "fields": fields, "tags": tags}
-            influx_measurement_list.append(record)
+            record = {"measurement": influxdb_measurement_str, "time": datetime.fromtimestamp(measurement.timestamp, tz=timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"), "fields": fields, "tags": tags}
+            influxdb_records.append(record)
 
-        return influx_measurement_list
+        return influxdb_records
 
     def import_client_classes(self):
         try:
