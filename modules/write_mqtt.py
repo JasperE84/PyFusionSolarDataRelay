@@ -24,6 +24,7 @@ class WriteMqtt:
 
         # Clean up stationDn for use in MQTT topic (remove non-alphanumeric)
         station_dn_sanitized = re.sub(r"\W+", "-", measurement.station_dn)
+        device_dn_sanitized = re.sub(r"\W+", "-", measurement.device_dn)
 
         # Construct base topic path
         # e.g. rootTopic / kiosk_site_descriptive_name / sensors / inverters / stationDn
@@ -35,10 +36,13 @@ class WriteMqtt:
 
         # Sequentially build the topic string, checking each segment for emptiness
         mqtt_base_topic = append_if_not_empty(mqtt_base_topic, self.conf.site_descriptive_name.lower())
-        mqtt_base_topic = append_if_not_empty(mqtt_base_topic, "sensors/inverters")
+        mqtt_base_topic = append_if_not_empty(mqtt_base_topic, "sensors")
         mqtt_base_topic = append_if_not_empty(mqtt_base_topic, measurement.data_source.lower())
-        mqtt_base_topic = append_if_not_empty(mqtt_base_topic, measurement.settings_descriptive_name.lower())
+        mqtt_base_topic = append_if_not_empty(mqtt_base_topic, f"{measurement.measurement_type.lower()}s")
         mqtt_base_topic = append_if_not_empty(mqtt_base_topic, station_dn_sanitized.lower())
+        mqtt_base_topic = append_if_not_empty(mqtt_base_topic, device_dn_sanitized.lower())
+        mqtt_base_topic = append_if_not_empty(mqtt_base_topic, measurement.settings_descriptive_name.lower())
+
         mqtt_base_topic = append_if_not_empty(mqtt_base_topic, "state")
 
         # Gather the data in a dict

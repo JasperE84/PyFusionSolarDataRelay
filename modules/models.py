@@ -38,18 +38,20 @@ class FusionSolarInverterMeasurement:
     def __init__(
         self,
         settings: FusionSolarOpenApiInverterSettings = None,
+        measurement_type: str = "",
+        data_source: str = "",
         station_name: str = "",
         station_dn: str = "",
         device_dn: str = "",
         device_name: str = "",
         device_model: str = "",
         device_id: str = "",
-        data_source: str = "",
         real_time_power_w: float = 0.0,
         lifetime_energy_wh: float = 0.0,
         day_energy_wh: float = 0.0,
     ):
         self.settings = settings
+        self.measurement_type = measurement_type
         self.station_name = station_name
         self.station_dn = station_dn
         self.device_dn = device_dn
@@ -62,6 +64,7 @@ class FusionSolarInverterMeasurement:
         self.day_energy_wh = day_energy_wh
 
     settings: FusionSolarOpenApiInverterSettings
+    measurement_type: str
     station_name: str
     station_dn: str
     device_dn: str

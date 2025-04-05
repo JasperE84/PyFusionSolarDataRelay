@@ -70,10 +70,10 @@ class FetchFusionSolarKiosk:
         # Populate and return the inverter kpi object without altering the original response dictionary.
         inverter_kpi = FusionSolarInverterMeasurement(
             settings=kiosk_settings,
+            measurement_type="station",
+            data_source="kiosk",
             station_name=station_name,
             station_dn=station_dn,
-            device_dn="",
-            data_source="kiosk",
             real_time_power_w=real_time_power_w,
             lifetime_energy_wh=lifetime_energy_wh,
             day_energy_wh=daily_energy_wh,

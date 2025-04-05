@@ -37,7 +37,9 @@ class WriteInfluxDb:
             self.classes_instantiated = self.instantiate()
 
         influxdb_record = self.make_kenterdata_influxdb_record(measurement)
-        self.logger.info(f"Writing GridData InfluxDB record for transformer [{measurement.descriptive_name}], connectionId: [{measurement.connection_id}], meteringPointId: [{measurement.metering_point_id}]")
+        self.logger.info(
+            f"Writing GridData InfluxDB record for transformer [{measurement.descriptive_name}], connectionId: [{measurement.connection_id}], meteringPointId: [{measurement.metering_point_id}]"
+        )
         try:
             if self.conf.influxdb_is_v2:
                 self.logger.debug("Writing GridData to InfluxDB v2...")
@@ -55,28 +57,27 @@ class WriteInfluxDb:
 
     def make_inverter_measurement_influxdb_record(self, measurement: FusionSolarInverterMeasurement) -> list[dict]:
         timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
-        measurement = "energy"
+        influxdb_measurement = "energy"
         device_type = "inverter"
 
         raw_tags = {
             "site_descriptive_name": self.conf.site_descriptive_name,
             "inverter_descriptive_name": measurement.settings_descriptive_name,
-            "device_type": device_type,
+            "measurement_type": measurement.measurement_type,
             "data_source": measurement.data_source,
-
+            "device_type": device_type,
             "station_name": measurement.station_name,
             "station_dn": measurement.station_dn,
-
-            "device_id" : measurement.device_id,
+            "device_id": measurement.device_id,
             "device_dn": measurement.device_dn,
-            "device_name" : measurement.device_name,
-            "device_model" : measurement.device_model,
+            "device_name": measurement.device_name,
+            "device_model": measurement.device_model,
         }
         # Do not set tag if string is empty
         tags = {key: value for key, value in raw_tags.items() if value}
 
         fields = {"real_time_power_w": measurement.real_time_power_w, "liftetime_energy_wh": measurement.lifetime_energy_wh}
-        record = {"measurement": measurement, "time": timestamp, "fields": fields, "tags": tags}
+        record = {"measurement": influxdb_measurement, "time": timestamp, "fields": fields, "tags": tags}
         return [record]
 
     def make_kenterdata_influxdb_record(self, transformer_data: KenterTransformerMeasurements):
@@ -153,7 +154,14 @@ class WriteInfluxDb:
 
         try:
             self.logger.debug("Instantiating InfluxDBClient class from InfluxDB library")
-            self.influxclient = self.InfluxDBClient(host=self.conf.influxdb_host, port=self.conf.influxdb_port, timeout=3, username=self.conf.influxdb_v1_username, password=self.conf.influxdb_v1_password, database=self.conf.influxdb_v1_db_name)
+            self.influxclient = self.InfluxDBClient(
+                host=self.conf.influxdb_host,
+                port=self.conf.influxdb_port,
+                timeout=3,
+                username=self.conf.influxdb_v1_username,
+                password=self.conf.influxdb_v1_password,
+                database=self.conf.influxdb_v1_db_name,
+            )
         except Exception as e:
             raise Exception(f"Error instantiating InfluxDB v1 client library: '{e}'")
 

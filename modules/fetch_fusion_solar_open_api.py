@@ -103,13 +103,14 @@ class FetchFusionSolarOpenApi:
             # Populate the inverter KPI model without altering the original response.
             api_measurement = FusionSolarInverterMeasurement(
                 settings=matching_conf,
+                measurement_type="inverter",
+                data_source="open_api",
                 station_name=station_name,
                 station_dn=station_dn,
                 device_dn=device_dn,
                 device_name=device_name,
                 device_model=device_model,
                 device_id=device_id,
-                data_source="open_api",
                 real_time_power_w=real_time_power_w,
                 lifetime_energy_wh=lifetime_energy_wh,
                 day_energy_wh=daily_energy_wh,
@@ -195,7 +196,9 @@ class FetchFusionSolarOpenApi:
             response_json = response.json()
         except Exception as exc:
             content = response.content.decode("utf-8") or ""
-            raise Exception("Error parsing JSON from FusionSolarOpenAPI response. " f"Check the API URL. Error info: {exc}\n" f"First 200 chars of response for diagnosis: {content[:200].replace(chr(10), ' ')}")
+            raise Exception(
+                "Error parsing JSON from FusionSolarOpenAPI response. " f"Check the API URL. Error info: {exc}\n" f"First 200 chars of response for diagnosis: {content[:200].replace(chr(10), ' ')}"
+            )
 
         if "data" not in response_json:
             raise Exception("FusionSolarOpenAPI response invalid: Missing 'data' key.")
