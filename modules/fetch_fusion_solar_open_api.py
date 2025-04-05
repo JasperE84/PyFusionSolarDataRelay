@@ -32,12 +32,7 @@ class FetchFusionSolarOpenApi:
         :param force_api_update: If True, always ignore the cache and call the FusionSolar OpenAPI.
         """
         # According to your requirement, /thirdData/getStationList does NOT need a request body.
-        response = self._fetch_and_cache_fusionsolar_data(
-            force_api_update=force_api_update,
-            endpoint="/thirdData/getStationList",
-            request_data=None,
-            cache_file_path=STATION_CACHE_FILE_PATH
-        )
+        response = self._fetch_and_cache_fusionsolar_data(force_api_update=force_api_update, endpoint="/thirdData/getStationList", request_data=None, cache_file_path=STATION_CACHE_FILE_PATH)
         self.station_list = response.get("data", [])
 
     def update_device_list(self, force_api_update: bool = False) -> None:
@@ -55,13 +50,8 @@ class FetchFusionSolarOpenApi:
 
         stations_str = ",".join(item["stationCode"] for item in self.station_list if "stationCode" in item)
         data = {"stationCodes": stations_str}
-        
-        response = self._fetch_and_cache_fusionsolar_data(
-            force_api_update=force_api_update,
-            endpoint="/thirdData/getDevList",
-            request_data=data,
-            cache_file_path=DEVICE_CACHE_FILE_PATH
-        )
+
+        response = self._fetch_and_cache_fusionsolar_data(force_api_update=force_api_update, endpoint="/thirdData/getDevList", request_data=data, cache_file_path=DEVICE_CACHE_FILE_PATH)
         self.device_list = response.get("data", [])
 
     @rate_limit(max_calls=1, period=300)
@@ -89,14 +79,14 @@ class FetchFusionSolarOpenApi:
         for dev_json in kpi_data:
             try:
                 real_time_power_w = float(dev_json["dataItemMap"]["active_power"]) * 1000
-                cumulative_energy_wh = float(dev_json["dataItemMap"]["total_cap"]) * 1000
+                lifetime_energy_wh = float(dev_json["dataItemMap"]["total_cap"]) * 1000
                 daily_energy_wh = float(dev_json["dataItemMap"]["day_cap"]) * 1000
             except KeyError as missing_key:
                 raise Exception(f"Key '{missing_key}' is missing from the API response data section.")
             except ValueError as val_err:
                 raise Exception(f"Failed to convert FusionSolarOpenAPI data values to float: {val_err}")
 
-            self.logger.debug(f"Metrics for {""} after transformations: " f"realTimePowerW={real_time_power_w}, " f"cumulativeEnergyWh={cumulative_energy_wh}, " f"dailyEnergyWh={daily_energy_wh}")
+            self.logger.debug(f"Metrics for {""} after transformations: " f"realTimePowerW={real_time_power_w}, " f"lifetimeEnergyWh={lifetime_energy_wh}, " f"dailyEnergyWh={daily_energy_wh}")
 
             matching_device = next((dev for dev in self.device_list if dev.get("id") == dev_json["devId"]), None)
             matching_station = next((stat for stat in self.station_list if stat.get("stationCode") == matching_device["stationCode"]), None)
@@ -106,15 +96,14 @@ class FetchFusionSolarOpenApi:
             station_dn = matching_device.get("stationCode") if matching_device else "unknown"
             station_name = matching_station.get("stationName") if matching_station else "unknown"
 
-
             # Populate the inverter KPI model without altering the original response.
             inverter_kpi = FusionSolarInverterKpi(
-                descriptive_name=descriptive_name,
+                conf=matching_conf,
                 station_name=station_name,
                 station_dn=station_dn,
                 data_source="open_api",
                 real_time_power_w=real_time_power_w,
-                cumulative_energy_wh=cumulative_energy_wh,
+                lifetime_energy_wh=lifetime_energy_wh,
                 day_energy_wh=daily_energy_wh,
             )
 
@@ -122,13 +111,7 @@ class FetchFusionSolarOpenApi:
 
         return inverter_kpis
 
-    def _fetch_and_cache_fusionsolar_data(
-        self,
-        force_api_update: bool,
-        endpoint: str,
-        request_data: Optional[Dict[str, Any]],
-        cache_file_path: str
-    ) -> Dict[str, Any]:
+    def _fetch_and_cache_fusionsolar_data(self, force_api_update: bool, endpoint: str, request_data: Optional[Dict[str, Any]], cache_file_path: str) -> Dict[str, Any]:
         """
         Shared method to handle FusionSolar data fetching and caching.
 
@@ -155,26 +138,14 @@ class FetchFusionSolarOpenApi:
                     age_in_seconds = time.time() - cached_timestamp
                     if age_in_seconds < CACHE_EXPIRATION_SECONDS:
                         # Cache is valid, so return from cache
-                        self.logger.info(
-                            f"Loaded data from cache (last updated {round(age_in_seconds)} seconds ago). "
-                            f"Number of items: {len(cached_data)}"
-                        )
+                        self.logger.info(f"Loaded data from cache (last updated {round(age_in_seconds)} seconds ago). " f"Number of items: {len(cached_data)}")
                         return cached_response
                     else:
-                        self.logger.info(
-                            "Cache file found, but it's older than 24 hours. "
-                            "Will fetch new data from API."
-                        )
+                        self.logger.info("Cache file found, but it's older than 24 hours. " "Will fetch new data from API.")
                 else:
-                    self.logger.warning(
-                        "Cache file does not contain valid format or data. "
-                        "Will fetch new data from API."
-                    )
+                    self.logger.warning("Cache file does not contain valid format or data. " "Will fetch new data from API.")
             except (json.JSONDecodeError, OSError) as exc:
-                self.logger.warning(
-                    f"Failed to parse or read cache file properly: {exc}. "
-                    "Will fetch new data from API."
-                )
+                self.logger.warning(f"Failed to parse or read cache file properly: {exc}. " "Will fetch new data from API.")
 
         # 2. If cache is invalid, expired, or force_api_update is True, call the API.
         self.logger.info("Fetching data from FusionSolar OpenAPI...")
@@ -187,21 +158,15 @@ class FetchFusionSolarOpenApi:
 
         # 3. Write the updated response to the cache file with a timestamp.
         try:
-            cache_content = {
-                "timestamp": time.time(),
-                "api_response": response_json
-            }
+            cache_content = {"timestamp": time.time(), "api_response": response_json}
             with open(cache_file_path, "w", encoding="utf-8") as cache_file:
                 json.dump(cache_content, cache_file, ensure_ascii=False, indent=2)
 
-            self.logger.info(
-                f"Data fetched from API and cached. Number of items: {len(response_json.get('data', []))}"
-            )
+            self.logger.info(f"Data fetched from API and cached. Number of items: {len(response_json.get('data', []))}")
         except OSError as exc:
             self.logger.error(f"Failed to write data to cache file: {exc}")
 
         return response_json
-
 
     def _fetch_fusionsolar_data_request(self, url: str, data: Dict[str, Any]) -> Dict[str, Any]:
         """

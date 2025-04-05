@@ -11,7 +11,7 @@ class WriteInfluxDb:
         self.import_client_classes()
         self.classes_instantiated = False
 
-    def write_fsolar_kiosk_data_to_influxdb(self, inverter_data: FusionSolarInverterKpi):
+    def write_pvdata_to_influxdb(self, inverter_data: FusionSolarInverterKpi):
         if self.classes_instantiated == False:
             self.classes_instantiated = self.instantiate()
 
@@ -67,7 +67,7 @@ class WriteInfluxDb:
             "station_dn": inverter_data.station_dn,
         }
 
-        fields = {"real_time_power_w": inverter_data.real_time_power_w, "liftetime_energy_wh": inverter_data.lifteime_energy_wh}
+        fields = {"real_time_power_w": inverter_data.real_time_power_w, "liftetime_energy_wh": inverter_data.lifetime_energy_wh}
         record = {"measurement": measurement, "time": timestamp, "fields": fields, "tags": tags}
         return [record]
 

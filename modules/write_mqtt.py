@@ -35,7 +35,7 @@ class WriteMqtt:
         data_points = {
             "real_time_power_w": inverter_data.real_time_power_w,
             "day_energy_wh": inverter_data.day_energy_wh,
-            "lifetime_energy_wh": inverter_data.lifteime_energy_wh,
+            "lifetime_energy_wh": inverter_data.lifetime_energy_wh,
         }
 
         try:

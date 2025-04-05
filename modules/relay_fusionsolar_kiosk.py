@@ -52,7 +52,7 @@ class RelayFusionSolarKiosk:
     def write_pvdata_to_pvoutput(self, inverter_data: FusionSolarInverterKpi, fs_conf: FusionSolarKioskMetric):
         if self.conf.pvoutput_module_enabled and fs_conf.output_pvoutput:
             try:
-                self.pvoutput.write_pvdata_to_pvoutput(inverter_data, fs_conf)
+                self.pvoutput.write_pvdata_to_pvoutput(inverter_data, fs_conf.api_kkid, fs_conf.output_pvoutput_system_id)
             except Exception as e:
                 # Log but do not raise, other outputs should proceed.
                 self.logger.exception(f"Error writing PV data to PVOutput.org for fusionsolar kiosk [{fs_conf.descriptive_name}] with kkid [{fs_conf.api_kkid}]: {e}")
@@ -72,7 +72,7 @@ class RelayFusionSolarKiosk:
     def write_pvdata_to_influxdb(self, inverter_data: FusionSolarInverterKpi, fs_conf: FusionSolarKioskMetric):
         if self.conf.influxdb_module_enabled and fs_conf.output_influxdb:
             try:
-                self.influxdb.write_fsolar_kiosk_data_to_influxdb(inverter_data)
+                self.influxdb.write_pvdata_to_influxdb(inverter_data)
             except Exception as e:
                 # Log but do not raise, other outputs should proceed.
                 self.logger.exception(f"Error publishing PV data to InfluxDB for fusionsolar kiosk [{fs_conf.descriptive_name}] with kkid [{fs_conf.api_kkid}]: {e}")

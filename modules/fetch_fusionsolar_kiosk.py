@@ -30,10 +30,7 @@ class FetchFusionSolarKiosk:
             response_json = response.json()
         except Exception as e:
             content = response.content.decode("utf-8") or ""
-            raise Exception(
-                f"Error parsing JSON from FetchFusionSolarKiosk APIresponse. Check the API url and KKID value. Error info: {e}\n"
-                f"First 200 chars of response for diagnosis: {content[:200].replace(chr(10), ' ')}"
-            )
+            raise Exception(f"Error parsing JSON from FetchFusionSolarKiosk APIresponse. Check the API url and KKID value. Error info: {e}\n" f"First 200 chars of response for diagnosis: {content[:200].replace(chr(10), ' ')}")
 
         # The top-level JSON should contain a "data" key with encoded JSON.
         if "data" not in response_json:
@@ -44,10 +41,7 @@ class FetchFusionSolarKiosk:
             response_json_data_decoded = html.unescape(response_json["data"])
             response_json_data = json.loads(response_json_data_decoded)
         except Exception as e:
-            raise Exception(
-                f"Could not parse JSON 'data' element in FusionSolarKiosk API response. Error info: {e}\n"
-                f"First 200 chars of response for diagnosis: {response_json_data_decoded[:200].replace(chr(10), ' ')}"
-            )
+            raise Exception(f"Could not parse JSON 'data' element in FusionSolarKiosk API response. Error info: {e}\n" f"First 200 chars of response for diagnosis: {response_json_data_decoded[:200].replace(chr(10), ' ')}")
 
         # Verify the "realKpi" key is present before accessing it.
         if "realKpi" not in response_json_data:
@@ -56,7 +50,7 @@ class FetchFusionSolarKiosk:
         # Extract KPI values and convert kW to W (multiplying by 1000).
         try:
             real_time_power_w = float(response_json_data["realKpi"]["realTimePower"]) * 1000
-            cumulative_energy_wh = float(response_json_data["realKpi"]["cumulativeEnergy"]) * 1000
+            lifetime_energy_wh = float(response_json_data["realKpi"]["cumulativeEnergy"]) * 1000
             daily_energy_wh = float(response_json_data["realKpi"]["dailyEnergy"]) * 1000
         except KeyError as missing_key:
             raise Exception(f"Key '{missing_key}' is missing from the 'realKpi' section of the FusionSolarKiosk API response.")
@@ -64,10 +58,10 @@ class FetchFusionSolarKiosk:
             raise Exception(f"Failed to convert FusionSolarKiosk realKpi values to float: {e}")
 
         # Fix FusionSolar quirk at midnight (ensure cumulativeEnergy does not decrease).
-        if self.lastCumulativeEnergy != 0 and cumulative_energy_wh < self.lastCumulativeEnergy:
-            cumulative_energy_wh = self.lastCumulativeEnergy
+        if self.lastCumulativeEnergy != 0 and lifetime_energy_wh < self.lastCumulativeEnergy:
+            lifetime_energy_wh = self.lastCumulativeEnergy
         else:
-            self.lastCumulativeEnergy = cumulative_energy_wh
+            self.lastCumulativeEnergy = lifetime_energy_wh
 
         # Extract station information.
         try:
@@ -77,20 +71,17 @@ class FetchFusionSolarKiosk:
             raise Exception(f"The key '{missing_key}' is missing from the 'stationOverview' section of the FusionSolarKiosk API response.")
 
         self.logger.debug(
-            f"FusionSolarKiosk metrics after transformations for {fs_conf.descriptive_name} / {station_name} / {station_dn}: "
-            f"realTimePowerW={real_time_power_w}, "
-            f"cumulativeEnergyWh={cumulative_energy_wh}, "
-            f"dailyEnergyWh={daily_energy_wh}, "
+            f"FusionSolarKiosk metrics after transformations for {fs_conf.descriptive_name} / {station_name} / {station_dn}: " f"realTimePowerW={real_time_power_w}, " f"cumulativeEnergyWh={lifetime_energy_wh}, " f"dailyEnergyWh={daily_energy_wh}, "
         )
 
         # Populate and return the inverter kpi object without altering the original response dictionary.
         inverter_kpi = FusionSolarInverterKpi(
-            descriptive_name=fs_conf.descriptive_name,
+            conf=fs_conf,
             station_name=station_name,
             station_dn=station_dn,
             data_source="kiosk",
             real_time_power_w=real_time_power_w,
-            cumulative_energy_wh=cumulative_energy_wh,
+            lifetime_energy_wh=lifetime_energy_wh,
             day_energy_wh=daily_energy_wh,
         )
 

@@ -1,5 +1,7 @@
 from typing import List
 
+from modules.conf_models import FusionSolarOpenApiInverter
+
 
 class KenterTransformerMeasurement:
     def __init__(
@@ -14,18 +16,11 @@ class KenterTransformerMeasurement:
 
     timestamp: int
     interval_energy_wh: float
-    interval_power_avg_w: float  
+    interval_power_avg_w: float
 
 
 class KenterTransformerKpi:
-    def __init__(
-        self,
-        descriptive_name: str = "",
-        connection_id: str = "",
-        metering_point_id: str = "",
-        channel_id: str = "",
-        measurements: List[KenterTransformerMeasurement] = []
-    ):
+    def __init__(self, descriptive_name: str = "", connection_id: str = "", metering_point_id: str = "", channel_id: str = "", measurements: List[KenterTransformerMeasurement] = []):
         self.descriptive_name = descriptive_name
         self.connection_id = connection_id
         self.metering_point_id = metering_point_id
@@ -42,28 +37,38 @@ class KenterTransformerKpi:
 class FusionSolarInverterKpi:
     def __init__(
         self,
-        descriptive_name: str = "",
-
+        conf: FusionSolarOpenApiInverter = None,
         station_name: str = "",
         station_dn: str = "",
         data_source: str = "",
-
         real_time_power_w: float = 0.0,
-        cumulative_energy_wh: float = 0.0,
+        lifetime_energy_wh: float = 0.0,
         day_energy_wh: float = 0.0,
     ):
-        self.descriptive_name = descriptive_name
+        self.conf = conf
         self.station_name = station_name
         self.station_dn = station_dn
         self.data_source = data_source
         self.real_time_power_w = real_time_power_w
-        self.lifteime_energy_wh = cumulative_energy_wh
+        self.lifetime_energy_wh = lifetime_energy_wh
         self.day_energy_wh = day_energy_wh
 
-    descriptive_name: str
+    conf: FusionSolarOpenApiInverter
     station_name: str
     station_dn: str
     data_source: str
     real_time_power_w: float
-    lifteime_energy_wh: float
+    lifetime_energy_wh: float
     day_energy_wh: float
+
+    @property
+    def descriptive_name(self) -> str:
+        if self.conf is not None:
+            return self.conf.descriptive_name
+        return ""
+    
+    @property
+    def dev_id(self) -> str:
+        if self.conf is not None:
+            return self.conf.dev_id
+        return ""
