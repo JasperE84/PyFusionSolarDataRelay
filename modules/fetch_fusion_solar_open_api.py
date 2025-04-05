@@ -54,7 +54,7 @@ class FetchFusionSolarOpenApi:
         response = self._fetch_and_cache_fusionsolar_data(force_api_update=force_api_update, endpoint="/thirdData/getDevList", request_data=data, cache_file_path=DEVICE_CACHE_FILE_PATH)
         self.device_list = response.get("data", [])
 
-    @rate_limit(max_calls=1, period=300)
+    #@rate_limit(max_calls=1, period=300)
     def fetch_fusionsolar_inverter_device_kpis(self) -> List[FusionSolarInverterKpi]:
         """
         Retrieve real-time KPIs from the FusionSolar OpenAPI.
@@ -92,15 +92,16 @@ class FetchFusionSolarOpenApi:
             matching_station = next((stat for stat in self.station_list if stat.get("stationCode") == matching_device["stationCode"]), None)
             matching_conf = next((inv for inv in self.conf.fusionsolar_open_api_inverters if inv.dev_id == str(dev_json["devId"])), None)
 
-            descriptive_name = matching_conf.descriptive_name if matching_conf else ""
             station_dn = matching_device.get("stationCode") if matching_device else "unknown"
             station_name = matching_station.get("stationName") if matching_station else "unknown"
+            device_dn = matching_device["devDn"]
 
             # Populate the inverter KPI model without altering the original response.
             inverter_kpi = FusionSolarInverterKpi(
                 conf=matching_conf,
                 station_name=station_name,
                 station_dn=station_dn,
+                device_dn=device_dn,
                 data_source="open_api",
                 real_time_power_w=real_time_power_w,
                 lifetime_energy_wh=lifetime_energy_wh,

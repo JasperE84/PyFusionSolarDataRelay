@@ -40,6 +40,7 @@ class FusionSolarInverterKpi:
         conf: FusionSolarOpenApiInverter = None,
         station_name: str = "",
         station_dn: str = "",
+        device_dn: str = "",
         data_source: str = "",
         real_time_power_w: float = 0.0,
         lifetime_energy_wh: float = 0.0,
@@ -48,6 +49,7 @@ class FusionSolarInverterKpi:
         self.conf = conf
         self.station_name = station_name
         self.station_dn = station_dn
+        self.device_dn = device_dn
         self.data_source = data_source
         self.real_time_power_w = real_time_power_w
         self.lifetime_energy_wh = lifetime_energy_wh
@@ -56,6 +58,7 @@ class FusionSolarInverterKpi:
     conf: FusionSolarOpenApiInverter
     station_name: str
     station_dn: str
+    device_dn: str
     data_source: str
     real_time_power_w: float
     lifetime_energy_wh: float
@@ -65,7 +68,7 @@ class FusionSolarInverterKpi:
     def descriptive_name(self) -> str:
         if self.conf is not None:
             return self.conf.descriptive_name
-        return ""
+        return "not_configured"
     
     @property
     def dev_id(self) -> str:

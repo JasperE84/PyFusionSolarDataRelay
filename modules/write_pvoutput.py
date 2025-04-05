@@ -35,6 +35,7 @@ class WritePvOutput:
                         verify=False
                     )
                     self.logger.debug("PVOutput response {}".format(api_response.text))
+                    api_response.raise_for_status()
                 except Exception as e:
                     raise Exception(
                         "Exception while posting data to PVOutput: '{}'".format(str(e))

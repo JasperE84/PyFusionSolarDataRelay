@@ -79,6 +79,7 @@ class FetchFusionSolarKiosk:
             conf=fs_conf,
             station_name=station_name,
             station_dn=station_dn,
+            device_dn='station',
             data_source="kiosk",
             real_time_power_w=real_time_power_w,
             lifetime_energy_wh=lifetime_energy_wh,

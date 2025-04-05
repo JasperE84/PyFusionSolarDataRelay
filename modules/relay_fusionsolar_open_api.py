@@ -65,13 +65,13 @@ class RelayFusionSolarOpenApi:
         else:
             self.logger.debug(f"Skipping publishing to InfluxDB, module disabled, or PVOutput disabled in fusionsolar open_api config.")
 
-    def publish_pvdata_to_mqtt(self, inverter_kpi: FusionSolarInverterKpi, fs_conf: FusionSolarOpenApiInverter):
+    def publish_pvdata_to_mqtt(self, inverter_kpi: FusionSolarInverterKpi):
         if self.conf.mqtt_module_enabled and ((inverter_kpi.conf is not None and inverter_kpi.conf.output_mqtt) or self.conf.fusionsolar_open_api_mqtt_for_discovered_dev):
             try:
                 self.mqtt.publish_pvdata_to_mqtt(inverter_kpi)
             except Exception as e:
                 # Log but do not raise, other outputs should proceed.
-                self.logger.exception(f"Error publishing PV data to MQTT for fusionsolar open_api [{fs_conf.descriptive_name}] with dev_id [{fs_conf.dev_id}]: {e}")
+                self.logger.exception(f"Error publishing PV data to MQTT for fusionsolar open_api [{inverter_kpi.descriptive_name}] with dev_id [{inverter_kpi.dev_id}]: {e}")
         else:
             self.logger.debug(f"Skipping publishing to MQTT, module disabled, or MQTT output disabled in fusionsolar open_api config.")
 
