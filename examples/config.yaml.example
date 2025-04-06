@@ -1,0 +1,121 @@
+{
+  "debug_mode": false,
+  "fetch_on_startup": true,
+  "site_descriptive_name": "my_site",
+  "fusionsolar_kiosk_module_enabled": true,
+  "fusionsolar_kiosks": [
+    {
+      "enabled": true,
+      "output_influxdb": true,
+      "descriptive_name": "my_site_pv_total",
+      "api_url": "https://region01eu5.fusionsolar.huawei.com/rest/pvms/web/kiosk/v1/station-kiosk-file?kk=",
+      "api_kkid": "zn050Lrw3u4HPlkjlkjjlkjlkjheyIIhd",
+      "output_mqtt": true,
+      "output_pvoutput": true,
+      "output_pvoutput_system_id": 12345
+    }
+  ],
+  "fusionsolar_kiosk_fetch_cron_hour": "*",
+  "fusionsolar_kiosk_fetch_cron_minute": "0,30",
+  "fusionsolar_open_api_module_enabled": true,
+  "fusionsolar_open_api_url": "https://eu5.fusionsolar.huawei.com",
+  "fusionsolar_open_api_user_name": "myuser",
+  "fusionsolar_open_api_system_code": "mypassword",
+  "fusionsolar_open_api_cron_hour": "*",
+  "fusionsolar_open_api_cron_minute": "*/5",
+  "fusionsolar_open_api_inverters": [
+    {
+      "enabled": true,
+      "output_influxdb": true,
+      "descriptive_name": "oa_inverter_01",
+      "dev_id": "1000000568284137",
+      "output_mqtt": true,
+      "output_pvoutput": false,
+      "output_pvoutput_system_id": 0
+    },
+    {
+      "enabled": true,
+      "output_influxdb": true,
+      "descriptive_name": "oa_inverter_02",
+      "dev_id": "1000000112858407",
+      "output_mqtt": true,
+      "output_pvoutput": false,
+      "output_pvoutput_system_id": 0
+    }
+  ],
+  "fusionsolar_open_api_meters": [
+    {
+      "enabled": true,
+      "output_influxdb": true,
+      "descriptive_name": "oa_composite_transformer_01",
+      "dev_id": "1000000789301871",
+      "output_mqtt": true
+    }
+  ],
+  "fusionsolar_open_api_mqtt_for_discovered_dev": true,
+  "fusionsolar_open_api_influxdb_for_discovered_dev": true,
+  "kenter_module_enabled": true,
+  "kenter_api_url": "https://api.kenter.nu",
+  "kenter_token_url": "https://login.kenter.nu/connect/token",
+  "kenter_clientid": "api_1234_a7a44x",
+  "kenter_password": "fjdsSdslsjw!",
+  "kenter_fetch_cron_hour": "8",
+  "kenter_fetch_cron_minute": "0",
+  "kenter_days_back": 1,
+  "kenter_days_backfill": 0,
+  "kenter_metering_points": [
+    {
+      "enabled": true,
+      "output_influxdb": true,
+      "descriptive_name": "main_building_sommatie_overdrachtspunt",
+      "connection_id": "871687870000006587",
+      "metering_point_id": "9846513",
+      "channel_id": "16180"
+    },
+    {
+      "enabled": true,
+      "output_influxdb": true,
+      "descriptive_name": "main_building_secondary_meter_01",
+      "connection_id": "871687870000006587",
+      "metering_point_id": "321684",
+      "channel_id": "10180"
+    },
+    {
+      "enabled": true,
+      "output_influxdb": true,
+      "descriptive_name": "main_building_secondary_meter_02",
+      "connection_id": "871687870000006587",
+      "metering_point_id": "32168",
+      "channel_id": "10180"
+    },
+    {
+      "enabled": true,
+      "output_influxdb": true,
+      "descriptive_name": "secondary_building_overdrachtspunt",
+      "connection_id": "8716878700000065498",
+      "metering_point_id": "6015748130",
+      "channel_id": "16180"
+    }
+  ],
+  "influxdb_module_enabled": true,
+  "influxdb_is_v2": false,
+  "influxdb_host": "svrdocker01",
+  "influxdb_port": 8428,
+  "influxdb_v1_db_name": "fusionsolar",
+  "influxdb_v1_username": "myuser",
+  "influxdb_v1_password": "mypass",
+  "influxdb_v2_protocol": "http",
+  "influxdb_v2_org": "contour",
+  "influxdb_v2_bucket": "fusionsolar",
+  "influxdb_v2_token": "sdoewh9ew8h9hlijdsodsijsdoidsjdsoidsjosjoidsjdsj==",
+  "pvoutput_module_enabled": true,
+  "pvoutput_record_url": "https://pvoutput.org/service/r2/addstatus.jsp",
+  "pvoutput_api_key": "498j498jr9fh98343h98h9h4398h9h9438h",
+  "mqtt_module_enabled": true,
+  "mqtt_host": "mqttserver.mydomain.local",
+  "mqtt_port": 1883,
+  "mqtt_auth": true,
+  "mqtt_username": "myuser",
+  "mqtt_password": "mypassword",
+  "mqtt_root_topic": "pyfusionsolar"
+}

@@ -19,7 +19,7 @@ class FusionSolarKioskSettings(BaseMetricSettings):
     api_url: str = Field(default="https://region01eu5.fusionsolar.huawei.com/rest/pvms/web/kiosk/v1/station-kiosk-file?kk=")
     api_kkid: str = Field(default="GET_THIS_FROM_KIOSK_URL")
     output_mqtt: bool = Field(default=True)
-    output_pvoutput: bool = Field(default=True)
+    output_pvoutput: bool = Field(default=False)
     output_pvoutput_system_id: int = Field(default=0)
 
 
@@ -27,14 +27,13 @@ class FusionSolarOpenApiInverterSettings(BaseMetricSettings):
     descriptive_name: str = Field(default="inverter01")
     dev_id: str = Field(default="")
     output_mqtt: bool = Field(default=True)
-    output_pvoutput: bool = Field(default=True)
+    output_pvoutput: bool = Field(default=False)
     output_pvoutput_system_id: int = Field(default=0)
 
 
 class FusionSolarOpenApiMeterSettings(BaseMetricSettings):
     descriptive_name: str = Field(default="meter01")
     dev_id: str = Field(default="")
-    dev_type_id: int = Field(default=17)
     output_mqtt: bool = Field(default=True)
 
 
@@ -73,8 +72,8 @@ class BaseConf(BaseSettings):
     fusionsolar_open_api_cron_minute: str = Field(default="*/5", description="Beware of API limits and throttling: https://support.huawei.com/enterprise/en/doc/EDOC1100379184/b71c4d05/flow-control-using-the-api-account#EN-US_TOPIC_0000001652426426")
     fusionsolar_open_api_inverters: List[FusionSolarOpenApiInverterSettings] = Field(default=[])
     fusionsolar_open_api_meters: List[FusionSolarOpenApiMeterSettings] = Field(default=[])
-    fusionsolar_open_api_mqtt_for_discovered_dev: bool = Field(default=False, description="Write KPI's to MQTT for devices discovered over the API without a matching dev_id")
-    fusionsolar_open_api_influxdb_for_discovered_dev: bool = Field(default=False, description="Write KPI's to InfluxDB for devices discovered over the API without a matching dev_id")
+    fusionsolar_open_api_mqtt_for_discovered_dev: bool = Field(default=True, description="Write KPI's to MQTT for devices discovered over the API without a matching dev_id")
+    fusionsolar_open_api_influxdb_for_discovered_dev: bool = Field(default=True, description="Write KPI's to InfluxDB for devices discovered over the API without a matching dev_id")
 
     # Kenter Kenter.nl
     kenter_module_enabled: bool = Field(default=False)

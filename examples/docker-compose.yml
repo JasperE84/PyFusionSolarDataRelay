@@ -41,57 +41,77 @@ services:
       - influxdb
       - mosquitto
     environment:
-      - debug_mode=True
+      - debug_mode=False
+      - fetch_on_startup=True
+      - site_descriptive_name=my_site
 
-      # Keep descriptive_name lowercase and without spaces, will be used in MQTT topic and InfluxDB record tags
-      - site_descriptive_name=companyname_site_01
-
-      # Enable fusionsolar kiosk module
       - fusionsolar_kiosk_module_enabled=True
-      - fusionsolar_kiosk_fetch_cron_minute=0,30 # Please note that the kiosk only seems to update each 30mins
 
-      # Define fusionsolar kiosk configuration
-      - fusionsolar_kiosks__0__api_kkid=GET_THIS_STRING_FROM_YOUR_KIOSK_URL
-      - fusionsolar_kiosks__0__output_pvoutput_system_id=12345
-      # Optionally disable specific outputs, (if output module is disabled, specific output will be disabled)
-      #- fusionsolar_kiosks__0__output_pvoutput=False
-      #- fusionsolar_kiosks__0__output_mqtt=False
-      #- fusionsolar_kiosks__0__output_influxdb=False
+      - fusionsolar_kiosks__0__descriptive_name=my_site_totals
+      - fusionsolar_kiosks__0__api_kkid=sdlew8h9hldshdsoidsuhidsu
+      - fusionsolar_kiosks__0__output_pvoutput=True
+      - fusionsolar_kiosks__0__output_pvoutput_system_id=123456
 
-      # Define second fusionsolar kiosk configuration
-      # - fusionsolar_kiosks__1__api_kkid=GET_THIS_STRING_FROM_YOUR_KIOSK_URL
-      # - fusionsolar_kiosks__1__output_pvoutput=False
+      - fusionsolar_open_api_module_enabled=True
+      - fusionsolar_open_api_user_name=MyUserName
+      - fusionsolar_open_api_system_code=MySecretPass
+      - fusionsolar_open_api_mqtt_for_discovered_dev=True
 
-      # Kenter module conf
-      - kenter_module_enabled=False
-      - kenter_clientid=my@username.com
-      - kenter_password=secretpassword
-      # Keep descriptive_name lowercase and without spaces, will be used in MQTT topic and InfluxDB record tags
-      - kenter_metering_points__0__descriptive_name=sommatie_ean
-      - kenter_metering_points__0__connection_id=123456789
-      - kenter_metering_points__0__metering_point_id=987654321
-      #- kenter_metering_points__0__output_mqtt=False
-      #- kenter_metering_points__0__output_influxdb=False
-      #- kenter_metering_points__0__output_pvoutput=False
+      - fusionsolar_open_api_inverters__0__descriptive_name=oa_inverter_01
+      - fusionsolar_open_api_inverters__0__dev_id=1004587964284137
 
+      - fusionsolar_open_api_inverters__1__descriptive_name=oa_inverter_02
+      - fusionsolar_open_api_inverters__1__dev_id=1000045678978407
+      - fusionsolar_open_api_inverters__1__output_pvoutput=True
+      - fusionsolar_open_api_inverters__1__output_pvoutput_system_id=123457
 
-      # InfluxDB module conf
+      - fusionsolar_open_api_meters__0__descriptive_name=oa_composite_metering_01
+      - fusionsolar_open_api_meters__0__dev_id=1000564879541871
+
+      - kenter_module_enabled=True
+      - kenter_clientid=api_1234_c3casa
+      - kenter_password=DFwh498h!!sdskljdss
+
+      - kenter_metering_points__0__descriptive_name=main_building_overdrachtpunt
+      - kenter_metering_points__0__connection_id=871645687210007898
+      - kenter_metering_points__0__metering_point_id=6014587216
+      - kenter_metering_points__0__channel_id=16180
+
+      - kenter_metering_points__1__descriptive_name=secondary_meter_1
+      - kenter_metering_points__1__connection_id=871645687210007898
+      - kenter_metering_points__1__metering_point_id=123468
+      - kenter_metering_points__1__channel_id=10180
+
+      - kenter_metering_points__2__descriptive_name=secondary_meter_2
+      - kenter_metering_points__2__connection_id=871645687210007898
+      - kenter_metering_points__2__metering_point_id=564984
+      - kenter_metering_points__2__channel_id=10180
+
+      - kenter_metering_points__3__descriptive_name=secondary_building_overdrachtspunt
+      - kenter_metering_points__3__connection_id=871687120000123458
+      - kenter_metering_points__3__metering_point_id=6546984
+      - kenter_metering_points__3__channel_id=16180
+
       - influxdb_module_enabled=True
-      - influxdb_host=influxdb
-      - influxdb_is_v2=True
+      - influxdb_host=svrdocker01
+      - influxdb_port=8428
+      - influxdb_is_v2=False
+      - influxdb_v1_username=myusername
+      - influxdb_v1_password=mysecretPassword
       - influxdb_v2_protocol=http
-      - influxdb_v2_org=acme
-      - influxdb_v2_bucket=fusionsolar
-      - influxdb_v2_token=GENERATE_TOKEN_IN_INFLUXDB_ADMIN_PANEL
+      - influxdb_v2_token=jlihw98rwh98hoids==
+      - influxdb_v2_org=mycompany
+      - influxdb_v2_bucket=mybucket
 
-      # PVOutput module conf
-      - pvoutput_module_enabled=True
-      - pvoutput_api_key=GENERATE_THIS_AND_SYSTEMID_ON_PVOUTPUT.ORG
-
-      # MQTT module conf
       - mqtt_module_enabled=True
-      - mqtt_host=mosquitto
-      - mqtt_auth=False
+      - mqtt_host=mymqttserver
+      - mqtt_port=1883
+      - mqtt_auth=True
+      - mqtt_username=myusername
+      - mqtt_password=mypassword
+
+      - pvoutput_module_enabled=True
+      - pvoutput_api_key=9847594832794874460d04c39
 
     volumes:
       - /etc/localtime:/etc/localtime:ro

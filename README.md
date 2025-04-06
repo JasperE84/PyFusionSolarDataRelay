@@ -54,14 +54,34 @@ Kenter provides measurement services for **commercially rented** grid transforme
 | fusionsolar_kiosk_module_enabled | Can be `True` or `False`, determines if fusionsolar kiosk API functionality is enabled | True |
 | fusionsolar_kiosk_fetch_cron_hour | Hour component for python cron job to fetch and process data from fusionsolar. | * |
 | fusionsolar_kiosk_fetch_cron_minute | Minute component for python cron job to fetch and process data from fusionsolar | 0,30 |
-| fusionsolar_kiosks__0__descriptive_name | Descriptive name for PV system for which this kiosk entity provides data. Use lowercase, and no special characters. This will be used for MQTT topics and InfluxDB record tags | inverter01 |
+| fusionsolar_kiosks__0__descriptive_name | Descriptive name for PV system for which this kiosk entity provides data. Use lowercase, and no special characters. This will be used for InfluxDB record tags | inverter01 |
 | fusionsolar_kiosks__0__enabled | To disable individual kiosk configurations. Can be `True` or `False` | True |
 | fusionsolar_kiosks__0__api_url | Link to the fusionsolar kiosk data backend, multiple records supported by adding an extra param with `__1__` etc. | [Click url](https://region01eu5.fusionsolar.huawei.com/rest/pvms/web/kiosk/v1/station-kiosk-file?kk=) |
 | fusionsolar_kiosks__0__api_kkid | Unique kiosk ID, can be found by looking the kiosk URL and then taking the code after `kk=` | GET_THIS_FROM_KIOSK_URL |
 | fusionsolar_kiosks__0__output_influxdb | Write to influxdb if influx module enabled. Can be `True` or `False` | True |
 | fusionsolar_kiosks__0__output_mqtt | Write to mqtt if mqtt module enabled. Can be `True` or `False` | True |
-| fusionsolar_kiosks__0__output_pvoutput | If pvoutput_module_enabled then write this pv metric to pvoutput | `True` |
-| fusionsolar_kiosks__0__output_pvoutput_system_id | System ID for PVOutput.org, should be numeric | 12345 |
+| fusionsolar_kiosks__0__output_pvoutput | If pvoutput_module_enabled then write this pv metric to pvoutput | `False` |
+| fusionsolar_kiosks__0__output_pvoutput_system_id | System ID for PVOutput.org, should be numeric | 0 |
+| fusionsolar_open_api_module_enabled | Can be `True` or `False`, determines if fusionsolar OpenAPI functionality is enabled | True |
+| fusionsolar_open_api_url | Link to the fusionsolar OpenAPI data backend. | [Click url](https://eu5.fusionsolar.huawei.com) |
+| fusionsolar_open_api_user_name | Username for FusionSolar Northbound OpenAPI. |  |
+| fusionsolar_open_api_system_code | Password for FusionSolar Northbound OpenAPI. |  |
+| fusionsolar_open_api_cron_hour | Hour component for python cron job to fetch and process data from fusionsolar. | * |
+| fusionsolar_open_api_cron_minute | Minute component for python cron job to fetch and process data from fusionsolar | */5 |
+| fusionsolar_open_api_mqtt_for_discovered_dev | Write KPI's to MQTT for devices discovered over the API without a matching dev_id | True |
+| fusionsolar_open_api_influxdb_for_discovered_dev | Write KPI's to InfluxDB for devices discovered over the API without a matching dev_id | True |
+| fusionsolar_open_api_inverters__0__descriptive_name | Descriptive name for inverter. Use lowercase, and no special characters. This will be used for InfluxDB record tags | inverter01 |
+| fusionsolar_open_api_inverters__0__enabled | To disable individual OpenAPI inverter configurations. Can be `True` or `False` | True |
+| fusionsolar_open_api_inverters__0__dev_id | Unique device ID nr, can be found by inspecting ./cache/fusion_solar_openapi_devices.json or inspecting stdout logs after startup | |
+| fusionsolar_open_api_inverters__0__output_influxdb | Write to influxdb if influx module enabled. Can be `True` or `False` | True |
+| fusionsolar_open_api_inverters__0__output_mqtt | Write to mqtt if mqtt module enabled. Can be `True` or `False` | True |
+| fusionsolar_open_api_inverters__0__output_pvoutput | If pvoutput_module_enabled then write this pv metric to pvoutput | `False` |
+| fusionsolar_open_api_inverters__0__output_pvoutput_system_id | System ID for PVOutput.org, should be numeric | 0 |
+| fusionsolar_open_api_meters__0__descriptive_name | Descriptive name for grid meter. Use lowercase, and no special characters. This will be used for InfluxDB record tags | meter01 |
+| fusionsolar_open_api_meters__0__enabled | To disable individual OpenAPI meter configurations. Can be `True` or `False` | True |
+| fusionsolar_open_api_meters__0__dev_id | Unique device ID nr, can be found by inspecting ./cache/fusion_solar_openapi_devices.json or inspecting stdout logs after startup | |
+| fusionsolar_open_api_meters__0__output_influxdb | Write to influxdb if influx module enabled. Can be `True` or `False` | True |
+| fusionsolar_open_api_meters__0__output_mqtt | Write to mqtt if mqtt module enabled. Can be `True` or `False` | True |
 | kenter_module_enabled | Can be `True` or `False`, determines if data is fetched from Kenter's klantportaal.kenter.nu API | False |
 | kenter_api_url | Kenter API url for fetching transformer grid measurements | [Click url](https://api.kenter.nu) |
 | kenter_token_url | Kenter API url for fetching auth token | [Click url](https://login.kenter.nu/connect/token) |
