@@ -11,7 +11,7 @@ Multiple parallel fusionsolar kiosk configurations are supported, and multiple d
 # Installation
 This project is mostly used as a Docker container and fetches its config from environment variables. The file `main.py` can also be started from a python3 environment, after running `pip install -r requirements.txt` and renaming `.env.example` to `.env`. PyFusionSolarDataRelay will then load the environment files from this file, overriding any environment variables already set.
 
-Check out [examples/docker-compose.yml](https://github.com/JasperE84/PyFusionSolarDataRelay/blob/main/Examples/docker-compose.yml) for a docker configuration example.
+Check out [examples/docker-compose.yml](https://github.com/JasperE84/PyFusionSolarDataRelay/blob/main/examples/docker-compose.yml) for a docker configuration example.
 
 [![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white)](https://hub.docker.com/r/jsprnl/pyfusionsolardatarelay)
 
@@ -26,7 +26,7 @@ FusionSolar features a kiosk mode. When enabled, a kiosk url is generated which 
 
 # About PVOutput.org
 [PVOutput.org](https://pvoutput.org/) is a free service for sharing and comparing PV output data.
-![PVOutput dashboard screenshot](./Examples/pvoutput-measurement-result-example.png)
+![PVOutput dashboard screenshot](./examples/pvoutput-measurement-result-example.png)
 
 # About InfluxDB
 [InfluxDB](https://www.influxdata.com/) is an open source time series database on which dashboards can easily be built. For instance using [Grafana](https://grafana.com/)
@@ -43,7 +43,7 @@ Once everything is configured, solar data will flow as follows:
 
 `[FusionSolar (Kiosk/Northbound) API] --> [PyFusionSolarDataRelay] --> [MQTT Server] --> [Home Assistant]`
 
-For those of you using Docker, a docker-compose.yml file is provided [here](./Examples/docker-compose.yml) in order to get these different components up and running quickly.
+For those of you using Docker, a docker-compose.yml file is provided [here](./examples/docker-compose.yml) in order to get these different components up and running quickly.
 
 # About Kenter's klantportaal.kenter.nu
 Kenter provides measurement services for **commercially rented** grid transformers. This project can fetch energy usage data from this API and post it to InfluxDB. MQTT/PVOutput is not supported for posting Kenter data, as Kenter's latest measurement data is usually 3 days old and PVOutput imposes challenges on having the datapoint timestamps between grid usage and PV output synchronous. 
