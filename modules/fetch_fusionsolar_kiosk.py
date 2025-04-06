@@ -53,8 +53,10 @@ class FetchFusionSolarKiosk:
             daily_energy_wh = float(response_json_data["realKpi"]["dailyEnergy"]) * 1000
         except KeyError as missing_key:
             raise Exception(f"Key '{missing_key}' is missing from the 'realKpi' section of the FusionSolarKiosk API response.")
-        except ValueError as e:
-            raise Exception(f"Failed to convert FusionSolarKiosk realKpi values to float: {e}")
+        except ValueError as val_err:
+            raise Exception(f"Failed to convert FusionSolarOpenAPI data values to float, out of bounds? {val_err}")
+        except TypeError as typ_err:
+            raise Exception(f"Failed to convert FusionSolarOpenAPI data values to float, value None? {typ_err}")
 
         # Extract station information.
         try:

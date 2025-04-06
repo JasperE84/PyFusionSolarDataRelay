@@ -40,7 +40,6 @@ class FetchFusionSolarOpenApi:
             self.logger.info(
                 f" stationName: {station.get('stationName','')}, stationCode: {station.get('stationCode','')}, capacity: {station.get('capacity','')}MW, stationAddr: {station.get('stationAddr','')}, stationLinkman: {station.get('stationLinkman','')}"
             )
-            
 
     def update_device_list(self, force_api_update: bool = False) -> None:
         """
@@ -95,9 +94,14 @@ class FetchFusionSolarOpenApi:
                 lifetime_energy_wh = float(api_measurement["dataItemMap"]["total_cap"]) * 1000
                 daily_energy_wh = float(api_measurement["dataItemMap"]["day_cap"]) * 1000
             except KeyError as missing_key:
-                raise Exception(f"Key '{missing_key}' is missing from the API response data section.")
+                self.logger.error(f"Key '{missing_key}' is missing from FusionSolarOpenAPI inverter measurement. Skipping this device.")
+                continue
             except ValueError as val_err:
-                raise Exception(f"Failed to convert FusionSolarOpenAPI data values to float: {val_err}")
+                self.logger.error(f"Failed to convert FusionSolarOpenAPI inverter measurement record to float, out of bounds? Skipping this device. {val_err}")
+                continue
+            except TypeError as typ_err:
+                self.logger.error(f"Failed to convert FusionSolarOpenAPI inverter measurement record to float, value None? Skipping this device. {typ_err}")
+                continue
 
             self.logger.debug(f"Metrics for {""} after transformations: " f"realTimePowerW={real_time_power_w}, " f"lifetimeEnergyWh={lifetime_energy_wh}, " f"dailyEnergyWh={daily_energy_wh}")
 
@@ -127,6 +131,77 @@ class FetchFusionSolarOpenApi:
                 real_time_power_w=real_time_power_w,
                 lifetime_energy_wh=lifetime_energy_wh,
                 day_energy_wh=daily_energy_wh,
+            )
+
+            inverter_measurements.append(api_measurement)
+
+        return inverter_measurements
+
+    @rate_limit(max_calls=1, period=60)
+    def fetch_fusionsolar_grid_meter_device_kpis(self) -> List[FusionSolarMeterMeasurement]:
+        """
+        Retrieve real-time KPIs from the FusionSolar OpenAPI.
+        Uses rate limiting to avoid frequent calls.
+
+        :return: A list of FusionSolarMeterKpi objects containing inverter metrics.
+        """
+        self.logger.info(f"Requesting inverter realtimeKpi's from FusionSolarOpenAPI.")
+
+        # Ensure the device list is populated
+        if not self.device_list:
+            self.update_device_list()
+
+        url = f"{self.conf.fusionsolar_open_api_url}/thirdData/getDevRealKpi"
+        devices_str = ",".join(str(item["id"]) for item in self.device_list if "id" in item and "devTypeId" in item and item["devTypeId"] == 17)
+        data = {"devTypeId": 17, "devIds": devices_str}
+
+        response_json = self._fetch_fusionsolar_data_request(url, data)
+        api_measurement_list = response_json.get("data", [])
+
+        inverter_measurements = []
+        for api_measurement in api_measurement_list:
+            try:
+                active_power_w = float(api_measurement["dataItemMap"]["active_power"]) * 1000
+
+                # fix for fusionsolar openapi quirk
+                # active_power_w = 0 if int(active_power_w) == -65230000000 else active_power_w
+
+            except KeyError as missing_key:
+                self.logger.error(f"Key '{missing_key}' is missing from FusionSolarOpenAPI grid meter measurement. Skipping this device.")
+                continue
+            except ValueError as val_err:
+                self.logger.error(f"Failed to convert FusionSolarOpenAPI grid meter measurement record to float, out of bounds? Skipping this device. {val_err}")
+                continue
+            except TypeError as typ_err:
+                self.logger.error(f"Failed to convert FusionSolarOpenAPI grid meter measurement record to float, value None? Skipping this device. {typ_err}")
+                continue
+
+            self.logger.debug(f"Metrics after transformations: realTimePowerW={active_power_w}")
+
+            matching_device = next((dev for dev in self.device_list if dev.get("id") == api_measurement["devId"]), None)
+            matching_station = next((stat for stat in self.station_list if stat.get("stationCode") == matching_device["stationCode"]), None)
+            matching_conf = next((inv for inv in self.conf.fusionsolar_open_api_meters if inv.dev_id == str(api_measurement["devId"])), None)
+
+            station_dn = matching_device.get("stationCode", "")
+            station_name = matching_station.get("stationName", "")
+            device_id = str(api_measurement.get("devId", ""))
+
+            device_dn = matching_device.get("devDn", "")
+            device_name = matching_device.get("devName", "")
+            device_model = matching_device.get("model", "")
+
+            # Populate the inverter KPI model without altering the original response.
+            api_measurement = FusionSolarMeterMeasurement(
+                settings=matching_conf,
+                measurement_type="grid_meter",
+                data_source="open_api",
+                station_name=station_name,
+                station_dn=station_dn,
+                device_dn=device_dn,
+                device_name=device_name,
+                device_model=device_model,
+                device_id=device_id,
+                active_power_w=active_power_w,
             )
 
             inverter_measurements.append(api_measurement)
@@ -295,6 +370,8 @@ class FetchFusionSolarOpenApi:
                 elif not response_json.get("success"):
                     fail_code = response_json.get("failCode", "Unknown")
                     message = response_json.get("message", "No message provided")
+                    if fail_code == 407:
+                        message = f"API RATE_LIMIT_EXCEEDED - {message}"
                     raise Exception(f"FusionSolarOpenAPI request failed. failCode: {fail_code}, message: {message}")
                 else:
                     # If success is True, no further retry needed

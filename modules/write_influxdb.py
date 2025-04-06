@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 from modules.conf_models import BaseConf
-from modules.models import FusionSolarInverterMeasurement, KenterTransformerMeasurements
+from modules.models import FusionSolarInverterMeasurement, FusionSolarMeterMeasurement, KenterTransformerMeasurements
 
 
 class WriteInfluxDb:
@@ -17,6 +17,27 @@ class WriteInfluxDb:
 
         influxdb_record = self.make_inverter_measurement_influxdb_record(measurement)
         self.logger.info(f"Writing InfluxDB FusionSolarKiosk record for inverter: {measurement.settings_descriptive_name} [{measurement.station_dn}]")
+        try:
+            if self.conf.influxdb_is_v2:
+                self.logger.debug("Writing PvData to InfluxDB v2...")
+                self.ifwrite_api.write(
+                    bucket=self.conf.influxdb_v2_bucket,
+                    org=self.conf.influxdb_v2_org,
+                    record=influxdb_record,
+                    write_precision="s",
+                )
+            else:
+                self.logger.debug("Writing PvData to InfluxDB v1...")
+                self.influxclient.write_points(influxdb_record, time_precision="s")
+        except Exception as e:
+            self.logger.exception(f"InfluxDB PvData write error: '{e}'")
+
+    def write_grid_data_to_influxdb(self, measurement: FusionSolarMeterMeasurement):
+        if self.classes_instantiated == False:
+            self.classes_instantiated = self.instantiate()
+
+        influxdb_record = self.make_grid_meter_measurement_influxdb_record(measurement)
+        self.logger.info(f"Writing InfluxDB FusionSolarKiosk record for grid meter: {measurement.settings_descriptive_name} [{measurement.station_dn}]")
         try:
             if self.conf.influxdb_is_v2:
                 self.logger.debug("Writing PvData to InfluxDB v2...")
@@ -77,6 +98,31 @@ class WriteInfluxDb:
         tags = {key: value for key, value in raw_tags.items() if value}
 
         fields = {"real_time_power_w": measurement.real_time_power_w, "liftetime_energy_wh": measurement.lifetime_energy_wh}
+        record = {"measurement": influxdb_measurement, "time": timestamp, "fields": fields, "tags": tags}
+        return [record]
+    
+    def make_grid_meter_measurement_influxdb_record(self, measurement: FusionSolarMeterMeasurement) -> list[dict]:
+        timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+        influxdb_measurement = "energy"
+        device_type = "grid_meter"
+
+        raw_tags = {
+            "site_descriptive_name": self.conf.site_descriptive_name,
+            "inverter_descriptive_name": measurement.settings_descriptive_name,
+            "measurement_type": measurement.measurement_type,
+            "data_source": measurement.data_source,
+            "device_type": device_type,
+            "station_name": measurement.station_name,
+            "station_dn": measurement.station_dn,
+            "device_id": measurement.device_id,
+            "device_dn": measurement.device_dn,
+            "device_name": measurement.device_name,
+            "device_model": measurement.device_model,
+        }
+        # Do not set tag if string is empty
+        tags = {key: value for key, value in raw_tags.items() if value}
+
+        fields = {"active_power_w": measurement.active_power_w}
         record = {"measurement": influxdb_measurement, "time": timestamp, "fields": fields, "tags": tags}
         return [record]
 

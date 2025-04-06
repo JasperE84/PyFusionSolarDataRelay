@@ -35,7 +35,7 @@ class RelayFusionSolarOpenApi:
 
     def process_fusionsolar_open_apis(self):
         self.process_fusionsolar_openapi_inverters()
-        # ToDo: Implement meters too
+        self.process_fusionsolar_openapi_grid_meters()
 
         self.logger.info("Waiting for next FusionSolar interval...")
 
@@ -43,7 +43,7 @@ class RelayFusionSolarOpenApi:
         try:
             self.logger.info(f"Processing fusionsolar OpenAPI inverters...")
             inverter_measurements = self.fs_open_api.fetch_fusionsolar_inverter_device_kpis()
-
+            
             for inverter_measurement in inverter_measurements:
                 if not (inverter_measurement.settings is not None and inverter_measurement.settings.enabled == False):
                     self.write_pvdata_to_influxdb(inverter_measurement)
@@ -54,6 +54,20 @@ class RelayFusionSolarOpenApi:
 
         except Exception as e:
             self.logger.exception(f"Exception while processing fusionsolar open_api inverters:\n{e}")
+
+    def process_fusionsolar_openapi_grid_meters(self):
+        try:
+            self.logger.info(f"Processing fusionsolar OpenAPI grid meters...")
+            grid_meter_measurements = self.fs_open_api.fetch_fusionsolar_grid_meter_device_kpis()
+            for grid_meter_measurement in grid_meter_measurements:
+                if not (grid_meter_measurement.settings is not None and grid_meter_measurement.settings.enabled == False):
+                    self.write_grid_data_to_influxdb(grid_meter_measurement)
+                    self.publish_grid_data_to_mqtt(grid_meter_measurement)
+                else:
+                    self.logger.info(f"Skipping disabled fusionsolar open_api {grid_meter_measurement.settings_descriptive_name}, with dev_id {grid_meter_measurement.settings_device_id}...")
+
+        except Exception as e:
+            self.logger.exception(f"Exception while processing fusionsolar open_api grid meters:\n{e}")
 
     def write_pvdata_to_pvoutput(self, inverter_measurement: FusionSolarInverterMeasurement):
         if self.conf.pvoutput_module_enabled and (inverter_measurement.settings is not None and inverter_measurement.settings.output_pvoutput):
@@ -89,6 +103,32 @@ class RelayFusionSolarOpenApi:
                 # Log but do not raise, other outputs should proceed.
                 self.logger.exception(
                     f"Error publishing PV data to InfluxDB for fusionsolar open_api [{inverter_measurement.settings_descriptive_name}] with dev_id [{inverter_measurement.settings_device_id}]: {e}"
+                )
+        else:
+            self.logger.debug(f"Skipping publishing to InfluxDB, module disabled, or InfluxDB output disabled in fusionsolar open_api config.")
+
+    def publish_grid_data_to_mqtt(self, meter_measurement: FusionSolarMeterMeasurement):
+        if self.conf.mqtt_module_enabled and ((meter_measurement.settings is not None and meter_measurement.settings.output_mqtt) or self.conf.fusionsolar_open_api_mqtt_for_discovered_dev):
+            try:
+                self.mqtt.publish_grid_data_to_mqtt(meter_measurement)
+            except Exception as e:
+                # Log but do not raise, other outputs should proceed.
+                self.logger.exception(
+                    f"Error publishing grid meter data to MQTT for fusionsolar open_api [{meter_measurement.settings_descriptive_name}] with dev_id [{meter_measurement.settings_device_id}]: {e}"
+                )
+        else:
+            self.logger.debug(f"Skipping publishing to MQTT, module disabled, or MQTT output disabled in fusionsolar open_api config.")
+
+    def write_grid_data_to_influxdb(self, meter_measurement: FusionSolarMeterMeasurement):
+        if self.conf.influxdb_module_enabled and (
+            (meter_measurement.settings is not None and meter_measurement.settings.output_influxdb) or self.conf.fusionsolar_open_api_influxdb_for_discovered_dev
+        ):
+            try:
+                self.influxdb.write_grid_data_to_influxdb(meter_measurement)
+            except Exception as e:
+                # Log but do not raise, other outputs should proceed.
+                self.logger.exception(
+                    f"Error publishing grid meter data to InfluxDB for fusionsolar open_api [{meter_measurement.settings_descriptive_name}] with dev_id [{meter_measurement.settings_device_id}]: {e}"
                 )
         else:
             self.logger.debug(f"Skipping publishing to InfluxDB, module disabled, or InfluxDB output disabled in fusionsolar open_api config.")
