@@ -1,5 +1,6 @@
 import re
 import json
+from socket import gaierror
 import paho.mqtt.publish as publish
 from datetime import datetime
 from modules.conf_models import BaseConf
@@ -32,48 +33,44 @@ class WriteMqtt:
             return f"{base}/{addition}" if addition else base
         
         # Start with the root topic and sequentially append other parts if they are not empty
-        mqtt_base_topic = self.conf.mqtt_root_topic.lower()
+        topic = self.conf.mqtt_root_topic.lower()
 
         # Sequentially build the topic string, checking each segment for emptiness
-        mqtt_base_topic = append_if_not_empty(mqtt_base_topic, self.conf.site_descriptive_name.lower())
-        mqtt_base_topic = append_if_not_empty(mqtt_base_topic, "sensors")
-        mqtt_base_topic = append_if_not_empty(mqtt_base_topic, measurement.data_source.lower())
-        mqtt_base_topic = append_if_not_empty(mqtt_base_topic, f"{measurement.measurement_type.lower()}s")
-        mqtt_base_topic = append_if_not_empty(mqtt_base_topic, station_dn_sanitized.lower())
-        mqtt_base_topic = append_if_not_empty(mqtt_base_topic, device_dn_sanitized.lower())
-        mqtt_base_topic = append_if_not_empty(mqtt_base_topic, measurement.settings_descriptive_name.lower())
+        topic = append_if_not_empty(topic, self.conf.site_descriptive_name.lower())
+        topic = append_if_not_empty(topic, "sensors")
+        topic = append_if_not_empty(topic, measurement.data_source.lower())
+        topic = append_if_not_empty(topic, f"{measurement.measurement_type.lower()}s")
+        topic = append_if_not_empty(topic, station_dn_sanitized.lower())      
+        topic = append_if_not_empty(topic, device_dn_sanitized.lower())
+        topic = append_if_not_empty(topic, "state")
 
-        mqtt_base_topic = append_if_not_empty(mqtt_base_topic, "state")
-
-        # Gather the data in a dict
-        # Note that 'device' and 'time' are optional—include them if you want
-        # these published to MQTT as well.
         data_points = {
+            "descriptive_name" : measurement.settings_descriptive_name,
             "real_time_power_w": measurement.real_time_power_w,
-            "day_energy_wh": measurement.day_energy_wh,
             "lifetime_energy_wh": measurement.lifetime_energy_wh,
+            "day_energy_wh": measurement.day_energy_wh,
         }
 
         try:
-            # Publish each data point to its own topic
-            for key, value in data_points.items():
-                topic = f"{mqtt_base_topic}/{key}"
-                self.logger.info(f"Publishing to MQTT topic: {topic}, value: {value}")
-                publish.single(
-                    topic,
-                    payload=json.dumps(value),
-                    qos=0,
-                    retain=False,
-                    hostname=self.conf.mqtt_host,
-                    port=self.conf.mqtt_port,
-                    client_id=self.conf.site_descriptive_name,
-                    keepalive=60,
-                    auth=auth_obj,
-                )
+            value = json.dumps(data_points)
+            self.logger.info(f"Publishing to MQTT topic: {topic}, value: {value}")
+            publish.single(
+                topic,
+                payload=value,
+                qos=0,
+                retain=False,
+                hostname=self.conf.mqtt_host,
+                port=self.conf.mqtt_port,
+                client_id=self.conf.site_descriptive_name,
+                keepalive=60,
+                auth=auth_obj,
+            )
 
         except TimeoutError as e:
             self.logger.error(f"Timeout while publishing to MQTT: '{e}'")
         except ConnectionRefusedError as e:
-            self.logger.error(f"Connection refused while connecting to MQTT: '{e}'")
+            self.logger.error(f"Connection refused while connecting to MQTT host: '{e}'")
+        except gaierror as e:
+            self.logger.error(f"Could not get address info (resolve) MQTT host: '{e}'")
         except Exception as e:
             raise Exception(f"Exception while publishing to MQTT: '{e}'")
