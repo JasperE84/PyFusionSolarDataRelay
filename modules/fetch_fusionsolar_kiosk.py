@@ -73,7 +73,7 @@ class FetchFusionSolarKiosk:
         inverter_kpi = FusionSolarInverterMeasurement(
             settings=kiosk_settings,
             measurement_type="station",
-            data_source="kiosk",
+            data_source="kiosk_realkpi",
             station_name=station_name,
             station_dn=station_dn,
             real_time_power_w=real_time_power_w,

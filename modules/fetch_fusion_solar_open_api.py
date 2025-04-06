@@ -121,7 +121,7 @@ class FetchFusionSolarOpenApi:
             api_measurement = FusionSolarInverterMeasurement(
                 settings=matching_conf,
                 measurement_type="inverter",
-                data_source="open_api",
+                data_source="openapi_realkpi",
                 station_name=station_name,
                 station_dn=station_dn,
                 device_dn=device_dn,
@@ -194,7 +194,7 @@ class FetchFusionSolarOpenApi:
             api_measurement = FusionSolarMeterMeasurement(
                 settings=matching_conf,
                 measurement_type="grid_meter",
-                data_source="open_api",
+                data_source="openapi_realkpi",
                 station_name=station_name,
                 station_dn=station_dn,
                 device_dn=device_dn,
