@@ -35,7 +35,7 @@ class RelayKenter:
             self.logger.info("Starting process_kenter_meters() at init, before waiting for cron, because fetch_on_startup is set")
             self.process_kenter_meters()
 
-        self.logger.info(f"Setting cron trigger to run kenter meter processing at hour: [{self.conf.fusionsolar_kiosk_fetch_cron_hour}], minute: [{self.conf.fusionsolar_kiosk_fetch_cron_minute}]")
+        self.logger.info(f"Setting cron trigger to run kenter meter processing at hour: [{self.conf.kenter_fetch_cron_hour}], minute: [{self.conf.kenter_fetch_cron_minute}]")
         sched = BlockingScheduler(standalone=True)
         sched.add_job(self.process_kenter_meters, trigger="cron", hour=self.conf.kenter_fetch_cron_hour, minute=self.conf.kenter_fetch_cron_minute)
         sched.start()
