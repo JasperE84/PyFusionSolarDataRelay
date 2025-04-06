@@ -19,7 +19,7 @@ streamHandler = logging.StreamHandler(sys.stdout)
 formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 streamHandler.setFormatter(formatter)
 logger.addHandler(streamHandler)
-logger.info("PyFusionSolarDataRelay 2.0.0 started")
+logger.info("PyFusionSolarDataRelay 2.0.1 started")
 
 # Config
 conf = Conf(logger).read_and_validate_config()

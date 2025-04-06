@@ -128,6 +128,7 @@ class PyFusionSolarSettings(BaseSettings):
     mqtt_username: str = Field(default="fusionsolar")
     mqtt_password: str = Field(default="fusionsolar")
     mqtt_root_topic: str = Field(default="pyfusionsolar")
+    mqtt_hass_discovery_enabled: bool = Field(default=True)
 
     @classmethod
     def settings_customise_sources(
