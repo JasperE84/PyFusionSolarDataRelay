@@ -2,13 +2,12 @@ import re
 import json
 from socket import gaierror
 import paho.mqtt.publish as publish
-from datetime import datetime
-from modules.conf_models import BaseConf
+from modules.conf_models import PyFusionSolarSettings
 from modules.models import FusionSolarInverterMeasurement, FusionSolarMeterMeasurement
 
 
 class WriteMqtt:
-    def __init__(self, conf: BaseConf, logger):
+    def __init__(self, conf: PyFusionSolarSettings, logger):
         self.conf = conf
         self.logger = logger
         self.logger.debug("WriteMqtt class instantiated")

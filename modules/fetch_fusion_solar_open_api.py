@@ -5,7 +5,7 @@ import time
 from typing import Any, Dict, Optional
 import requests
 from modules.decorators import rate_limit
-from modules.conf_models import BaseConf, FusionSolarOpenApiInverterSettings
+from modules.conf_models import PyFusionSolarSettings, FusionSolarOpenApiInverterSettings
 from modules.models import *
 
 DEVICE_CACHE_FILE_PATH = "cache/fusion_solar_openapi_devices.json"
@@ -14,7 +14,7 @@ CACHE_EXPIRATION_SECONDS = 24 * 3600  # 24 hours in seconds
 
 
 class FetchFusionSolarOpenApi:
-    def __init__(self, conf: BaseConf, logger: logging.Logger):
+    def __init__(self, conf: PyFusionSolarSettings, logger: logging.Logger):
         self.conf = conf
         self.logger = logger
         self.jwt_token = ""

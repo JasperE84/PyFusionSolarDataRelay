@@ -1,10 +1,11 @@
 from datetime import datetime, timezone
-from modules.conf_models import BaseConf
+
+from modules.conf_models import PyFusionSolarSettings
 from modules.models import FusionSolarInverterMeasurement, FusionSolarMeterMeasurement, KenterTransformerMeasurements
 
 
 class WriteInfluxDb:
-    def __init__(self, conf: BaseConf, logger):
+    def __init__(self, conf: PyFusionSolarSettings, logger):
         self.conf = conf
         self.logger = logger
         self.logger.debug("WriteInfluxDb class instantiated")
@@ -29,6 +30,8 @@ class WriteInfluxDb:
             else:
                 self.logger.debug("Writing PvData to InfluxDB v1...")
                 self.influxclient.write_points(influxdb_record, time_precision="s")
+        except ConnectionError as e:
+            self.logger.error("Could not connect to InfluxDB: '{}'".format(str(e)))
         except Exception as e:
             self.logger.exception(f"InfluxDB PvData write error: '{e}'")
 
@@ -50,6 +53,8 @@ class WriteInfluxDb:
             else:
                 self.logger.debug("Writing PvData to InfluxDB v1...")
                 self.influxclient.write_points(influxdb_record, time_precision="s")
+        except ConnectionError as e:
+            self.logger.error("Could not connect to InfluxDB: '{}'".format(str(e)))
         except Exception as e:
             self.logger.exception(f"InfluxDB PvData write error: '{e}'")
 
@@ -73,6 +78,8 @@ class WriteInfluxDb:
             else:
                 self.logger.debug("Writing GridData to InfluxDB v1...")
                 self.influxclient.write_points(influxdb_record, time_precision="s")
+        except ConnectionError as e:
+            self.logger.error("Could not connect to InfluxDB: '{}'".format(str(e)))
         except Exception as e:
             self.logger.exception("InfluxDB GridData write error: '{}'".format(str(e)))
 

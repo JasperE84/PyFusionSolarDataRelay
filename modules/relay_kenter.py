@@ -4,13 +4,13 @@ from apscheduler.schedulers.blocking import BlockingScheduler
 from modules.models import KenterTransformerMeasurements
 from modules.write_influxdb import WriteInfluxDb
 from modules.write_pvoutput import WritePvOutput
-from modules.conf_models import BaseConf, KenterMeterSettings
+from modules.conf_models import PyFusionSolarSettings, KenterMeterSettings
 from modules.fetch_kenter import FetchKenter, FetchKenterMissingChannelId
 from modules.write_mqtt import WriteMqtt
 
 
 class RelayKenter:
-    def __init__(self, conf: BaseConf, logger: logging.Logger):
+    def __init__(self, conf: PyFusionSolarSettings, logger: logging.Logger):
         self.conf = conf
         self.logger = logger
         self.logger.debug("RelayKenter class instantiated")

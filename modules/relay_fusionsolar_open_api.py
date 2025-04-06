@@ -1,7 +1,7 @@
 import logging
 import time
 from apscheduler.schedulers.blocking import BlockingScheduler
-from modules.conf_models import BaseConf, FusionSolarOpenApiInverterSettings
+from modules.conf_models import PyFusionSolarSettings, FusionSolarOpenApiInverterSettings
 from modules.write_influxdb import WriteInfluxDb
 from modules.write_pvoutput import WritePvOutput
 from modules.fetch_fusion_solar_open_api import FetchFusionSolarOpenApi
@@ -10,7 +10,7 @@ from modules.models import *
 
 
 class RelayFusionSolarOpenApi:
-    def __init__(self, conf: BaseConf, logger: logging.Logger):
+    def __init__(self, conf: PyFusionSolarSettings, logger: logging.Logger):
         self.conf = conf
         self.logger = logger
         self.logger.debug("RelayFusionSolarOpenApiOpenApi class instantiated")

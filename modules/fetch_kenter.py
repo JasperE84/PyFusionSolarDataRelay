@@ -2,12 +2,12 @@ import logging
 import requests
 from datetime import datetime, timedelta
 import json
-from modules.conf_models import BaseConf
+from modules.conf_models import PyFusionSolarSettings
 from modules.models import KenterTransformerMeasurements, KenterTransformerMeasurement
 
 
 class FetchKenter:
-    def __init__(self, conf: BaseConf, logger: logging.Logger):
+    def __init__(self, conf: PyFusionSolarSettings, logger: logging.Logger):
         self.conf = conf
         self.logger = logger
         self.logger.debug("Kenter class instantiated")

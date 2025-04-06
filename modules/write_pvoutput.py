@@ -1,11 +1,11 @@
 import requests
 import time
-from modules.conf_models import BaseConf, FusionSolarKioskSettings
+from modules.conf_models import PyFusionSolarSettings, FusionSolarKioskSettings
 from modules.models import FusionSolarInverterMeasurement
 
 
 class WritePvOutput:
-    def __init__(self, conf: BaseConf, logger):
+    def __init__(self, conf: PyFusionSolarSettings, logger):
         self.conf = conf
         self.logger = logger
         self.logger.debug("WritePvOutput class instantiated")

@@ -1,25 +1,30 @@
-# Huawei FusionSolar Kiosk to InfluxDB, MQTT, PVOutput and Home Assistant relay
-This is a python project intended to fetch data from the **Huawei FusionSolar** public **kiosk** and relay it to **InfluxDB**/**VictoriaMetrics** and/or **PVOutput.org** and/or **MQTT** and/or **Home Assistant (hass)**. 
+# Huawei FusionSolar (Northbound OpenAPI and/or Kiosk) to InfluxDB, MQTT, PVOutput and Home Assistant relay
+This is a python project intended to fetch data from the FusionSolar **Northbound OpenAPI** or public **kiosk**, and relay it to **InfluxDB**/**VictoriaMetrics** and/or **PVOutput.org** and/or **MQTT** and/or **Home Assistant (hass)**. Both inverter and grid meter metrics can be retrieved from FusionSolar's API.
 
-Additionally this project can also fetch and relay grid usage data from the Dutch klantportaal.kenter.nu API provider by **Kenter**.
+Additionally this project can also fetch and relay utility grid energy usage data from the Dutch **Kenter** metering service for commercial transformers.
+
+Multiple parallel fusionsolar kiosk configurations are supported, and multiple devices on the *same* Northbound OpenAPI account are supported. Also, multiple parallel meters from Kenter's service are supported as well. You can configure where metrics should be published per configured device. Additionally, the project also supports publishing metrics from discovered devices over the Northbound API, which have not been individually configured in the environment variables. Please refer to settings the configuration options in this document for more explanation.
 
 [![GitHub release](https://img.shields.io/github/release/JasperE84/PyFusionSolarDataRelay?include_prereleases=&sort=semver&color=2ea44f)](https://github.com/JasperE84/PyFusionSolarDataRelay/releases/)
 [![License](https://img.shields.io/badge/License-MIT-2ea44f)](#license)
 
 # Installation
-This project is currently intented to run as a Docker container and fetches its config from environment variables. The project can also be started standalone by putting a config.yaml file in the root directory where main.py is.
-Configuration examples are in the examples folder.
+This project is mostly used as a Docker container and fetches its config from environment variables. The file `main.py` can also be started from a python3 environment, after running `pip install -r requirements.txt` and renaming `.env.example` to `.env`. PyFusionSolarDataRelay will then load the environment files from this file, overriding any environment variables already set.
+
+Check out [examples/docker-compose.yml](https://github.com/JasperE84/PyFusionSolarDataRelay/blob/main/Examples/docker-compose.yml) for a docker configuration example.
 
 [![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white)](https://hub.docker.com/r/jsprnl/pyfusionsolardatarelay)
 
-Check out [Examples/docker-compose.yml](https://github.com/JasperE84/PyFusionSolarDataRelay/blob/main/Examples/docker-compose.yml) for a docker configuration example.
+
 
 # Breaking changes in the latest release
-Environment variables for config changed names and structure. Please review the configuration section in README for updated variable names. Additionaly, functionality to write electrical energy usage from utility grid has been removed.
+In version 2.0.0 the environment variables used by this project changed names and structure. Please review the configuration section in README for updated variable names. Additionaly, functionality to write electrical energy usage from utility grid has been removed.
+
+# About Huawei FusionSolar Northbound OpenAPI mode
+FusionSolar is Huawei's online monitoring platform, the Northbound API exposes metrics from devices supported by this platform. This project specifically supports inverter and grid meter device types. To use the Northbound API (also called OpenAPI) please ask your installer to create an API account for you, with read access to the relevant inverter and grid meter (if applicable) metrics.
 
 # About Huawei FusionSolar Kiosk mode
-FusionSolar is Huawei's online monitoring platform for their PV inverters. FusionSolar features a kiosk mode. When enabled, a kiosk url is generated which is publically accessible. The kiosk web app fetches its data from a JSON backend. It is this backend where this project fetches the PV data. 
-Fetching data from the kiosk mode can be beneficial to those without direct access to the official API and/or the inverter Modbus-TCP. For instance when the inverter is logging to fusionsolar over a direct cellular connection configured and fitted by an installer unable to provide API access rights to third parties.
+FusionSolar features a kiosk mode. When enabled, a kiosk url is generated which is publically accessible. The kiosk web app fetches its data from a JSON backend. It is this backend where this project fetches the PV data. Fetching data from the kiosk mode can be beneficial to those without direct access to the official API and/or the inverter Modbus-TCP. For instance when the inverter is logging to fusionsolar over a direct cellular connection configured and fitted by an installer unable to provide API access rights to third parties.
 
 # About PVOutput.org
 [PVOutput.org](https://pvoutput.org/) is a free service for sharing and comparing PV output data.
@@ -38,7 +43,7 @@ Hass can easily be connected to an MQTT using the MQTT integration, which can be
 
 Once everything is configured, solar data will flow as follows: 
 
-`[FusionSolar Kiosk API] --> [PyFusionSolarDataRelay] --> [MQTT Server] --> [Home Assistant]`
+`[FusionSolar (Kiosk/Northbound) API] --> [PyFusionSolarDataRelay] --> [MQTT Server] --> [Home Assistant]`
 
 For those of you using Docker, a docker-compose.yml file is provided [here](./Examples/docker-compose.yml) in order to get these different components up and running quickly.
 
@@ -143,11 +148,14 @@ Result:
 # Changelog
 | Version | Description |
 | --- | --- |
-| 1.1.0 | Removed currentPower kiosk property (fetched from powercurve API obj) in favor of realTimePower |
-| 1.1.0 | Removed functionality to write utility grid consumption (non-pv) to PVOutput (InfluxDB fully supported!) |
-| 1.1.0 | **BREAKING CHANGE:** Environment variables for config changed names and structure. Please review the configuration section in README for updated variable names |
-| 1.1.0 | Refactored class names and .py file structure |
-| 1.1.0 | Implemented pydantic to replace pvconf.py, now supporting non-environment variable based settings using config.yaml |
+| 2.0.0 | Introduced possibility to configure multiple input sources (kiosks, openapi meters/inverters and kenter meters) |
+| 2.0.0 | Implemented Huawei Northbound OpenAPI as data source for metrics |
+| 2.0.0 | Now supporting Kenter API v2 |
+| 2.0.0 | Removed currentPower kiosk property (fetched from powercurve API obj) in favor of realTimePower |
+| 2.0.0 | Removed functionality to write utility grid consumption (non-pv) to PVOutput (InfluxDB fully supported!) |
+| 2.0.0 | **BREAKING CHANGE:** Environment variables for config changed names and structure. Please review the configuration section in README for updated variable names |
+| 2.0.0 | Refactored class names and .py file structure |
+| 2.0.0 | Implemented pydantic to replace pvconf.py, now supporting non-environment variable based settings using config.yaml |
 | 1.0.6 | Fixed a bug  parsing the environment cron settings, which are in string format, but were interpreted as int, causing an exception |
 | 1.0.6 | FusionSolar API will now immediately be queried on startup if debug mode is enabled (so no waiting for cron to trigger is required for testing) |
 | 1.0.5 | Added InfluxDB support for an optional secondary grid telemetry EAN configuration (pvoutput output is only supported on the primary EAN) |

@@ -1,12 +1,12 @@
 import requests
 import json
 import html
-from modules.conf_models import BaseConf, FusionSolarKioskSettings
+from modules.conf_models import PyFusionSolarSettings, FusionSolarKioskSettings
 from modules.models import *
 
 
 class FetchFusionSolarKiosk:
-    def __init__(self, conf: BaseConf, logger):
+    def __init__(self, conf: PyFusionSolarSettings, logger):
         self.conf = conf
         self.logger = logger
         self.logger.debug("FetchFusionSolarKiosk class instantiated")

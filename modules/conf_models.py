@@ -41,11 +41,13 @@ class KenterMeterSettings(BaseMetricSettings):
     descriptive_name: str = Field(default="transformer01")
     connection_id: str = Field(default="XXX")
     metering_point_id: str = Field(default="XXX")
-    channel_id: str = Field(default="16180", description="See kenter API docs, 16180 is delivery for allocation with transformer correction factor for billing, 10180 is delivery kWh from an individual meter")
+    channel_id: str = Field(
+        default="16180", description="See kenter API docs, 16180 is delivery for allocation with transformer correction factor for billing, 10180 is delivery kWh from an individual meter"
+    )
 
 
-class BaseConf(BaseSettings):
-    model_config = SettingsConfigDict(env_nested_delimiter="__")
+class PyFusionSolarSettings(BaseSettings):
+    model_config = SettingsConfigDict(env_nested_delimiter="__", extra="ignore")
 
     #
     # General settings
@@ -61,7 +63,9 @@ class BaseConf(BaseSettings):
     fusionsolar_kiosk_module_enabled: bool = Field(default=True)
     fusionsolar_kiosks: List[FusionSolarKioskSettings] = Field(default=[])
     fusionsolar_kiosk_fetch_cron_hour: str = Field(default="*")
-    fusionsolar_kiosk_fetch_cron_minute: str = Field(default="0,30", description="The fusionsolar API only updates portal data each half hour, setting to lower value will produce weird PVOutput graph with horizontal bits in it.")
+    fusionsolar_kiosk_fetch_cron_minute: str = Field(
+        default="0,30", description="The fusionsolar API only updates portal data each half hour, setting to lower value will produce weird PVOutput graph with horizontal bits in it."
+    )
 
     # FusionSolar OpenAPI
     fusionsolar_open_api_module_enabled: bool = Field(default=True)
@@ -69,7 +73,10 @@ class BaseConf(BaseSettings):
     fusionsolar_open_api_user_name: str = Field(default="")
     fusionsolar_open_api_system_code: str = Field(default="")
     fusionsolar_open_api_cron_hour: str = Field(default="*")
-    fusionsolar_open_api_cron_minute: str = Field(default="*/5", description="Beware of API limits and throttling: https://support.huawei.com/enterprise/en/doc/EDOC1100379184/b71c4d05/flow-control-using-the-api-account#EN-US_TOPIC_0000001652426426")
+    fusionsolar_open_api_cron_minute: str = Field(
+        default="*/5",
+        description="Beware of API limits and throttling: https://support.huawei.com/enterprise/en/doc/EDOC1100379184/b71c4d05/flow-control-using-the-api-account#EN-US_TOPIC_0000001652426426",
+    )
     fusionsolar_open_api_inverters: List[FusionSolarOpenApiInverterSettings] = Field(default=[])
     fusionsolar_open_api_meters: List[FusionSolarOpenApiMeterSettings] = Field(default=[])
     fusionsolar_open_api_mqtt_for_discovered_dev: bool = Field(default=True, description="Write KPI's to MQTT for devices discovered over the API without a matching dev_id")
@@ -84,7 +91,9 @@ class BaseConf(BaseSettings):
     kenter_fetch_cron_hour: str = Field(default="8")
     kenter_fetch_cron_minute: str = Field(default="0")
     kenter_days_back: int = Field(default=1, description="Grid infrastructure measurements in The Netherlands, show up in the API with a 3-5 days delay.")
-    kenter_days_backfill: int = Field(default=0, description="Setting this to 30 would try to backfill gridkenter data on startup for any day between 3 days back (gridrelaydaysback) and 3+30=33 days back.")
+    kenter_days_backfill: int = Field(
+        default=0, description="Setting this to 30 would try to backfill gridkenter data on startup for any day between 3 days back (gridrelaydaysback) and 3+30=33 days back."
+    )
     kenter_metering_points: List[KenterMeterSettings] = Field(default=[])
 
     #

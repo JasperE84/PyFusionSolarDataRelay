@@ -1,39 +1,30 @@
 import os
-import yaml
+import pathlib
 from modules.conf_models import *
-from pydantic import ValidationError
+from dotenv import load_dotenv
+
+DOTENV = f"{pathlib.Path(__file__).resolve().parent.parent}\\.env"
 
 class Conf:
     def __init__(self, logger):
         self.logger = logger
         self.logger.debug("Config class instantiated")
 
-    def read_and_validate_config(self) -> BaseConf:
-        config_file = os.path.join(os.path.dirname(__file__), os.path.pardir, "config.yaml")
-        self.logger.info(f"Config file path: {config_file}")
-
-        if os.path.exists(config_file):
-            self.logger.info(f"File exists, safe_loading yaml...")
-            with open(config_file, "r") as file:
-                try:
-                    user_config = yaml.safe_load(file) or {}
-                    BaseConf.validate(user_config)
-                    self.logger.debug("Validated user config")
-                    config = BaseConf(**user_config)
-                    self.logger.info("Parsed configuration file.")
-                except (ValidationError, Exception) as e:
-                    self.logger.exception(f"Error while parsing yaml file: {e}")
-                    raise
+    def read_and_validate_config(self) -> PyFusionSolarSettings:
+        
+        # DOTENV processing
+        self.logger.debug(f"DOTENV config file path: {DOTENV}")
+        if os.path.exists(DOTENV):
+            self.logger.info(f"DOTENV config file exists, loading settings from .env file...")
+            try:
+                load_dotenv(dotenv_path=DOTENV, encoding='utf-8')
+                self.logger.debug("Loaded environment variables from file.")
+            except (Exception) as e:
+                self.logger.exception(f"Error while loading DOTENV file from {DOTENV}: {e}")
+                raise
         else:
-            self.logger.info(f"No config file found, using default values.")
-            config = BaseConf()
+            self.logger.info(f"No DOTENV config file found in pyfusionsolar working dir. Using environment variables from environment or default settings.")
 
+        # Class instantiating
+        config = PyFusionSolarSettings()
         return config
-    
-    def dump_config_as_yaml(self, conf: BaseConf, skip_defaults: bool, output_file: str = "config.yaml.dump"):
-        settings_dict = conf.dict(skip_defaults=skip_defaults)
-        yaml_str = yaml.dump(settings_dict, indent=4)
-    
-        with open(output_file, 'w') as file:
-            file.write(yaml_str)
-
