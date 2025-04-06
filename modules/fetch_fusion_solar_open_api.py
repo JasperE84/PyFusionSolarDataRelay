@@ -38,7 +38,7 @@ class FetchFusionSolarOpenApi:
         self.logger.info("Current FusionSolar OpenAPI stations:")
         for station in self.station_list:
             self.logger.info(
-                f" stationName: {station.get('stationName','')}, stationCode: {station.get('stationCode','')}, capacity: {station.get('capacity','')}MW, stationAddr: {station.get('stationAddr','')}, stationLinkman: {station.get('stationLinkman','')}"
+                f"stationName: {station.get('stationName','')}, stationCode: {station.get('stationCode','')}, capacity: {station.get('capacity','')}MW, stationAddr: {station.get('stationAddr','')}, stationLinkman: {station.get('stationLinkman','')}"
             )
 
     def update_device_list(self, force_api_update: bool = False) -> None:
@@ -63,7 +63,7 @@ class FetchFusionSolarOpenApi:
         self.logger.info("Current FusionSolar OpenAPI devices:")
         for device in self.device_list:
             self.logger.info(
-                f" devDn: {device.get('devDn','')}, devName: {device.get('devName','')}, id: {device.get('id','')}, stationCode: {device.get('stationCode','')}, devTypeId: {device.get('devTypeId','')}, model: {device.get('model','')}"
+                f"devDn: {device.get('devDn','')}, devName: {device.get('devName','')}, id: {device.get('id','')}, stationCode: {device.get('stationCode','')}, devTypeId: {device.get('devTypeId','')}, model: {device.get('model','')}"
             )
 
     @rate_limit(max_calls=1, period=60)
@@ -100,7 +100,7 @@ class FetchFusionSolarOpenApi:
                 self.logger.error(f"Failed to convert FusionSolarOpenAPI inverter measurement record to float, out of bounds? Skipping this device. {val_err}")
                 continue
             except TypeError as typ_err:
-                self.logger.error(f"Failed to convert FusionSolarOpenAPI inverter measurement record to float, value None? Skipping this device. {typ_err}")
+                self.logger.warning(f"Failed to parse FusionSolarOpenAPI grid meter measurements, value None? This happens if a device is inactive or disabled. Skipping this device. {typ_err}")
                 continue
 
             self.logger.debug(f"Metrics for {""} after transformations: " f"realTimePowerW={real_time_power_w}, " f"lifetimeEnergyWh={lifetime_energy_wh}, " f"dailyEnergyWh={daily_energy_wh}")
@@ -173,7 +173,7 @@ class FetchFusionSolarOpenApi:
                 self.logger.error(f"Failed to convert FusionSolarOpenAPI grid meter measurement record to float, out of bounds? Skipping this device. {val_err}")
                 continue
             except TypeError as typ_err:
-                self.logger.error(f"Failed to convert FusionSolarOpenAPI grid meter measurement record to float, value None? Skipping this device. {typ_err}")
+                self.logger.warning(f"Failed to parse FusionSolarOpenAPI grid meter measurements, value None? This happens if a device is inactive or disabled. Skipping this device. {typ_err}")
                 continue
 
             self.logger.debug(f"Metrics after transformations: realTimePowerW={active_power_w}")
