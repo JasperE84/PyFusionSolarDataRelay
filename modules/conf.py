@@ -3,7 +3,7 @@ import pathlib
 from modules.conf_models import *
 from dotenv import load_dotenv
 
-DOTENV = f"{pathlib.Path(__file__).resolve().parent.parent}\\.env"
+DOTENV = f"{pathlib.Path(__file__).resolve().parent.parent}/.env"
 
 class Conf:
     def __init__(self, logger):
