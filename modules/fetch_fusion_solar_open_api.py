@@ -35,6 +35,13 @@ class FetchFusionSolarOpenApi:
         response = self._fetch_and_cache_fusionsolar_data(force_api_update=force_api_update, endpoint="/thirdData/getStationList", request_data=None, cache_file_path=STATION_CACHE_FILE_PATH)
         self.station_list = response.get("data", [])
 
+        self.logger.info("Current FusionSolar OpenAPI stations:")
+        for station in self.station_list:
+            self.logger.info(
+                f" stationName: {station.get('stationName','')}, stationCode: {station.get('stationCode','')}, capacity: {station.get('capacity','')}MW, stationAddr: {station.get('stationAddr','')}, stationLinkman: {station.get('stationLinkman','')}"
+            )
+            
+
     def update_device_list(self, force_api_update: bool = False) -> None:
         """
         Fetch, cache, and store the list of devices from the FusionSolar OpenAPI.
@@ -53,6 +60,12 @@ class FetchFusionSolarOpenApi:
 
         response = self._fetch_and_cache_fusionsolar_data(force_api_update=force_api_update, endpoint="/thirdData/getDevList", request_data=data, cache_file_path=DEVICE_CACHE_FILE_PATH)
         self.device_list = response.get("data", [])
+
+        self.logger.info("Current FusionSolar OpenAPI devices:")
+        for device in self.device_list:
+            self.logger.info(
+                f" devDn: {device.get('devDn','')}, devName: {device.get('devName','')}, id: {device.get('id','')}, stationCode: {device.get('stationCode','')}, devTypeId: {device.get('devTypeId','')}, model: {device.get('model','')}"
+            )
 
     @rate_limit(max_calls=1, period=60)
     def fetch_fusionsolar_inverter_device_kpis(self) -> List[FusionSolarInverterMeasurement]:
