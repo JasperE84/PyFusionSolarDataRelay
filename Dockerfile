@@ -1,4 +1,4 @@
-FROM python:3.10-slim
+FROM python:3.13-slim
 WORKDIR /code
 
 ENV LANG=en_US.UTF-8
@@ -14,4 +14,4 @@ COPY requirements.txt requirements.txt
 RUN pip install -r requirements.txt
 
 COPY . .
-CMD ["python", "-u", "pv.py", "-v"]
+CMD ["python", "-u", "main.py", "-v"]
