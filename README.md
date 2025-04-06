@@ -15,8 +15,6 @@ Check out [examples/docker-compose.yml](https://github.com/JasperE84/PyFusionSol
 
 [![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white)](https://hub.docker.com/r/jsprnl/pyfusionsolardatarelay)
 
-
-
 # Breaking changes in the latest release
 In version 2.0.0 the environment variables used by this project changed names and structure. Please review the configuration section in README for updated variable names. Additionaly, functionality to write electrical energy usage from utility grid has been removed.
 
@@ -39,7 +37,7 @@ MQTT is an OASIS standard messaging protocol for the Internet of Things (IoT). I
 # About Home Assistant
 Home Assistant (hass) is an open source home automation platform. Hass features an energy dashboard in which energy generation, storage and usage data can be combined in a dashboard giving a total overview of energy flow. Using MQTT, the power and energy generation data from Huawei's FusionSolar Kiosk can be fed into Home Assistant. This project can then act as a data source for the solar production section of the HASS energy dashboard.
 
-Hass can easily be connected to an MQTT using the MQTT integration, which can be set up using the hass web interface. Once hass is connected to MQTT, a change in configuration.yaml is required in order to add the energy sensors to hass. A [configuration.yaml example file](./examples/home_assistant/configuration.yaml) which shows how to do this is provided in the Examples subfolder of this project. 
+Hass can easily be connected to an MQTT using the MQTT integration, which can be set up using the hass web interface. Once hass is connected to MQTT, PyFusionSolarDataRelay publishes a HASS MQTT device discovery topic so that home assistant automatically recognizes the devices for which measurements are relayed. No configuration in home assistant sensors is required.
 
 Once everything is configured, solar data will flow as follows: 
 
@@ -122,32 +120,14 @@ Kenter provides measurement services for **commercially rented** grid transforme
 | mqtt_username | MQTT Username | fusionsolar |
 | mqtt_password | MQTT Password | fusionsolar |
 | mqtt_root_topic | MQTT Topic for publishing | pyfusionsolar |
+| mqtt_hass_discovery_enabled | Automatically publish all sensors in MQTT home assistant device discovery | True |
 
-
-# Grafana dashboard example
-A grafana dashboard export is included in the Examples subfolder in the Git repository.
-
-![Grafana dashboard screenshot](./Examples/grafana-screenshot.png)
-
-# Grafana solar PV dashboard elements on Xibo digital signage system
-I'm using individual the elements on this dashboard to show the PV solar statistics on a free and open source [Xibo Digital Signage](https://xibo.org.uk/) narrowcasting system. 
-
-Take the following steps to achieve this:
-1. Enable Grafana anonymous mode (see [Examples/docker-compose.yml](https://github.com/JasperE84/PyFusionSolarDataRelay/blob/main/Examples/docker-compose.yml))
-2. Create a new layout in Xibo and add some regions
-3. Back in Grafana, open the dashboard and click 'Share' in the grafana individual graph dropdown dialog (not the entire dashboard, but the individual graph on the dashboard)
-4. Share in "Link" mode (do not use snapshot or embed)
-5. Back in Xibo, drop the "Webpage" widget on your region
-6. Configure the webpage widget to show the link copied in step 4.
-7. Optionally alter the url to format like `&from=now-12h` instead of the default `&from=1655015379544&to=1655058579544`
-7. Publish the layout, the graphs will now fit nicely in the width/height of the defined regions.
-
-Result:
-![Xibo layout screenshot](./Examples/grafana-embedded-in-xibo-layout.png)
 
 # Changelog
 | Version | Description |
 | --- | --- |
+| 2.0.1 | Now sending MQTT device discovery message |
+| 2.0.1 | Bugfix in environment variable parsing for custom pydantic nested env list parser |
 | 2.0.0 | Introduced possibility to configure multiple input sources (kiosks, openapi meters/inverters and kenter meters) |
 | 2.0.0 | Implemented Huawei Northbound OpenAPI as data source for metrics |
 | 2.0.0 | Now supporting Kenter API v2 |

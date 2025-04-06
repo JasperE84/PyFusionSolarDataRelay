@@ -114,6 +114,7 @@ services:
       - pvoutput_api_key=9847594832794874460d04c39
 
     volumes:
+      - ./data/pyfusionsolar/cache:/code/cache
       - /etc/localtime:/etc/localtime:ro
 
   grafana:

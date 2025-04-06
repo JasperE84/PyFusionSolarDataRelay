@@ -103,7 +103,7 @@ class FetchFusionSolarOpenApi:
                 self.logger.warning(f"Failed to parse FusionSolarOpenAPI grid meter measurements, value None? This happens if a device is inactive or disabled. Skipping this device. {typ_err}")
                 continue
 
-            self.logger.debug(f"Metrics for {""} after transformations: " f"realTimePowerW={real_time_power_w}, " f"lifetimeEnergyWh={lifetime_energy_wh}, " f"dailyEnergyWh={daily_energy_wh}")
+            self.logger.debug(f"Metrics after transformations: realTimePowerW={real_time_power_w}, lifetimeEnergyWh={lifetime_energy_wh}, dailyEnergyWh={daily_energy_wh}")
 
             matching_device = next((dev for dev in self.device_list if dev.get("id") == api_measurement["devId"]), None)
             matching_station = next((stat for stat in self.station_list if stat.get("stationCode") == matching_device["stationCode"]), None)
