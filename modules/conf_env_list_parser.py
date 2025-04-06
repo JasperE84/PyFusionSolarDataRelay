@@ -11,6 +11,7 @@ class ConfEnvListParser(EnvSettingsSource):
             prefix = f"{field_name.upper()}__"
             kiosks_map = {}
             for key, val in os.environ.items():
+                key = key.upper()
                 if key.startswith(prefix):
                     # Example: FUSIONSOLAR_KIOSKS__0__FUSIONSOLAR_KIOSK_API_URL
                     # Split out the index and field name
