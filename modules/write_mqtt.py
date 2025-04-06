@@ -166,7 +166,7 @@ class WriteMqtt:
         device_identifier = f"{station_dn_sanitized}_{measurement_type_sanitized}_{data_source_sanitized}"
         if device_dn_sanitized:
             device_identifier = f"{device_identifier}_{device_dn_sanitized}"
-        device_name = data_points.get("descriptive_name", device_identifier)
+        device_name = data_points.get("descriptive_name") or device_dn_sanitized
 
         # Publish one discovery config message for each sensor-like field
         for field_name, field_value in data_points.items():
