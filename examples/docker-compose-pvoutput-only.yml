@@ -1,0 +1,41 @@
+services:
+
+  pyfusionsolar:
+    container_name: pyfusionsolardatarelay
+    image: jsprnl/pyfusionsolardatarelay:latest
+    #build: ./PyFusionSolarDataRelay
+    restart: unless-stopped
+    environment:
+      - debug_mode=False
+      - fetch_on_startup=False
+      - site_descriptive_name=my_site
+
+      # Set below to True if using the public Huawei Kiosk API mode
+      - fusionsolar_kiosk_module_enabled=False
+      - fusionsolar_kiosks__0__descriptive_name=my_site_totals
+      - fusionsolar_kiosks__0__api_kkid=sdlew8h9hldshdsoidsuhidsu
+      - fusionsolar_kiosks__0__output_pvoutput=True
+      - fusionsolar_kiosks__0__output_pvoutput_system_id=123456
+
+      # Set below to True if using the Huawei Northbound OpenAPI mode
+      - fusionsolar_open_api_module_enabled=False
+      - fusionsolar_open_api_user_name=MyUserName
+      - fusionsolar_open_api_system_code=MySecretPass
+      - fusionsolar_open_api_mqtt_for_discovered_dev=True
+      - fusionsolar_open_api_inverters__0__descriptive_name=oa_inverter_02
+      - fusionsolar_open_api_inverters__0__dev_id=1000045678978407
+      - fusionsolar_open_api_inverters__0__output_pvoutput=True
+      - fusionsolar_open_api_inverters__0__output_pvoutput_system_id=123457
+
+      # Enable PVOutput.org module
+      - pvoutput_module_enabled=True
+      - pvoutput_api_key=9847594832794874460d465654
+
+      # Disable other output modules
+      - kenter_module_enabled=False
+      - influxdb_module_enabled=False
+      - mqtt_module_enabled=False
+
+    volumes:
+      - ./data/pyfusionsolar/cache:/code/cache
+      - /etc/localtime:/etc/localtime:ro
