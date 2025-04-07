@@ -76,7 +76,7 @@ class WriteMqtt:
             raise Exception(f"Exception while publishing to MQTT: '{e}'")
 
         # Publish MQTT device discovery
-        self.publish_homeassistant_discovery(station_dn_sanitized, device_dn_sanitized, measurement.measurement_type, measurement.data_source, topic, data_points)
+        self.publish_homeassistant_discovery(station_dn_sanitized, device_dn_sanitized, measurement.measurement_type, measurement.data_source, measurement.device_model, topic, data_points)
 
     def publish_grid_data_to_mqtt(self, measurement: FusionSolarMeterMeasurement):
         """
@@ -139,9 +139,9 @@ class WriteMqtt:
             raise Exception(f"Exception while publishing to MQTT: '{e}'")
 
         # Publish MQTT device discovery
-        self.publish_homeassistant_discovery(station_dn_sanitized, device_dn_sanitized, measurement.measurement_type, measurement.data_source, topic, data_points)
+        self.publish_homeassistant_discovery(station_dn_sanitized, device_dn_sanitized, measurement.measurement_type, measurement.data_source, measurement.device_model, topic, data_points)
 
-    def publish_homeassistant_discovery(self, station_dn_sanitized, device_dn_sanitized, measurement_type, data_source, state_topic, data_points):
+    def publish_homeassistant_discovery(self, station_dn_sanitized, device_dn_sanitized, measurement_type, data_source, device_model, state_topic, data_points):
         """
         Publish Home Assistant discovery config for each data field.
         Any field ending in '_w' is treated as a power (W) sensor,
@@ -181,12 +181,12 @@ class WriteMqtt:
             if field_name.endswith("_w"):
                 # It's a power sensor
                 device_class = "power"
-                unit_of_measurement = "W"
+                unit_of_measurement = "kW"
                 state_class = "measurement"
             elif field_name.endswith("_wh"):
                 # It's an energy sensor
                 device_class = "energy"
-                unit_of_measurement = "Wh"
+                unit_of_measurement = "kWh"
                 # For cumulative energy sensors, setting "state_class=total_increasing"
                 # helps with HA’s Energy Dashboard
                 state_class = "total_increasing"
@@ -199,7 +199,7 @@ class WriteMqtt:
             # Topic format: homeassistant/sensor/<unique_id>/config
             field_name_sanitized = re.sub(r"\W+", "_", field_name).lower()
             unique_sensor_id = f"{device_identifier}_{field_name_sanitized}"
-            discovery_topic = f"homeassistant/sensor/{unique_sensor_id}/config"
+            discovery_topic = f"homeassistant/sensor/pyfusionsolar/{unique_sensor_id}/config"
 
             # Skip if device is already discovery_published
             if unique_sensor_id in self.hass_discovery_published:
@@ -210,11 +210,14 @@ class WriteMqtt:
                 "name": f"{field_name}",
                 "state_topic": state_topic,
                 "uniq_id": unique_sensor_id,
+                "suggested_display_precision": 3,
                 "device": {
                     "identifiers": [device_identifier],
-                    "name": f"{device_name}",
+                    "name": device_name,
+                    "model": device_model,
+                    "manufacturer": "Huawei",
                 },
-                "value_template": f"{{{{ value_json.{field_name} }}}}",
+                "value_template": f"{{{{ none if value_json.{field_name} is none else ((value_json.{field_name}|float / 1000) if (value_json.{field_name}|float > 0) else 0) }}}}",
             }
 
             # Add the sensor-specific attributes
