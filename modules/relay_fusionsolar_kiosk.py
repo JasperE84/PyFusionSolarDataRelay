@@ -31,9 +31,9 @@ class RelayFusionSolarKiosk:
         self.logger.info(
             f"Setting cron trigger to run fusionsolar kiosk processing at hour: [{self.conf.fusionsolar_kiosk_fetch_cron_hour}], minute: [{self.conf.fusionsolar_kiosk_fetch_cron_minute}]"
         )
-        sched = BlockingScheduler(standalone=True)
-        sched.add_job(self.process_fusionsolar_kiosks, trigger="cron", hour=self.conf.fusionsolar_kiosk_fetch_cron_hour, minute=self.conf.fusionsolar_kiosk_fetch_cron_minute)
-        sched.start()
+        self.sched = BlockingScheduler(standalone=True)
+        self.sched.add_job(self.process_fusionsolar_kiosks, trigger="cron", hour=self.conf.fusionsolar_kiosk_fetch_cron_hour, minute=self.conf.fusionsolar_kiosk_fetch_cron_minute)
+        self.sched.start()
 
     def process_fusionsolar_kiosks(self):
         for kiosk_settings in self.conf.fusionsolar_kiosks:
@@ -49,7 +49,7 @@ class RelayFusionSolarKiosk:
             else:
                 self.logger.info(f"Skipping disabled fusionsolar kiosk {kiosk_settings.descriptive_name}, with kkid {kiosk_settings.api_kkid}...")
 
-        self.logger.info("Waiting for next FusionSolar interval...")
+        self.logger.info("Waiting for next FusionSolar Kiosk interval...")
 
     def write_pvdata_to_pvoutput(self, kiosk_measurement: FusionSolarInverterMeasurement, kiosk_settings: FusionSolarKioskSettings):
         if self.conf.pvoutput_module_enabled and kiosk_settings.output_pvoutput:
