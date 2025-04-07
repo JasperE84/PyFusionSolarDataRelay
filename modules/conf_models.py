@@ -64,7 +64,7 @@ class PyFusionSolarSettings(BaseSettings):
     fusionsolar_kiosks: List[FusionSolarKioskSettings] = Field(default=[])
     fusionsolar_kiosk_fetch_cron_hour: str = Field(default="*")
     fusionsolar_kiosk_fetch_cron_minute: str = Field(
-        default="0,30", description="The fusionsolar API only updates portal data each half hour, setting to lower value will produce weird PVOutput graph with horizontal bits in it."
+        default="*/30", description="The fusionsolar API only updates portal data each half hour, setting to lower value will produce weird PVOutput graph with horizontal bits in it."
     )
 
     # FusionSolar OpenAPI

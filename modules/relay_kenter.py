@@ -36,9 +36,9 @@ class RelayKenter:
             self.process_kenter_meters()
 
         self.logger.info(f"Setting cron trigger to run kenter meter processing at hour: [{self.conf.kenter_fetch_cron_hour}], minute: [{self.conf.kenter_fetch_cron_minute}]")
-        sched = BlockingScheduler(standalone=True)
-        sched.add_job(self.process_kenter_meters, trigger="cron", hour=self.conf.kenter_fetch_cron_hour, minute=self.conf.kenter_fetch_cron_minute)
-        sched.start()
+        self.sched = BlockingScheduler(standalone=True)
+        self.sched.add_job(self.process_kenter_meters, trigger="cron", hour=self.conf.kenter_fetch_cron_hour, minute=self.conf.kenter_fetch_cron_minute)
+        self.sched.start()
 
     def process_kenter_meters(self):
         # Run API fetch loop for each day to process for each metering point

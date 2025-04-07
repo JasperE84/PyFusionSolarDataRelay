@@ -29,9 +29,9 @@ class RelayFusionSolarOpenApi:
             self.process_fusionsolar_open_apis()
 
         self.logger.info(f"Setting cron trigger to run fusionsolar open_api processing at hour: [{self.conf.fusionsolar_open_api_cron_hour}], minute: [{self.conf.fusionsolar_open_api_cron_minute}]")
-        sched = BlockingScheduler(standalone=True)
-        sched.add_job(self.process_fusionsolar_open_apis, trigger="cron", hour=self.conf.fusionsolar_open_api_cron_hour, minute=self.conf.fusionsolar_open_api_cron_minute)
-        sched.start()
+        self.sched = BlockingScheduler(standalone=True)
+        self.sched.add_job(self.process_fusionsolar_open_apis, trigger="cron", hour=self.conf.fusionsolar_open_api_cron_hour, minute=self.conf.fusionsolar_open_api_cron_minute)
+        self.sched.start()
 
     def process_fusionsolar_open_apis(self):
         self.process_fusionsolar_openapi_inverters()

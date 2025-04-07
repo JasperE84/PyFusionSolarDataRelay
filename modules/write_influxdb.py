@@ -17,7 +17,7 @@ class WriteInfluxDb:
             self.classes_instantiated = self.instantiate()
 
         influxdb_record = self.make_inverter_measurement_influxdb_record(measurement)
-        self.logger.info(f"Writing InfluxDB FusionSolarKiosk record for inverter: {measurement.settings_descriptive_name} [{measurement.station_dn}]")
+        self.logger.info(f"Writing InfluxDB FusionSolar record for inverter: {measurement.settings_descriptive_name} [{measurement.station_dn}]")
         try:
             if self.conf.influxdb_is_v2:
                 self.logger.debug("Writing PvData to InfluxDB v2...")
@@ -40,7 +40,7 @@ class WriteInfluxDb:
             self.classes_instantiated = self.instantiate()
 
         influxdb_record = self.make_grid_meter_measurement_influxdb_record(measurement)
-        self.logger.info(f"Writing InfluxDB FusionSolarKiosk record for grid meter: {measurement.settings_descriptive_name} [{measurement.station_dn}]")
+        self.logger.info(f"Writing InfluxDB FusionSolar record for grid meter: {measurement.settings_descriptive_name} [{measurement.station_dn}]")
         try:
             if self.conf.influxdb_is_v2:
                 self.logger.debug("Writing PvData to InfluxDB v2...")
