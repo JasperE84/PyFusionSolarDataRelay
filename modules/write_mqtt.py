@@ -217,7 +217,7 @@ class WriteMqtt:
                     "model": device_model,
                     "manufacturer": "Huawei",
                 },
-                "value_template": "{{{{ none if value_json.{field_name} is none else ((value_json.{field_name}|float / 1000) if (value_json.{field_name}|float > 0) else 0) }}}}",
+                "value_template": f"{{{{ none if value_json.{field_name} is none else ((value_json.{field_name}|float / 1000) if (value_json.{field_name}|float > 0) else 0) }}}}",
             }
 
             # Add the sensor-specific attributes
