@@ -126,6 +126,7 @@ Kenter provides measurement services for **commercially rented** grid transforme
 # Changelog
 | Version | Description |
 | --- | --- |
+| 2.0.2 | Default to kW in home assistant with 3 digit precision suggestion |
 | 2.0.1 | Now sending MQTT device discovery message |
 | 2.0.1 | Bugfix in environment variable parsing for custom pydantic nested env list parser |
 | 2.0.0 | Introduced possibility to configure multiple input sources (kiosks, openapi meters/inverters and kenter meters) |
