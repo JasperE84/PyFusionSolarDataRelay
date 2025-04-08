@@ -23,7 +23,7 @@ class FetchFusionSolarKiosk:
             )
             response.raise_for_status()
         except Exception as e:
-            raise Exception("Error in FetchFusionSolarKiosk API HTTP request. Error info: {e}")
+            raise Exception(f"Error in FetchFusionSolarKiosk API HTTP request. Error info: {e}")
 
         # Attempt to parse the top-level JSON.
         try:
