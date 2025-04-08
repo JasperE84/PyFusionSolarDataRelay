@@ -172,6 +172,7 @@ Take the following steps to achieve this:
 # Changelog
 | Version | Description |
 | --- | --- |
+| 2.0.4 | Bugfix for fusionsolar cumulative energy quirk where cumulative energy provided by dashboard shortly decreases with the days production |
 | 2.0.3 | Bugfix in scheduler |
 | 2.0.2 | Default to kW in home assistant with 3 digit precision suggestion |
 | 2.0.1 | Now sending MQTT device discovery message |
