@@ -48,12 +48,17 @@ For those of you using Docker, a docker-compose.yml file is provided [here](./ex
 # About Kenter's klantportaal.kenter.nu
 Kenter provides measurement services for **commercially rented** grid transformers. This project can fetch energy usage data from this API and post it to InfluxDB. MQTT/PVOutput is not supported for posting Kenter data, as Kenter's latest measurement data is usually 3 days old and PVOutput imposes challenges on having the datapoint timestamps between grid usage and PV output synchronous. 
 
-# Configuration parameter documentation
+# Configuration settings documentation
+## General settings
 | Parameter | Description | Default |
 | --- | --- | --- |
 | debug_mode | Enables verbose logging | False |
 | fetch_on_startup | Starts API fetching and processing on startup one, then schedule cron jobs | False |
 | site_descriptive_name | Descriptive name for complete site. Use lowercase, and no special characters. This will be used for MQTT topics and InfluxDB record tags | site01 |
+
+## Kiosk settings
+| Parameter | Description | Default |
+| --- | --- | --- |
 | fusionsolar_kiosk_module_enabled | Can be `True` or `False`, determines if fusionsolar kiosk API functionality is enabled | True |
 | fusionsolar_kiosk_fetch_cron_hour | Hour component for python cron job to fetch and process data from fusionsolar. | * |
 | fusionsolar_kiosk_fetch_cron_minute | Minute component for python cron job to fetch and process data from fusionsolar | 0,30 |
@@ -65,6 +70,10 @@ Kenter provides measurement services for **commercially rented** grid transforme
 | fusionsolar_kiosks__0__output_mqtt | Write to mqtt if mqtt module enabled. Can be `True` or `False` | True |
 | fusionsolar_kiosks__0__output_pvoutput | If pvoutput_module_enabled then write this pv metric to pvoutput | `False` |
 | fusionsolar_kiosks__0__output_pvoutput_system_id | System ID for PVOutput.org, should be numeric | 0 |
+
+## General Northbound OpenAPI settings
+| Parameter | Description | Default |
+| --- | --- | --- |
 | fusionsolar_open_api_module_enabled | Can be `True` or `False`, determines if fusionsolar OpenAPI functionality is enabled | True |
 | fusionsolar_open_api_url | Link to the fusionsolar OpenAPI data backend. | [Click url](https://eu5.fusionsolar.huawei.com) |
 | fusionsolar_open_api_user_name | Username for FusionSolar Northbound OpenAPI. |  |
@@ -73,6 +82,9 @@ Kenter provides measurement services for **commercially rented** grid transforme
 | fusionsolar_open_api_cron_minute | Minute component for python cron job to fetch and process data from fusionsolar | */5 |
 | fusionsolar_open_api_mqtt_for_discovered_dev | Write KPI's to MQTT for devices discovered over the API without a matching dev_id | True |
 | fusionsolar_open_api_influxdb_for_discovered_dev | Write KPI's to InfluxDB for devices discovered over the API without a matching dev_id | True |
+### Inverter Northbound OpenAPI settings
+| Parameter | Description | Default |
+| --- | --- | --- |
 | fusionsolar_open_api_inverters__0__descriptive_name | Descriptive name for inverter. Use lowercase, and no special characters. This will be used for InfluxDB record tags | inverter01 |
 | fusionsolar_open_api_inverters__0__enabled | To disable individual OpenAPI inverter configurations. Can be `True` or `False` | True |
 | fusionsolar_open_api_inverters__0__dev_id | Unique device ID nr, can be found by inspecting ./cache/fusion_solar_openapi_devices.json or inspecting stdout logs after startup | |
@@ -80,11 +92,17 @@ Kenter provides measurement services for **commercially rented** grid transforme
 | fusionsolar_open_api_inverters__0__output_mqtt | Write to mqtt if mqtt module enabled. Can be `True` or `False` | True |
 | fusionsolar_open_api_inverters__0__output_pvoutput | If pvoutput_module_enabled then write this pv metric to pvoutput | `False` |
 | fusionsolar_open_api_inverters__0__output_pvoutput_system_id | System ID for PVOutput.org, should be numeric | 0 |
+### Grid Meter Northbound OpenAPI settings
+| Parameter | Description | Default |
+| --- | --- | --- |
 | fusionsolar_open_api_meters__0__descriptive_name | Descriptive name for grid meter. Use lowercase, and no special characters. This will be used for InfluxDB record tags | meter01 |
 | fusionsolar_open_api_meters__0__enabled | To disable individual OpenAPI meter configurations. Can be `True` or `False` | True |
 | fusionsolar_open_api_meters__0__dev_id | Unique device ID nr, can be found by inspecting ./cache/fusion_solar_openapi_devices.json or inspecting stdout logs after startup | |
 | fusionsolar_open_api_meters__0__output_influxdb | Write to influxdb if influx module enabled. Can be `True` or `False` | True |
 | fusionsolar_open_api_meters__0__output_mqtt | Write to mqtt if mqtt module enabled. Can be `True` or `False` | True |
+## Kenter metering settings
+| Parameter | Description | Default |
+| --- | --- | --- |
 | kenter_module_enabled | Can be `True` or `False`, determines if data is fetched from Kenter's klantportaal.kenter.nu API | False |
 | kenter_api_url | Kenter API url for fetching transformer grid measurements | [Click url](https://api.kenter.nu) |
 | kenter_token_url | Kenter API url for fetching auth token | [Click url](https://login.kenter.nu/connect/token) |
@@ -99,6 +117,9 @@ Kenter provides measurement services for **commercially rented** grid transforme
 | kenter_metering_points__0__metering_point_id | MeteringPointId as shown in meter list on startup stdout | XXX |
 | kenter_metering_points__0__channel_id | See kenter API docs, 16180 is delivery for allocation with transformer correction factor for billing, 10180 is delivery kWh from an individual meter | 16180 |
 | kenter_metering_points__0__output_influxdb | Write to influxdb if influx module enabled. Can be `True` or `False` | True |
+## Influxdb / VictoriaMetrics settings
+| Parameter | Description | Default |
+| --- | --- | --- |
 | influxdb_module_enabled | Can be `True` or `False`, determines if InfluxDB processing is enabled | False |
 | influxdb_is_v2 | If `True` the InfluxDBv2 methods are used. If `False` InfluxDBv1 methods are used | True |
 | influxdb_host | Hostname of the influxdb server | localhost |
@@ -110,9 +131,15 @@ Kenter provides measurement services for **commercially rented** grid transforme
 | influxdb_v2_org | Organization for InfluxDBv2, only required if influx2=True | acme |
 | influxdb_v2_bucket | Bucket for InfluxDBv2, only required if influx2=True | fusionsolar |
 | influxdb_v2_token | Token for InfluxDBv2, only required if influx2=True | XXXXXXX |
+## PVOutput.org settings
+| Parameter | Description | Default |
+| --- | --- | --- |
 | pvoutput_module_enabled | Can be `True` or `False`, determines if PVOutput.org API is enabled | False |
 | pvoutput_record_url | API url for PVOutput.org live output posting | [Click url](https://pvoutput.org/service/r2/addstatus.jsp)
 | pvoutput_api_key | API Key for PVOutput.org | yourapikey |
+## MQTT settings
+| Parameter | Description | Default |
+| --- | --- | --- |
 | mqtt_module_enabled | Can be `True` or `False`, determines if MQTT publishing is enabled | False |
 | mqtt_host | Hostname of MQTT server | localhost |
 | mqtt_port | Port of MQTT server | 1883 |
@@ -123,9 +150,29 @@ Kenter provides measurement services for **commercially rented** grid transforme
 | mqtt_hass_discovery_enabled | Automatically publish all sensors in MQTT home assistant device discovery | True |
 
 
+# Grafana dashboard example
+A [grafana dashboard export](./examples/grafana-dashboard-export.json) is included in the examples subfolder in the Git repository.
+
+![Grafana dashboard screenshot](./examples/grafana-dashboard-screenshot.png)
+
+# Grafana solar PV dashboard elements on Xibo digital signage system
+I'm using individual the elements on this dashboard to show the PV solar statistics on a free and open source [Xibo Digital Signage](https://xibo.org.uk/) narrowcasting system. 
+
+Take the following steps to achieve this:
+1. Enable Grafana anonymous mode (see [examples/docker-compose.yml](https://github.com/JasperE84/PyFusionSolarDataRelay/blob/main/examples/docker-compose.yml))
+2. Create a new layout in Xibo and add some regions, or import the [example Xibo layout](./examples/xibo-export-pv-triptych-v2-1080p.zip).
+3. Back in Grafana, open the dashboard and click 'Share' in the grafana individual graph dropdown dialog (not the entire dashboard, but the individual graph on the dashboard)
+4. Share in "Link" mode (do not use snapshot or embed)
+5. Back in Xibo, drop the "Webpage" widget on your region, or select the existing widget in the imported example layout.
+6. Configure the webpage widget to show the link copied in step 4.
+7. Optionally alter the url to format like `&from=now-12h` instead of the default `&from=1655015379544&to=1655058579544`
+7. Publish the layout, the graphs will now fit nicely in the width/height of the defined regions.
+
+
 # Changelog
 | Version | Description |
 | --- | --- |
+| 2.0.4 | Bugfix for fusionsolar cumulative energy quirk where cumulative energy provided by dashboard shortly decreases with the days production |
 | 2.0.3 | Bugfix in scheduler |
 | 2.0.2 | Default to kW in home assistant with 3 digit precision suggestion |
 | 2.0.1 | Now sending MQTT device discovery message |

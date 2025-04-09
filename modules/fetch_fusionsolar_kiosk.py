@@ -9,6 +9,7 @@ class FetchFusionSolarKiosk:
     def __init__(self, conf: PyFusionSolarSettings, logger):
         self.conf = conf
         self.logger = logger
+        self.last_lifetime_energy_wh = 0
         self.logger.debug("FetchFusionSolarKiosk class instantiated")
 
     def fetch_fusionsolar_status(self, kiosk_settings: FusionSolarKioskSettings) -> FusionSolarInverterMeasurement:
@@ -22,7 +23,7 @@ class FetchFusionSolarKiosk:
             )
             response.raise_for_status()
         except Exception as e:
-            raise Exception("Error in FetchFusionSolarKiosk API HTTP request. Error info: {e}")
+            raise Exception(f"Error in FetchFusionSolarKiosk API HTTP request. Error info: {e}")
 
         # Attempt to parse the top-level JSON.
         try:
@@ -57,6 +58,12 @@ class FetchFusionSolarKiosk:
             raise Exception(f"Failed to convert FusionSolarOpenAPI data values to float, out of bounds? {val_err}")
         except TypeError as typ_err:
             raise Exception(f"Failed to convert FusionSolarOpenAPI data values to float, value None? {typ_err}")
+
+        # Set this to fix fusionsolar quirk where cumulativeEnergy will decrease with the days amount of solar production
+        if self.last_lifetime_energy_wh != 0 and lifetime_energy_wh < self.last_lifetime_energy_wh:
+            lifetime_energy_wh = self.last_lifetime_energy_wh
+        else:
+            self.last_lifetime_energy_wh = lifetime_energy_wh
 
         # Extract station information.
         try:
