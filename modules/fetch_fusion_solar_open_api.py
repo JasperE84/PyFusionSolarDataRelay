@@ -164,7 +164,7 @@ class FetchFusionSolarOpenApi:
                 active_power_w = float(api_measurement["dataItemMap"]["active_power"]) * 1000
 
                 # Fix for fusionsolar meter device quirk, set to 0 of power drawn is greater than 16bits maxout plus 2MW pv capacity
-                active_power_w = 0 if int(active_power_w) < (65535 * 1000**2) + 2*10**6 else active_power_w
+                active_power_w = 0 if int(active_power_w) < ((-65535 * 1000**2) + (2 * 10**6)) else active_power_w
 
             except KeyError as missing_key:
                 self.logger.error(f"Key '{missing_key}' is missing from FusionSolarOpenAPI grid meter measurement. Skipping this device.")
