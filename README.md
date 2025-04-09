@@ -172,6 +172,7 @@ Take the following steps to achieve this:
 # Changelog
 | Version | Description |
 | --- | --- |
+| 2.0.5 | Bugfix for incorrect fusionsolar northbound API docs, which state active_power for inverters returns kW, but in fact returns W |
 | 2.0.4 | Bugfix for fusionsolar cumulative energy quirk where cumulative energy provided by dashboard shortly decreases with the days production |
 | 2.0.3 | Bugfix in scheduler |
 | 2.0.2 | Default to kW in home assistant with 3 digit precision suggestion |
