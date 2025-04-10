@@ -59,7 +59,7 @@ class RelayFusionSolarKiosk:
                 # Log but do not raise, other outputs should proceed.
                 self.logger.exception(f"Error writing PV data to PVOutput.org for fusionsolar kiosk [{kiosk_settings.descriptive_name}] with kkid [{kiosk_settings.api_kkid}]: {e}")
         else:
-            self.logger.debug(f"Skipping publishing to InfluxDB, module disabled, or PVOutput disabled in fusionsolar kiosk config.")
+            self.logger.debug(f"Skipping publishing to PvOutput, module disabled, or PVOutput disabled in fusionsolar kiosk config.")
 
     def publish_pvdata_to_mqtt(self, kiosk_measurement: FusionSolarInverterMeasurement, kiosk_settings: FusionSolarKioskSettings):
         if self.conf.mqtt_module_enabled and kiosk_settings.output_mqtt:

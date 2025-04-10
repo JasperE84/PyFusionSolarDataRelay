@@ -79,7 +79,7 @@ class RelayFusionSolarOpenApi:
                     f"Error writing PV data to PVOutput.org for fusionsolar open_api [{inverter_measurement.settings_descriptive_name}] with dev_id [{inverter_measurement.settings_device_id}]: {e}"
                 )
         else:
-            self.logger.debug(f"Skipping publishing to InfluxDB, module disabled, or PVOutput disabled in fusionsolar open_api config.")
+            self.logger.debug(f"Skipping publishing to PvOutpu, module disabled, or PVOutput disabled in fusionsolar open_api config.")
 
     def publish_pvdata_to_mqtt(self, inverter_measurement: FusionSolarInverterMeasurement):
         if self.conf.mqtt_module_enabled and ((inverter_measurement.settings is not None and inverter_measurement.settings.output_mqtt) or self.conf.fusionsolar_open_api_mqtt_for_discovered_dev):
