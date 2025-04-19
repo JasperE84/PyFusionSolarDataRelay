@@ -1,4 +1,17 @@
 # Huawei FusionSolar (Northbound OpenAPI and/or Kiosk) to InfluxDB, MQTT, PVOutput and Home Assistant relay
+
+## Table of Contents
+- [Introduction](#introduction)
+- [Features](#features)
+- [Installation](#installation)
+- [Configuration](#configuration-settings)
+- [Usage](#usage)
+- [Output Structure](#output-structure)
+- [Examples and Dashboards](#examples-and-dashboards)
+- [Changelog](#changelog)
+- [License](#license)
+
+## Introduction
 This is a python project intended to fetch data from the FusionSolar **Northbound OpenAPI** or public **kiosk**, and relay it to **InfluxDB**/**VictoriaMetrics** and/or **PVOutput.org** and/or **MQTT** and/or **Home Assistant (hass)**. Both inverter and grid meter metrics can be retrieved from FusionSolar's API.
 
 Additionally this project can also fetch and relay utility grid energy usage data from the Dutch **Kenter** metering service for commercial transformers.
@@ -7,6 +20,12 @@ Multiple parallel fusionsolar kiosk configurations are supported, and multiple d
 
 [![GitHub release](https://img.shields.io/github/release/JasperE84/PyFusionSolarDataRelay?include_prereleases=&sort=semver&color=2ea44f)](https://github.com/JasperE84/PyFusionSolarDataRelay/releases/)
 [![License](https://img.shields.io/badge/License-MIT-2ea44f)](#license)
+
+## Features
+- Fetch data from Huawei FusionSolar API (Northbound OpenAPI) and public kiosk
+- Relay metrics to InfluxDB/VictoriaMetrics, PVOutput.org, MQTT, Home Assistant
+- Support for inverter, grid meter, and Kenter transformer data
+- Multiple parallel configurations and automatic device discovery
 
 # Installation
 This project is mostly used as a Docker container and fetches its config from environment variables. The file `main.py` can also be started from a python3 environment, after running `pip install -r requirements.txt` and renaming `.env.example` to `.env`. PyFusionSolarDataRelay will then load the environment files from this file, overriding any environment variables already set.
@@ -18,35 +37,28 @@ Check out [examples/docker-compose.yml](https://github.com/JasperE84/PyFusionSol
 # Breaking changes in the latest release
 In version 2.0.0 the environment variables used by this project changed names and structure. Please review the configuration section in README for updated variable names. Additionaly, functionality to write electrical energy usage from utility grid has been removed.
 
-# About Huawei FusionSolar Northbound OpenAPI mode
-FusionSolar is Huawei's online monitoring platform, the Northbound API exposes metrics from devices supported by this platform. This project specifically supports inverter and grid meter device types. To use the Northbound API (also called OpenAPI) please ask your installer to create an API account for you, with read access to the relevant inverter and grid meter (if applicable) metrics.
+## Integrations
 
-# About Huawei FusionSolar Kiosk mode
-FusionSolar features a kiosk mode. When enabled, a kiosk url is generated which is publically accessible. The kiosk web app fetches its data from a JSON backend. It is this backend where this project fetches the PV data. Fetching data from the kiosk mode can be beneficial to those without direct access to the official API and/or the inverter Modbus-TCP. For instance when the inverter is logging to fusionsolar over a direct cellular connection configured and fitted by an installer unable to provide API access rights to third parties.
+This section summarizes the external services and protocols supported by PyFusionSolarDataRelay.
 
-# About PVOutput.org
-[PVOutput.org](https://pvoutput.org/) is a free service for sharing and comparing PV output data.
-![PVOutput dashboard screenshot](./examples/pvoutput-measurement-result-example.png)
+### FusionSolar
+- **Northbound OpenAPI**: Fetch inverter and grid meter metrics via Huawei's Northbound API. Requires an API account with read access to relevant devices.
+- **Kiosk Mode**: Scrape public kiosk endpoints for PV data when API access is unavailable. Ideal for installers without API credentials.
 
-# About InfluxDB
-[InfluxDB](https://www.influxdata.com/) is an open source time series database on which dashboards can easily be built. For instance using [Grafana](https://grafana.com/)
+### PVOutput.org
+A free service for sharing and comparing PV output data. Metrics can be posted to PVOutput to track solar generation online.
 
-# About MQTT
-MQTT is an OASIS standard messaging protocol for the Internet of Things (IoT). It is designed as an extremely lightweight publish/subscribe messaging transport that is ideal for connecting remote devices. MQTT can be used to relay the PV data to various home automation software such as [Home Assistant](https://www.home-assistant.io/)
+### InfluxDB / VictoriaMetrics
+An open‑source time-series database for storing energy data. Compatible with both InfluxDB v1 and v2, and ideal for visualization via Grafana.
 
-# About Home Assistant
-Home Assistant (hass) is an open source home automation platform. Hass features an energy dashboard in which energy generation, storage and usage data can be combined in a dashboard giving a total overview of energy flow. Using MQTT, the power and energy generation data from Huawei's FusionSolar Kiosk can be fed into Home Assistant. This project can then act as a data source for the solar production section of the HASS energy dashboard.
+### MQTT
+A lightweight publish/subscribe protocol for IoT. Relay PV metrics over MQTT to home automation platforms or other consumers.
 
-Hass can easily be connected to an MQTT using the MQTT integration, which can be set up using the hass web interface. Once hass is connected to MQTT, PyFusionSolarDataRelay publishes a HASS MQTT device discovery topic so that home assistant automatically recognizes the devices for which measurements are relayed. No configuration in home assistant sensors is required.
+### Home Assistant
+An open-source home automation platform with an energy dashboard. Supports automatic device discovery via MQTT and visualizes generation and consumption data.
 
-Once everything is configured, solar data will flow as follows: 
-
-`[FusionSolar (Kiosk/Northbound) API] --> [PyFusionSolarDataRelay] --> [MQTT Server] --> [Home Assistant]`
-
-For those of you using Docker, a docker-compose.yml file is provided [here](./examples/docker-compose.yml) in order to get these different components up and running quickly.
-
-# About Kenter's klantportaal.kenter.nu
-Kenter provides measurement services for **commercially rented** grid transformers. This project can fetch energy usage data from this API and post it to InfluxDB. MQTT/PVOutput is not supported for posting Kenter data, as Kenter's latest measurement data is usually 3 days old and PVOutput imposes challenges on having the datapoint timestamps between grid usage and PV output synchronous. 
+### Kenter (klantportaal.kenter.nu)
+Fetches transformer grid energy usage data from the Dutch Kenter API. Only InfluxDB output is supported due to data latency and timestamp constraints.
 
 # Configuration settings documentation
 ## General settings
