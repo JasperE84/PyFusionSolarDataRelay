@@ -1,62 +1,120 @@
-# Huawei FusionSolar (Northbound OpenAPI and/or Kiosk) to InfluxDB, MQTT, PVOutput and Home Assistant relay
-This is a python project intended to fetch data from the FusionSolar **Northbound OpenAPI** or public **kiosk**, and relay it to **InfluxDB**/**VictoriaMetrics** and/or **PVOutput.org** and/or **MQTT** and/or **Home Assistant (hass)**. Both inverter and grid meter metrics can be retrieved from FusionSolar's API.
+# 📊 PyFusionSolarDataRelay
 
-Additionally this project can also fetch and relay utility grid energy usage data from the Dutch **Kenter** metering service for commercial transformers.
-
-Multiple parallel fusionsolar kiosk configurations are supported, and multiple devices on the *same* Northbound OpenAPI account are supported. Also, multiple parallel meters from Kenter's service are supported as well. You can configure where metrics should be published per configured device. Additionally, the project also supports publishing metrics from discovered devices over the Northbound API, which have not been individually configured in the environment variables. Please refer to settings the configuration options in this document for more explanation.
+> Data relay from Huawei FusionSolar (Northbound OpenAPI and/or Kiosk) to InfluxDB, MQTT, PVOutput and Home Assistant
 
 [![GitHub release](https://img.shields.io/github/release/JasperE84/PyFusionSolarDataRelay?include_prereleases=&sort=semver&color=2ea44f)](https://github.com/JasperE84/PyFusionSolarDataRelay/releases/)
 [![License](https://img.shields.io/badge/License-MIT-2ea44f)](#license)
-
-# Installation
-This project is mostly used as a Docker container and fetches its config from environment variables. The file `main.py` can also be started from a python3 environment, after running `pip install -r requirements.txt` and renaming `.env.example` to `.env`. PyFusionSolarDataRelay will then load the environment files from this file, overriding any environment variables already set.
-
-Check out [examples/docker-compose.yml](https://github.com/JasperE84/PyFusionSolarDataRelay/blob/main/examples/docker-compose.yml) for a docker configuration example.
-
 [![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white)](https://hub.docker.com/r/jsprnl/pyfusionsolardatarelay)
 
-# Breaking changes in the latest release
-In version 2.0.0 the environment variables used by this project changed names and structure. Please review the configuration section in README for updated variable names. Additionaly, functionality to write electrical energy usage from utility grid has been removed.
 
-# About Huawei FusionSolar Northbound OpenAPI mode
-FusionSolar is Huawei's online monitoring platform, the Northbound API exposes metrics from devices supported by this platform. This project specifically supports inverter and grid meter device types. To use the Northbound API (also called OpenAPI) please ask your installer to create an API account for you, with read access to the relevant inverter and grid meter (if applicable) metrics.
 
-# About Huawei FusionSolar Kiosk mode
-FusionSolar features a kiosk mode. When enabled, a kiosk url is generated which is publically accessible. The kiosk web app fetches its data from a JSON backend. It is this backend where this project fetches the PV data. Fetching data from the kiosk mode can be beneficial to those without direct access to the official API and/or the inverter Modbus-TCP. For instance when the inverter is logging to fusionsolar over a direct cellular connection configured and fitted by an installer unable to provide API access rights to third parties.
+## 📋 Table of Contents
+- [Overview](#overview)
+- [Features](#features)
+- [Installation](#installation)
+- [Breaking Changes](#breaking-changes)
+- [Integrations](#integrations)
+- [Configuration](#configuration)
+  - [General Settings](#general-settings)
+  - [FusionSolar Kiosk Settings](#kiosk-settings)
+  - [Northbound OpenAPI Settings](#general-northbound-openapi-settings)
+  - [Kenter Settings](#kenter-metering-settings)
+  - [InfluxDB Settings](#influxdb--victoriametrics-settings)
+  - [PVOutput Settings](#pvoutputorg-settings)
+  - [MQTT Settings](#mqtt-settings)
+- [Output Structure](#output-structure)
+- [Examples and Dashboards](#grafana-dashboard-example)
+- [Changelog](#changelog)
+- [License](#license)
 
-# About PVOutput.org
-[PVOutput.org](https://pvoutput.org/) is a free service for sharing and comparing PV output data.
-![PVOutput dashboard screenshot](./examples/pvoutput-measurement-result-example.png)
+## Overview
 
-# About InfluxDB
-[InfluxDB](https://www.influxdata.com/) is an open source time series database on which dashboards can easily be built. For instance using [Grafana](https://grafana.com/)
+PyFusionSolarDataRelay is a Python application that serves as a data bridge between Huawei solar systems and various monitoring/visualization platforms. It can collect data from multiple sources and distribute it to multiple destinations.
 
-# About MQTT
-MQTT is an OASIS standard messaging protocol for the Internet of Things (IoT). It is designed as an extremely lightweight publish/subscribe messaging transport that is ideal for connecting remote devices. MQTT can be used to relay the PV data to various home automation software such as [Home Assistant](https://www.home-assistant.io/)
+### Data Sources:
+- **FusionSolar Northbound OpenAPI**: Official API for accessing inverter and grid meter data
+- **FusionSolar Public Kiosk**: Alternative source when API access is unavailable
+- **Kenter Metering Service API**: Dutch utility grid energy usage data for commercial transformers
 
-# About Home Assistant
-Home Assistant (hass) is an open source home automation platform. Hass features an energy dashboard in which energy generation, storage and usage data can be combined in a dashboard giving a total overview of energy flow. Using MQTT, the power and energy generation data from Huawei's FusionSolar Kiosk can be fed into Home Assistant. This project can then act as a data source for the solar production section of the HASS energy dashboard.
+### Data Destinations:
+- **InfluxDB/VictoriaMetrics**: For time-series storage and visualization
+- **PVOutput.org**: For public solar generation tracking
+- **MQTT**: For integration with home automation systems
+- **Home Assistant**: For energy dashboard visualization
 
-Hass can easily be connected to an MQTT using the MQTT integration, which can be set up using the hass web interface. Once hass is connected to MQTT, PyFusionSolarDataRelay publishes a HASS MQTT device discovery topic so that home assistant automatically recognizes the devices for which measurements are relayed. No configuration in home assistant sensors is required.
+The application supports multiple parallel configurations and automatic device discovery over the Northbound API.
 
-Once everything is configured, solar data will flow as follows: 
+## ✨ Features
 
-`[FusionSolar (Kiosk/Northbound) API] --> [PyFusionSolarDataRelay] --> [MQTT Server] --> [Home Assistant]`
+- **Multiple Data Sources**: Connect to both FusionSolar API and public kiosk interfaces
+- **Flexible Output Options**: Send data to any combination of supported platforms
+- **Device Auto-Discovery**: Automatically detect and monitor devices on your FusionSolar account
+- **Comprehensive Metrics**: Collect data from inverters, grid meters, and Kenter transformers
+- **Docker Ready**: Easy deployment with Docker and docker-compose
+- **Configurable**: Extensive environment variable configuration options
 
-For those of you using Docker, a docker-compose.yml file is provided [here](./examples/docker-compose.yml) in order to get these different components up and running quickly.
+## 🚀 Installation
 
-# About Kenter's klantportaal.kenter.nu
-Kenter provides measurement services for **commercially rented** grid transformers. This project can fetch energy usage data from this API and post it to InfluxDB. MQTT/PVOutput is not supported for posting Kenter data, as Kenter's latest measurement data is usually 3 days old and PVOutput imposes challenges on having the datapoint timestamps between grid usage and PV output synchronous. 
+PyFusionSolarDataRelay is designed to run as a Docker container, but can also be run directly with Python. Docker-compose examples can be found in the examples directory.
 
-# Configuration settings documentation
-## General settings
+### Docker Installation (Recommended)
+```yaml
+# See the complete example in examples/docker-compose.yml
+version: '3'
+services:
+  pyfusionsolardatarelay:
+    image: jsprnl/pyfusionsolardatarelay:latest
+    container_name: pyfusionsolardatarelay
+    restart: unless-stopped
+    environment:
+      - TZ=Europe/Amsterdam
+      - site_descriptive_name=mysolarsite
+      # Add your configuration options here
+```
+
+### Python Installation
+1. Clone the repository
+2. Install dependencies: `pip install -r requirements.txt`
+3. Rename `.env.example` to `.env` and configure your settings
+4. Run the application: `python main.py`
+
+## ⚠️ Breaking Changes
+
+**Important**: Version 2.0.0 introduced significant changes to environment variables and the structure of output to MQTT (topics/payload) and InfluxDB (values/tags/fields).
+
+## 🔌 Integrations
+
+### FusionSolar
+- **Northbound OpenAPI**: Fetch inverter and grid meter metrics via Huawei's Northbound API
+- **Kiosk Mode**: Scrape public kiosk endpoints for PV data when API access is unavailable
+
+### PVOutput.org
+A free service for sharing and comparing PV output data.
+
+### InfluxDB / VictoriaMetrics
+An open‑source time-series database for storing energy data.
+
+### MQTT
+A lightweight publish/subscribe protocol for IoT.
+
+### Home Assistant
+An open-source home automation platform with an energy dashboard.
+
+### Kenter
+Fetches transformer grid energy usage data from the Dutch Kenter API.
+
+## ⚙️ Configuration
+
+All configuration is done through environment variables or an optional `.env` file in the directory where `main.py` is.
+
+### General Settings
 | Parameter | Description | Default |
 | --- | --- | --- |
 | debug_mode | Enables verbose logging | False |
 | fetch_on_startup | Starts API fetching and processing on startup one, then schedule cron jobs | False |
 | site_descriptive_name | Descriptive name for complete site. Use lowercase, and no special characters. This will be used for MQTT topics and InfluxDB record tags | site01 |
 
-## Kiosk settings
+### FusionSolar Kiosk Settings
 | Parameter | Description | Default |
 | --- | --- | --- |
 | fusionsolar_kiosk_module_enabled | Can be `True` or `False`, determines if fusionsolar kiosk API functionality is enabled | True |
@@ -71,7 +129,7 @@ Kenter provides measurement services for **commercially rented** grid transforme
 | fusionsolar_kiosks__0__output_pvoutput | If pvoutput_module_enabled then write this pv metric to pvoutput | `False` |
 | fusionsolar_kiosks__0__output_pvoutput_system_id | System ID for PVOutput.org, should be numeric | 0 |
 
-## General Northbound OpenAPI settings
+### General Northbound OpenAPI Settings
 | Parameter | Description | Default |
 | --- | --- | --- |
 | fusionsolar_open_api_module_enabled | Can be `True` or `False`, determines if fusionsolar OpenAPI functionality is enabled | True |
@@ -82,7 +140,8 @@ Kenter provides measurement services for **commercially rented** grid transforme
 | fusionsolar_open_api_cron_minute | Minute component for python cron job to fetch and process data from fusionsolar | */5 |
 | fusionsolar_open_api_mqtt_for_discovered_dev | Write KPI's to MQTT for devices discovered over the API without a matching dev_id | True |
 | fusionsolar_open_api_influxdb_for_discovered_dev | Write KPI's to InfluxDB for devices discovered over the API without a matching dev_id | True |
-### Inverter Northbound OpenAPI settings
+
+### Inverter Northbound OpenAPI Settings
 | Parameter | Description | Default |
 | --- | --- | --- |
 | fusionsolar_open_api_inverters__0__descriptive_name | Descriptive name for inverter. Use lowercase, and no special characters. This will be used for InfluxDB record tags | inverter01 |
@@ -92,7 +151,8 @@ Kenter provides measurement services for **commercially rented** grid transforme
 | fusionsolar_open_api_inverters__0__output_mqtt | Write to mqtt if mqtt module enabled. Can be `True` or `False` | True |
 | fusionsolar_open_api_inverters__0__output_pvoutput | If pvoutput_module_enabled then write this pv metric to pvoutput | `False` |
 | fusionsolar_open_api_inverters__0__output_pvoutput_system_id | System ID for PVOutput.org, should be numeric | 0 |
-### Grid Meter Northbound OpenAPI settings
+
+### Grid Meter Northbound OpenAPI Settings
 | Parameter | Description | Default |
 | --- | --- | --- |
 | fusionsolar_open_api_meters__0__descriptive_name | Descriptive name for grid meter. Use lowercase, and no special characters. This will be used for InfluxDB record tags | meter01 |
@@ -100,7 +160,8 @@ Kenter provides measurement services for **commercially rented** grid transforme
 | fusionsolar_open_api_meters__0__dev_id | Unique device ID nr, can be found by inspecting ./cache/fusion_solar_openapi_devices.json or inspecting stdout logs after startup | |
 | fusionsolar_open_api_meters__0__output_influxdb | Write to influxdb if influx module enabled. Can be `True` or `False` | True |
 | fusionsolar_open_api_meters__0__output_mqtt | Write to mqtt if mqtt module enabled. Can be `True` or `False` | True |
-## Kenter metering settings
+
+### Kenter Metering Settings
 | Parameter | Description | Default |
 | --- | --- | --- |
 | kenter_module_enabled | Can be `True` or `False`, determines if data is fetched from Kenter's klantportaal.kenter.nu API | False |
@@ -117,7 +178,8 @@ Kenter provides measurement services for **commercially rented** grid transforme
 | kenter_metering_points__0__metering_point_id | MeteringPointId as shown in meter list on startup stdout | XXX |
 | kenter_metering_points__0__channel_id | See kenter API docs, 16180 is delivery for allocation with transformer correction factor for billing, 10180 is delivery kWh from an individual meter | 16180 |
 | kenter_metering_points__0__output_influxdb | Write to influxdb if influx module enabled. Can be `True` or `False` | True |
-## Influxdb / VictoriaMetrics settings
+
+### InfluxDB / VictoriaMetrics Settings
 | Parameter | Description | Default |
 | --- | --- | --- |
 | influxdb_module_enabled | Can be `True` or `False`, determines if InfluxDB processing is enabled | False |
@@ -131,13 +193,15 @@ Kenter provides measurement services for **commercially rented** grid transforme
 | influxdb_v2_org | Organization for InfluxDBv2, only required if influx2=True | acme |
 | influxdb_v2_bucket | Bucket for InfluxDBv2, only required if influx2=True | fusionsolar |
 | influxdb_v2_token | Token for InfluxDBv2, only required if influx2=True | XXXXXXX |
-## PVOutput.org settings
+
+### PVOutput.org Settings
 | Parameter | Description | Default |
 | --- | --- | --- |
 | pvoutput_module_enabled | Can be `True` or `False`, determines if PVOutput.org API is enabled | False |
 | pvoutput_record_url | API url for PVOutput.org live output posting | [Click url](https://pvoutput.org/service/r2/addstatus.jsp)
 | pvoutput_api_key | API Key for PVOutput.org | yourapikey |
-## MQTT settings
+
+### MQTT Settings
 | Parameter | Description | Default |
 | --- | --- | --- |
 | mqtt_module_enabled | Can be `True` or `False`, determines if MQTT publishing is enabled | False |
@@ -210,12 +274,12 @@ The InfluxDB records are structured as follows:
 
 Each record is constructed as a dictionary (or a list of dictionaries in the case of transformer data) and is ready to be written to InfluxDB using either the v1 or v2 client.
 
-# Grafana dashboard example
+## Grafana dashboard example
 A [grafana dashboard export](./examples/grafana-dashboard-export.json) is included in the examples subfolder in the Git repository.
 
 ![Grafana dashboard screenshot](./examples/grafana-dashboard-screenshot.png)
 
-# Grafana solar PV dashboard elements on Xibo digital signage system
+## Grafana solar PV dashboard elements on Xibo digital signage system
 I'm using individual the elements on this dashboard to show the PV solar statistics on a free and open source [Xibo Digital Signage](https://xibo.org.uk/) narrowcasting system. 
 
 Take the following steps to achieve this:
@@ -228,8 +292,7 @@ Take the following steps to achieve this:
 7. Optionally alter the url to format like `&from=now-12h` instead of the default `&from=1655015379544&to=1655058579544`
 7. Publish the layout, the graphs will now fit nicely in the width/height of the defined regions.
 
-
-# Changelog
+## Changelog
 | Version | Description |
 | --- | --- |
 | 2.0.5 | Bugfix for incorrect fusionsolar northbound API docs, which state active_power for inverters returns kW, but in fact returns W |
@@ -255,7 +318,6 @@ Take the following steps to achieve this:
 | 1.0.3 | main.py now uses separate threads for RelayFusionSolar and RelayKenter classes |
 | 1.0.3 | Implemented apscheduler's cron implementation to be able to specify exact moments to fetch fusionsolar data |
 | 1.0.3 | Code and method name refactoring including PvConf type hints in classes where this class was injected as method parameter |
-
 
 Released under [MIT](/LICENSE) by [@JasperE84](https://github.com/JasperE84).
 
