@@ -66,6 +66,8 @@ class PyFusionSolarSettings(BaseSettings):
     fusionsolar_kiosk_fetch_cron_minute: str = Field(
         default="*/30", description="The fusionsolar API only updates portal data each half hour, setting to lower value will produce weird PVOutput graph with horizontal bits in it."
     )
+    fusionsolar_kiosk_job_timeout_seconds: int = Field(default=120, description="Maximum time in seconds before cancelling a stuck kiosk job")
+    fusionsolar_kiosk_allow_job_cancellation: bool = Field(default=True, description="Allow automatic cancellation of kiosk jobs that exceed the timeout")
 
     # FusionSolar OpenAPI
     fusionsolar_open_api_module_enabled: bool = Field(default=True)
@@ -77,6 +79,8 @@ class PyFusionSolarSettings(BaseSettings):
         default="*/5",
         description="Beware of API limits and throttling: https://support.huawei.com/enterprise/en/doc/EDOC1100379184/b71c4d05/flow-control-using-the-api-account#EN-US_TOPIC_0000001652426426",
     )
+    fusionsolar_open_api_job_timeout_seconds: int = Field(default=120, description="Maximum time in seconds before cancelling a stuck job")
+    fusionsolar_open_api_allow_job_cancellation: bool = Field(default=True, description="Allow automatic cancellation of jobs that exceed the timeout")
     fusionsolar_open_api_inverters: List[FusionSolarOpenApiInverterSettings] = Field(default=[])
     fusionsolar_open_api_meters: List[FusionSolarOpenApiMeterSettings] = Field(default=[])
     fusionsolar_open_api_mqtt_for_discovered_dev: bool = Field(default=True, description="Write KPI's to MQTT for devices discovered over the API without a matching dev_id")

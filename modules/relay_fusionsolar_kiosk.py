@@ -1,12 +1,14 @@
 import logging
 import time
 from apscheduler.schedulers.blocking import BlockingScheduler
+from apscheduler.events import EVENT_JOB_EXECUTED, EVENT_JOB_ERROR
 from modules.conf_models import PyFusionSolarSettings, FusionSolarKioskSettings
 from modules.write_influxdb import WriteInfluxDb
 from modules.write_pvoutput import WritePvOutput
 from modules.fetch_fusionsolar_kiosk import FetchFusionSolarKiosk
 from modules.write_mqtt import WriteMqtt
 from modules.models import *
+from modules.decorators import job_timeout, JobTimeoutError, JobExecutionTracker
 
 
 class RelayFusionSolarKiosk:
@@ -19,6 +21,10 @@ class RelayFusionSolarKiosk:
         self.pvoutput = WritePvOutput(conf, logger)
         self.mqtt = WriteMqtt(conf, logger)
         self.influxdb = WriteInfluxDb(self.conf, self.logger)
+        
+        # Initialize job execution tracker
+        self.job_tracker = JobExecutionTracker(logger)
+        self.job_id = "process_fusionsolar_kiosks"
 
         self.logger.info("Starting RelayFusionSolarKiosk on separate thread...")
         self.logger.debug("RelayFusionSolarKiosk waiting 5sec to initialize docker-compose containers")
@@ -26,14 +32,84 @@ class RelayFusionSolarKiosk:
 
         if self.conf.fetch_on_startup:
             self.logger.info("Starting process_fusionsolar_kiosks() at init, before waiting for cron, because fetch_on_startup is set")
-            self.process_fusionsolar_kiosks()
+            self._execute_job_with_timeout()
 
         self.logger.info(
             f"Setting cron trigger to run fusionsolar kiosk processing at hour: [{self.conf.fusionsolar_kiosk_fetch_cron_hour}], minute: [{self.conf.fusionsolar_kiosk_fetch_cron_minute}]"
         )
+        self.logger.info(f"Kiosk job timeout configured for {self.conf.fusionsolar_kiosk_job_timeout_seconds} seconds, cancellation {'enabled' if self.conf.fusionsolar_kiosk_allow_job_cancellation else 'disabled'}")
+        
         self.sched = BlockingScheduler(standalone=True)
-        self.sched.add_job(self.process_fusionsolar_kiosks, trigger="cron", hour=self.conf.fusionsolar_kiosk_fetch_cron_hour, minute=self.conf.fusionsolar_kiosk_fetch_cron_minute)
+        # Use the wrapper method instead of the direct method
+        self.sched.add_job(
+            self._execute_job_with_timeout,
+            trigger="cron",
+            hour=self.conf.fusionsolar_kiosk_fetch_cron_hour,
+            minute=self.conf.fusionsolar_kiosk_fetch_cron_minute,
+            max_instances=1,
+            coalesce=True,
+            id=self.job_id
+        )
+        
+        # Add job event listeners
+        self.sched.add_listener(self._job_listener, EVENT_JOB_EXECUTED | EVENT_JOB_ERROR)
+        
         self.sched.start()
+
+    def _execute_job_with_timeout(self):
+        """
+        Wrapper method that handles job execution with timeout and overlap prevention.
+        """
+        # Check if job is already running and handle accordingly
+        if self.job_tracker.is_job_running(self.job_id):
+            current_duration = self.job_tracker.get_job_duration(self.job_id)
+            
+            if current_duration and current_duration >= self.conf.fusionsolar_kiosk_job_timeout_seconds:
+                if self.conf.fusionsolar_kiosk_allow_job_cancellation:
+                    self.logger.warning(f"Previous kiosk job has been running for {current_duration:.1f} seconds (>= {self.conf.fusionsolar_kiosk_job_timeout_seconds}s timeout). Cleaning up and starting new job.")
+                    self.job_tracker.cleanup_stale_jobs(self.conf.fusionsolar_kiosk_job_timeout_seconds)
+                else:
+                    self.logger.warning(f"Previous kiosk job has been running for {current_duration:.1f} seconds (>= {self.conf.fusionsolar_kiosk_job_timeout_seconds}s timeout), but cancellation is disabled. Skipping this execution.")
+                    return
+            else:
+                self.logger.info(f"Previous kiosk job still running ({current_duration:.1f}s). Skipping this execution to prevent overlap.")
+                return
+        
+        # Start tracking this job execution
+        if not self.job_tracker.start_job(self.job_id):
+            self.logger.warning("Failed to start kiosk job tracking. Another job may be running.")
+            return
+        
+        try:
+            if self.conf.fusionsolar_kiosk_allow_job_cancellation:
+                # Execute with timeout if cancellation is enabled
+                self._process_with_timeout()
+            else:
+                # Execute without timeout if cancellation is disabled
+                self.process_fusionsolar_kiosks()
+        except JobTimeoutError as e:
+            self.logger.error(f"Kiosk job execution timed out: {e}")
+        except Exception as e:
+            self.logger.exception(f"Unexpected error during kiosk job execution: {e}")
+        finally:
+            # Always clean up job tracking
+            self.job_tracker.finish_job(self.job_id)
+    
+    def _process_with_timeout(self):
+        """Execute the main processing with timeout decorator."""
+        @job_timeout(self.conf.fusionsolar_kiosk_job_timeout_seconds, self.logger)
+        def timed_process():
+            return self.process_fusionsolar_kiosks()
+        
+        return timed_process()
+    
+    def _job_listener(self, event):
+        """Listen to job events for additional logging and cleanup."""
+        if event.job_id == self.job_id:
+            if event.exception:
+                self.logger.error(f"Kiosk job {self.job_id} failed with exception: {event.exception}")
+            else:
+                self.logger.debug(f"Kiosk job {self.job_id} completed successfully")
 
     def process_fusionsolar_kiosks(self):
         for kiosk_settings in self.conf.fusionsolar_kiosks:

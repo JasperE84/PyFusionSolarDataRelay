@@ -120,6 +120,8 @@ All configuration is done through environment variables or an optional `.env` fi
 | fusionsolar_kiosk_module_enabled | Can be `True` or `False`, determines if fusionsolar kiosk API functionality is enabled | True |
 | fusionsolar_kiosk_fetch_cron_hour | Hour component for python cron job to fetch and process data from fusionsolar. | * |
 | fusionsolar_kiosk_fetch_cron_minute | Minute component for python cron job to fetch and process data from fusionsolar | 0,30 |
+| fusionsolar_kiosk_job_timeout_seconds | Maximum time in seconds before cancelling a stuck kiosk job | 120 |
+| fusionsolar_kiosk_allow_job_cancellation | Allow automatic cancellation of kiosk jobs that exceed the timeout. Can be `True` or `False`. Next job will be skipped if False | True |
 | fusionsolar_kiosks__0__descriptive_name | Descriptive name for PV system for which this kiosk entity provides data. Use lowercase, and no special characters. This will be used for InfluxDB record tags | inverter01 |
 | fusionsolar_kiosks__0__enabled | To disable individual kiosk configurations. Can be `True` or `False` | True |
 | fusionsolar_kiosks__0__api_url | Link to the fusionsolar kiosk data backend, multiple records supported by adding an extra param with `__1__` etc. | [Click url](https://region01eu5.fusionsolar.huawei.com/rest/pvms/web/kiosk/v1/station-kiosk-file?kk=) |
@@ -138,6 +140,8 @@ All configuration is done through environment variables or an optional `.env` fi
 | fusionsolar_open_api_system_code | Password for FusionSolar Northbound OpenAPI. |  |
 | fusionsolar_open_api_cron_hour | Hour component for python cron job to fetch and process data from fusionsolar. | * |
 | fusionsolar_open_api_cron_minute | Minute component for python cron job to fetch and process data from fusionsolar | */5 |
+| fusionsolar_open_api_job_timeout_seconds | Maximum time in seconds before cancelling a stuck OpenAPI job | 120 |
+| fusionsolar_open_api_allow_job_cancellation | Allow automatic cancellation of OpenAPI jobs that exceed the timeout. Can be `True` or `False`. Next job will be skipped if false | True |
 | fusionsolar_open_api_mqtt_for_discovered_dev | Write KPI's to MQTT for devices discovered over the API without a matching dev_id | True |
 | fusionsolar_open_api_influxdb_for_discovered_dev | Write KPI's to InfluxDB for devices discovered over the API without a matching dev_id | True |
 
@@ -295,6 +299,7 @@ Take the following steps to achieve this:
 ## Changelog
 | Version | Description |
 | --- | --- |
+| 2.0.6 | Added scheduler timeout and job cancellation functionality to prevent stuck jobs from blocking new executions |
 | 2.0.5 | Bugfix for incorrect fusionsolar northbound API docs, which state active_power for inverters returns kW, but in fact returns W |
 | 2.0.4 | Bugfix for fusionsolar cumulative energy quirk where cumulative energy provided by dashboard shortly decreases with the days production |
 | 2.0.3 | Bugfix in scheduler |
