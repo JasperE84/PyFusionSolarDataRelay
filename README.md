@@ -16,7 +16,7 @@
 - [Integrations](#integrations)
 - [Configuration](#configuration)
   - [General Settings](#general-settings)
-  - [FusionSolar Kiosk Settings](#kiosk-settings)
+  - [FusionSolar Kiosk Settings](#fusionsolar-kiosk-settings)
   - [Northbound OpenAPI Settings](#general-northbound-openapi-settings)
   - [Kenter Settings](#kenter-metering-settings)
   - [InfluxDB Settings](#influxdb--victoriametrics-settings)
@@ -44,7 +44,7 @@ PyFusionSolarDataRelay is a Python application that serves as a data bridge betw
 
 The application supports multiple parallel configurations and automatic device discovery over the Northbound API.
 
-## ✨ Features
+## Features
 
 - **Multiple Data Sources**: Connect to both FusionSolar API and public kiosk interfaces
 - **Flexible Output Options**: Send data to any combination of supported platforms
@@ -53,7 +53,7 @@ The application supports multiple parallel configurations and automatic device d
 - **Docker Ready**: Easy deployment with Docker and docker-compose
 - **Configurable**: Extensive environment variable configuration options
 
-## 🚀 Installation
+## Installation
 
 PyFusionSolarDataRelay is designed to run as a Docker container, but can also be run directly with Python. Docker-compose examples can be found in the examples directory.
 
@@ -78,11 +78,11 @@ services:
 3. Rename `.env.example` to `.env` and configure your settings
 4. Run the application: `python main.py`
 
-## ⚠️ Breaking Changes
+## Breaking Changes
 
 **Important**: Version 2.0.0 introduced significant changes to environment variables and the structure of output to MQTT (topics/payload) and InfluxDB (values/tags/fields).
 
-## 🔌 Integrations
+## Integrations
 
 ### FusionSolar
 - **Northbound OpenAPI**: Fetch inverter and grid meter metrics via Huawei's Northbound API
@@ -103,7 +103,7 @@ An open-source home automation platform with an energy dashboard.
 ### Kenter
 Fetches transformer grid energy usage data from the Dutch Kenter API.
 
-## ⚙️ Configuration
+## Configuration
 
 All configuration is done through environment variables or an optional `.env` file in the directory where `main.py` is.
 
@@ -324,6 +324,7 @@ Take the following steps to achieve this:
 | 1.0.3 | Implemented apscheduler's cron implementation to be able to specify exact moments to fetch fusionsolar data |
 | 1.0.3 | Code and method name refactoring including PvConf type hints in classes where this class was injected as method parameter |
 
+## License
 Released under [MIT](/LICENSE) by [@JasperE84](https://github.com/JasperE84).
 
 This project has been partly developed in time donated by [Contour - Sheet metal supplier](https://www.contour.eu/en/)
