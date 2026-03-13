@@ -195,11 +195,12 @@ All configuration is done through environment variables or an optional `.env` fi
 | influxdb_v2_token | Token for InfluxDBv2, only required if influx2=True | XXXXXXX |
 
 ### PVOutput.org Settings
-| Parameter | Description | Default |
-| --- | --- | --- |
-| pvoutput_module_enabled | Can be `True` or `False`, determines if PVOutput.org API is enabled | False |
-| pvoutput_record_url | API url for PVOutput.org live output posting | [Click url](https://pvoutput.org/service/r2/addstatus.jsp)
-| pvoutput_api_key | API Key for PVOutput.org | yourapikey |
+| Parameter                | Description                                                         | Default                                                    |
+|--------------------------|---------------------------------------------------------------------|------------------------------------------------------------|
+| pvoutput_module_enabled  | Can be `True` or `False`, determines if PVOutput.org API is enabled | False                                                      |
+| pvoutput_record_url      | API url for PVOutput.org live output posting                        | [Click url](https://pvoutput.org/service/r2/addstatus.jsp) |
+| pvoutput_api_key         | API Key for PVOutput.org                                            | yourapikey                                                 |
+| pvoutput_skip_zero_power | Flag to skip events with zero power (i.e. in the night)             | False                                                      |
 
 ### MQTT Settings
 | Parameter | Description | Default |

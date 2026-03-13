@@ -14,6 +14,8 @@ class WritePvOutput:
         if self.conf.pvoutput_module_enabled:
             if pvoutput_system_id == 0:
                 self.logger.info(f"Skipping PVOutput API call for (kk)id: {dev_id}, output_pvoutput_system_id is not configured")
+            elif self.conf.pvoutput_skip_zero_power and measurement.real_time_power_w <= 0:
+                self.logger.info(f"Skipping PVOutput API call for (kk)id: {dev_id}, real_time_power_w is {measurement.real_time_power_w}w")
             else:
                 pvoutput_header_obj = {
                     "X-Pvoutput-Apikey": self.conf.pvoutput_api_key,

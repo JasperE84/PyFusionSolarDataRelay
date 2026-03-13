@@ -119,6 +119,7 @@ class PyFusionSolarSettings(BaseSettings):
     pvoutput_module_enabled: bool = Field(default=False)
     pvoutput_record_url: str = Field(default="https://pvoutput.org/service/r2/addstatus.jsp")
     pvoutput_api_key: str = Field(default="yourapikey")
+    pvoutput_skip_zero_power: bool = Field(default=False)
 
     # MQTT
     mqtt_module_enabled: bool = Field(default=False)
