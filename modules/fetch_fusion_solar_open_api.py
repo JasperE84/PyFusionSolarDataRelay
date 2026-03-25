@@ -143,17 +143,26 @@ class FetchFusionSolarOpenApi:
         Retrieve real-time KPIs from the FusionSolar OpenAPI.
         Uses rate limiting to avoid frequent calls.
 
-        :return: A list of FusionSolarMeterKpi objects containing inverter metrics.
+        :return: A list of FusionSolarMeterKpi objects containing grid meter metrics.
         """
-        self.logger.info(f"Requesting inverter realtimeKpi's from FusionSolarOpenAPI.")
+        self.logger.info(f"Requesting grid meter realtimeKpi's from FusionSolarOpenAPI.")
 
         # Ensure the device list is populated
         if not self.device_list:
             self.update_device_list()
 
+        grid_meters = [
+            str(item["id"])
+            for item in self.device_list
+            if item.get("devTypeId") == 17 and item.get("id") is not None
+        ]
+
+        if not grid_meters:
+            self.logger.warning("No compatible grid meter found. Skipping")
+            return []
+
         url = f"{self.conf.fusionsolar_open_api_url}/thirdData/getDevRealKpi"
-        devices_str = ",".join(str(item["id"]) for item in self.device_list if "id" in item and "devTypeId" in item and item["devTypeId"] == 17)
-        data = {"devTypeId": 17, "devIds": devices_str}
+        data = {"devTypeId": 17, "devIds": ",".join(grid_meters)}
 
         response_json = self._fetch_fusionsolar_data_request(url, data)
         api_measurement_list = response_json.get("data", [])
